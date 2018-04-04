@@ -1,0 +1,5 @@
+{
+    "go.testEnvVars": {
+        "LD_LIBRARY_PATH":"/Users/laurent/alice/sw/osx_x86-64/O2/latest/lib"
+    }
+}
