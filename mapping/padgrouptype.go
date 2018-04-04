@@ -2,9 +2,9 @@ package mapping
 
 import "fmt"
 
-// A PadGroupType is a collection of pads of unspecified size(s)
+// A padGroupType is a collection of pads of unspecified size(s)
 // organized in a certain way in a x-y rectilinear plane
-type PadGroupType struct {
+type padGroupType struct {
 	fastID      []int
 	fastIndices []int
 	nofPadsX    int
@@ -12,7 +12,7 @@ type PadGroupType struct {
 	nofPads     int
 }
 
-func (pgt PadGroupType) NofPads() int {
+func (pgt padGroupType) NofPads() int {
 	return pgt.nofPads
 }
 
@@ -27,8 +27,8 @@ func validIndices(v []int) []int {
 }
 
 // NewPadGroupType returns a pad group type
-func NewPadGroupType(nofPadsX int, nofPadsY int, ids []int) *PadGroupType {
-	pgt := new(PadGroupType)
+func newPadGroupType(nofPadsX int, nofPadsY int, ids []int) *padGroupType {
+	pgt := new(padGroupType)
 	pgt.fastID = ids
 	pgt.fastIndices = validIndices(pgt.fastID)
 	pgt.nofPads = len(pgt.fastIndices)
@@ -37,7 +37,7 @@ func NewPadGroupType(nofPadsX int, nofPadsY int, ids []int) *PadGroupType {
 	return pgt
 }
 
-func (pgt *PadGroupType) String() string {
+func (pgt *padGroupType) String() string {
 	s := fmt.Sprintf("n=%d nx=%d ny=%d\n", pgt.nofPads, pgt.nofPadsX, pgt.nofPadsY)
 	s += "index "
 	for i := 0; i < len(pgt.fastID); i++ {

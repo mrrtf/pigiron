@@ -16,15 +16,15 @@ func NewSegmentation(detElemID int, isBendingPlane bool) Segmentation {
 		return nil
 	}
 	fmt.Printf("detElemID %d -> segType %d\n", detElemID, segType)
-	builder := GetSegmentationBuilder(segType)
+	builder := getSegmentationBuilder(segType)
 	if builder == nil {
 		return nil
 	}
 	return builder.Build(isBendingPlane)
 }
 
-func newSegmentation(segType int, isBendingPlane bool, padGroups []PadGroup,
-	padGroupTypes []PadGroupType, padSizes []PadSize) *segmentation3 {
+func newSegmentation(segType int, isBendingPlane bool, padGroups []padGroup,
+	padGroupTypes []padGroupType, padSizes []padSize) *segmentation3 {
 
 	fmt.Println("segType", segType, "isBendingPlane", isBendingPlane)
 	return &segmentation3{}

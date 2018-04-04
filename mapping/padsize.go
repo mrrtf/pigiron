@@ -1,5 +1,5 @@
 package mapping
 
-type PadSize struct {
+type padSize struct {
 	x, y float64
 }
