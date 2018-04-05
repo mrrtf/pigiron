@@ -27,14 +27,14 @@ func validIndices(v []int) []int {
 }
 
 // NewPadGroupType returns a pad group type
-func newPadGroupType(nofPadsX int, nofPadsY int, ids []int) *padGroupType {
+func NewPadGroupType(nofPadsX int, nofPadsY int, ids []int) padGroupType {
 	pgt := new(padGroupType)
 	pgt.fastID = ids
 	pgt.fastIndices = validIndices(pgt.fastID)
 	pgt.nofPads = len(pgt.fastIndices)
 	pgt.nofPadsX = nofPadsX
 	pgt.nofPadsY = nofPadsY
-	return pgt
+	return *pgt
 }
 
 func (pgt *padGroupType) String() string {
@@ -44,4 +44,18 @@ func (pgt *padGroupType) String() string {
 		s += fmt.Sprintf("%2d ", pgt.fastID[i])
 	}
 	return s
+}
+
+func (pgt padGroupType) fastIndex(ix int, iy int) int {
+	return ix + iy*pgt.nofPadsX
+}
+
+func (pgt padGroupType) idByFastIndex(fastIndex int) int {
+	return fastIndex
+}
+
+// Return the index of the pad with indices = (ix,iy)
+// or -1 if not found
+func (pgt padGroupType) idByIndices(ix int, iy int) int {
+	return pgt.idByFastIndex(pgt.fastIndex(ix, iy))
 }
