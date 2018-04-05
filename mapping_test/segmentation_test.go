@@ -1,6 +1,7 @@
 package mapping_test
 
 import (
+	"log"
 	"testing"
 
 	"github.com/aphecetche/pigiron/mapping"
@@ -19,14 +20,14 @@ func (de *deIncrementer) Do(detElemID int) {
 }
 
 func TestNumberOfDetectionElementIs156(t *testing.T) {
-	var deinc deIncrementer
-	mapping.ForEachDetectionElement(&deinc)
-	if deinc.nde != 156 {
-		t.Errorf("Expected 156 detection elements, got %d", deinc.nde)
+	var deproc deIncrementer
+	mapping.ForEachDetectionElement(&deproc)
+	if deproc.nde != 156 {
+		t.Errorf("Expected 156 detection elements, got %d", deproc.nde)
 	}
 }
 
-func TestNewCSegmentationMustNotErrorIfDetElemIdIsValid(t *testing.T) {
+func TestNewSegmentationMustNotErrorIfDetElemIdIsValid(t *testing.T) {
 
 	seg := mapping.NewSegmentation(100, true)
 	if seg == nil {
@@ -34,7 +35,7 @@ func TestNewCSegmentationMustNotErrorIfDetElemIdIsValid(t *testing.T) {
 	}
 }
 
-func TestNewCSegmentationMustErrorIfDetElemIdIsNotValid(t *testing.T) {
+func TestNewSegmentationMustErrorIfDetElemIdIsNotValid(t *testing.T) {
 
 	seg := mapping.NewSegmentation(-1, true)
 	if seg != nil {
@@ -43,42 +44,6 @@ func TestNewCSegmentationMustErrorIfDetElemIdIsNotValid(t *testing.T) {
 	seg = mapping.NewSegmentation(121, true)
 	if seg != nil {
 		t.Fatalf("Should have failed here")
-	}
-}
-func TestValidFindPadByFEE(t *testing.T) {
-	_, err := seg.FindPadByFEE(102, 3)
-	if err != nil {
-		t.Errorf("Should get a valid pad here")
-	}
-}
-func TestInvalidFindPadByFEE(t *testing.T) {
-	_, err := seg.FindPadByFEE(214, 14)
-	if err == nil {
-		t.Errorf("Should not get a valid pad here")
-	}
-}
-func TestMustErrorIfDualSampaChannelIsNotBetween0And63(t *testing.T) {
-	_, err := seg.FindPadByFEE(102, -1)
-	if err == nil {
-		t.Errorf("Should _not_ get a valid pad here")
-	}
-	_, err = seg.FindPadByFEE(102, 64)
-	if err == nil {
-		t.Errorf("Should _not_ get a valid pad here")
-	}
-}
-
-func TestPositionOfOnePadInDE100Bending(t *testing.T) {
-	p1, err := seg.FindPadByFEE(76, 9)
-	if err != nil {
-		t.Error("Should get a valid pad")
-	}
-	p2, err := seg.FindPadByPosition(1.575, 18.69)
-	if err != nil {
-		t.Error("Should get a valid pad")
-	}
-	if p1 != p2 {
-		t.Error("Should get the same pads here")
 	}
 }
 
@@ -92,6 +57,47 @@ func TestCreateSegmentation(t *testing.T) {
 			if seg == nil {
 				t.Fatalf("could not create segmentation for DE %d", de)
 			}
+		}
+	}
+}
+
+func TestNofPads(t *testing.T) {
+	var tv = []struct {
+		de                int
+		nofBendingPads    int
+		nofNonBendingPads int
+	}{
+		{100, 14392, 14280},
+		{300, 13947, 13986},
+		{902, 4480, 3136},
+		{702, 4160, 2912},
+		{701, 4096, 2880},
+		{601, 3648, 2560},
+		{501, 3568, 2496},
+		{602, 3200, 2240},
+		{700, 3200, 2240},
+		{502, 3120, 2176},
+		{600, 3008, 2112},
+		{500, 2928, 2048},
+		{903, 2880, 2016},
+		{703, 2560, 1792},
+		{904, 2240, 1568},
+		{503, 1920, 1344},
+		{704, 1920, 1344},
+		{504, 1280, 896},
+		{905, 1280, 896},
+		{705, 960, 672},
+		{706, 640, 448},
+	}
+
+	for _, tt := range tv {
+		b := mapping.NewSegmentation(tt.de, true)
+		nb := mapping.NewSegmentation(tt.de, false)
+		if b.NofPads() != tt.nofBendingPads {
+			t.Errorf("DE %d : expected %d pads in bending plane. Got %d", tt.de, b.NofPads(), tt.nofBendingPads)
+		}
+		if nb.NofPads() != tt.nofNonBendingPads {
+			t.Errorf("DE %d : Expected %d pads in non bending plane. Got %d", tt.de, nb.NofPads(), tt.nofNonBendingPads)
 		}
 	}
 }
@@ -158,43 +164,62 @@ func TestNofFEC(t *testing.T) {
 	}
 }
 
-func TestNofPads(t *testing.T) {
-	var tv = []struct {
-		de                int
-		nofBendingPads    int
-		nofNonBendingPads int
-	}{
-		{100, 14392, 14280},
-		{300, 13947, 13986},
-		{902, 4480, 3136},
-		{702, 4160, 2912},
-		{701, 4096, 2880},
-		{601, 3648, 2560},
-		{501, 3568, 2496},
-		{602, 3200, 2240},
-		{700, 3200, 2240},
-		{502, 3120, 2176},
-		{600, 3008, 2112},
-		{500, 2928, 2048},
-		{903, 2880, 2016},
-		{703, 2560, 1792},
-		{904, 2240, 1568},
-		{503, 1920, 1344},
-		{704, 1920, 1344},
-		{504, 1280, 896},
-		{905, 1280, 896},
-		{705, 960, 672},
-		{706, 640, 448},
-	}
+type dePadCounter struct {
+	npads int
+}
 
-	for _, tt := range tv {
-		b := mapping.NewSegmentation(tt.de, true)
-		nb := mapping.NewSegmentation(tt.de, false)
-		if b.NofPads() != tt.nofBendingPads {
-			t.Errorf("DE %d : expected %d pads in bending plane. Got %d", tt.de, b.NofPads(), tt.nofBendingPads)
+func (de *dePadCounter) Do(detElemID int) {
+	for _, plane := range []bool{true, false} {
+		seg := mapping.NewSegmentation(detElemID, plane)
+		if seg == nil {
+			log.Fatalf("Got nil seg for detElemId %d plane %v", detElemID, plane)
 		}
-		if nb.NofPads() != tt.nofNonBendingPads {
-			t.Errorf("DE %d : Expected %d pads in non bending plane. Got %d", tt.de, nb.NofPads(), tt.nofNonBendingPads)
-		}
+		de.npads += seg.NofPads()
+	}
+}
+
+func TestNofPadsInSegmentations(t *testing.T) {
+	var proc dePadCounter
+	mapping.ForOneDetectionElementOfEachSegmentationType(&proc)
+	if proc.npads != 143469 {
+		t.Errorf("Expected 143469 pads : got %d", proc.npads)
+	}
+}
+
+func TestMustErrorIfDualSampaChannelIsNotBetween0And63(t *testing.T) {
+	_, err := seg.FindPadByFEE(102, -1)
+	if err == nil {
+		t.Errorf("Should _not_ get a valid pad here")
+	}
+	_, err = seg.FindPadByFEE(102, 64)
+	if err == nil {
+		t.Errorf("Should _not_ get a valid pad here")
+	}
+}
+
+func TestPositionOfOnePadInDE100Bending(t *testing.T) {
+	p1, err := seg.FindPadByFEE(76, 9)
+	if err != nil {
+		t.Error("Should get a valid pad")
+	}
+	p2, err := seg.FindPadByPosition(1.575, 18.69)
+	if err != nil {
+		t.Error("Should get a valid pad")
+	}
+	if p1 != p2 {
+		t.Error("Should get the same pads here")
+	}
+}
+
+func TestValidFindPadByFEE(t *testing.T) {
+	_, err := seg.FindPadByFEE(102, 3)
+	if err != nil {
+		t.Errorf("Should get a valid pad here")
+	}
+}
+func TestInvalidFindPadByFEE(t *testing.T) {
+	_, err := seg.FindPadByFEE(214, 14)
+	if err == nil {
+		t.Errorf("Should not get a valid pad here")
 	}
 }
