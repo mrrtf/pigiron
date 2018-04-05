@@ -11,19 +11,14 @@ var (
 	seg = mapping.NewSegmentation(100, true)
 )
 
-type deIncrementer struct {
-	nde int
-}
-
-func (de *deIncrementer) Do(detElemID int) {
-	de.nde++
-}
-
 func TestNumberOfDetectionElementIs156(t *testing.T) {
-	var deproc deIncrementer
-	mapping.ForEachDetectionElement(&deproc)
-	if deproc.nde != 156 {
-		t.Errorf("Expected 156 detection elements, got %d", deproc.nde)
+	nde := 0
+	mapping.ForEachDetectionElement(func(detElemID int) {
+		nde++
+	})
+
+	if nde != 156 {
+		t.Errorf("Expected 156 detection elements, got %d", nde)
 	}
 }
 
@@ -164,27 +159,78 @@ func TestNofFEC(t *testing.T) {
 	}
 }
 
-type dePadCounter struct {
-	npads int
-}
-
-func (de *dePadCounter) Do(detElemID int) {
-	for _, plane := range []bool{true, false} {
-		seg := mapping.NewSegmentation(detElemID, plane)
-		if seg == nil {
-			log.Fatalf("Got nil seg for detElemId %d plane %v", detElemID, plane)
-		}
-		de.npads += seg.NofPads()
-	}
-}
-
 func TestNofPadsInSegmentations(t *testing.T) {
-	var proc dePadCounter
-	mapping.ForOneDetectionElementOfEachSegmentationType(&proc)
-	if proc.npads != 143469 {
-		t.Errorf("Expected 143469 pads : got %d", proc.npads)
+	npads := 0
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
+		for _, plane := range []bool{true, false} {
+			seg := mapping.NewSegmentation(detElemID, plane)
+			if seg == nil {
+				log.Fatalf("Got nil seg for detElemId %d plane %v", detElemID, plane)
+			}
+			npads += seg.NofPads()
+		}
+
+	})
+	if npads != 143469 {
+		t.Errorf("Expected 143469 pads : got %d", npads)
 	}
 }
+
+func TestNofSegmentations(t *testing.T) {
+	n := 0
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
+		n += 2
+	})
+	if n != 42 {
+		t.Errorf("Expected 42 segmentations : got %d", n)
+	}
+}
+
+/*
+
+BOOST_AUTO_TEST_CASE(DualSampasWithLessThan64Pads)
+{
+  std::map<int, int> non64;
+  forOneDetectionElementOfEachSegmentationType([&non64](int detElemId) {
+    for (auto plane : { true, false }) {
+      Segmentation seg{ detElemId, plane };
+      for (int i = 0; i < seg.nofDualSampas(); ++i) {
+        int n{ 0 };
+        seg.forEachPadInDualSampa(seg.dualSampaId(i), [&n](int paduid) { ++n; });
+        if (n != 64) {
+          non64[n]++;
+        }
+      }
+    }
+  });
+
+  BOOST_CHECK_EQUAL(non64[31], 1);
+  BOOST_CHECK_EQUAL(non64[32], 2);
+  BOOST_CHECK_EQUAL(non64[39], 1);
+  BOOST_CHECK_EQUAL(non64[40], 3);
+  BOOST_CHECK_EQUAL(non64[46], 2);
+  BOOST_CHECK_EQUAL(non64[48], 10);
+  BOOST_CHECK_EQUAL(non64[49], 1);
+  BOOST_CHECK_EQUAL(non64[50], 1);
+  BOOST_CHECK_EQUAL(non64[52], 3);
+  BOOST_CHECK_EQUAL(non64[54], 2);
+  BOOST_CHECK_EQUAL(non64[55], 3);
+  BOOST_CHECK_EQUAL(non64[56], 114);
+  BOOST_CHECK_EQUAL(non64[57], 3);
+  BOOST_CHECK_EQUAL(non64[58], 2);
+  BOOST_CHECK_EQUAL(non64[59], 1);
+  BOOST_CHECK_EQUAL(non64[60], 6);
+  BOOST_CHECK_EQUAL(non64[62], 4);
+  BOOST_CHECK_EQUAL(non64[63], 7);
+
+  int n{ 0 };
+  for (auto p : non64) {
+    n += p.second;
+  }
+
+  BOOST_CHECK_EQUAL(n, 166);
+}
+*/
 
 func TestMustErrorIfDualSampaChannelIsNotBetween0And63(t *testing.T) {
 	_, err := seg.FindPadByFEE(102, -1)
