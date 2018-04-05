@@ -186,51 +186,64 @@ func TestNofSegmentations(t *testing.T) {
 	}
 }
 
-/*
+func TestDualSampasWithLessThan64Pads(t *testing.T) {
 
-BOOST_AUTO_TEST_CASE(DualSampasWithLessThan64Pads)
-{
-  std::map<int, int> non64;
-  forOneDetectionElementOfEachSegmentationType([&non64](int detElemId) {
-    for (auto plane : { true, false }) {
-      Segmentation seg{ detElemId, plane };
-      for (int i = 0; i < seg.nofDualSampas(); ++i) {
-        int n{ 0 };
-        seg.forEachPadInDualSampa(seg.dualSampaId(i), [&n](int paduid) { ++n; });
-        if (n != 64) {
-          non64[n]++;
-        }
-      }
-    }
-  });
+	non64 := make(map[int]int)
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
+		for _, plane := range []bool{true, false} {
+			seg := mapping.NewSegmentation(detElemID, plane)
+			for i := 0; i < seg.NofDualSampas(); i++ {
+				n := 0
+				dualSampaID, _ := seg.DualSampaID(i)
+				seg.ForEachPadInDualSampa(dualSampaID, func(paduid int) {
+					n++
+				})
+				if n != 64 {
+					non64[n]++
+				}
+			}
+		}
+	})
 
-  BOOST_CHECK_EQUAL(non64[31], 1);
-  BOOST_CHECK_EQUAL(non64[32], 2);
-  BOOST_CHECK_EQUAL(non64[39], 1);
-  BOOST_CHECK_EQUAL(non64[40], 3);
-  BOOST_CHECK_EQUAL(non64[46], 2);
-  BOOST_CHECK_EQUAL(non64[48], 10);
-  BOOST_CHECK_EQUAL(non64[49], 1);
-  BOOST_CHECK_EQUAL(non64[50], 1);
-  BOOST_CHECK_EQUAL(non64[52], 3);
-  BOOST_CHECK_EQUAL(non64[54], 2);
-  BOOST_CHECK_EQUAL(non64[55], 3);
-  BOOST_CHECK_EQUAL(non64[56], 114);
-  BOOST_CHECK_EQUAL(non64[57], 3);
-  BOOST_CHECK_EQUAL(non64[58], 2);
-  BOOST_CHECK_EQUAL(non64[59], 1);
-  BOOST_CHECK_EQUAL(non64[60], 6);
-  BOOST_CHECK_EQUAL(non64[62], 4);
-  BOOST_CHECK_EQUAL(non64[63], 7);
+	var expected = []struct {
+		npads     int
+		occurence int
+	}{
+		{31, 1},
+		{32, 2},
+		{39, 1},
+		{40, 3},
+		{46, 2},
+		{48, 10},
+		{49, 1},
+		{50, 1},
+		{52, 3},
+		{54, 2},
+		{55, 3},
+		{56, 114},
+		{57, 3},
+		{58, 2},
+		{59, 1},
+		{60, 6},
+		{62, 4},
+		{63, 7},
+	}
 
-  int n{ 0 };
-  for (auto p : non64) {
-    n += p.second;
-  }
+	for _, tt := range expected {
+		if non64[tt.npads] != tt.occurence {
+			t.Errorf("Expected %d dual sampas with %d pads, but got %d", tt.occurence, tt.npads, non64[tt.npads])
+		}
+	}
 
-  BOOST_CHECK_EQUAL(n, 166);
+	n := 0
+	for _, v := range non64 {
+		n += v
+	}
+
+	if n != 166 {
+		t.Errorf("Expected 166 dual sampas with a number of pads different from 64 and got %d", n)
+	}
 }
-*/
 
 func TestMustErrorIfDualSampaChannelIsNotBetween0And63(t *testing.T) {
 	_, err := seg.FindPadByFEE(102, -1)

@@ -120,3 +120,9 @@ func (seg segmentation3) NofPads() int {
 	}
 	return n
 }
+
+func (seg segmentation3) ForEachPadInDualSampa(dualSampaID int, padHandler func(paduid int)) {
+	for paduid := range seg.getPadUIDs(dualSampaID) {
+		padHandler(paduid)
+	}
+}
