@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"path/filepath"
 	"sort"
 	"testing"
 
@@ -112,7 +113,9 @@ func checkAllChannels(t *testing.T, de DetectionElement) {
 }
 
 func TestDetectionElementChannels(t *testing.T) {
-	data, err := ioutil.ReadFile("/Users/laurent/Mind/@Working/MRRTF/genmap/dev/test_de.json")
+	path := filepath.Join("testdata", "test_de.json")
+	fmt.Print(path)
+	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Fatal("could not read test file")
 	}
