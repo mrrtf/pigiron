@@ -51,7 +51,10 @@ func (pgt padGroupType) fastIndex(ix int, iy int) int {
 }
 
 func (pgt padGroupType) idByFastIndex(fastIndex int) int {
-	return fastIndex
+	if fastIndex >= 0 && fastIndex < len(pgt.fastID) {
+		return pgt.fastID[fastIndex]
+	}
+	return -1
 }
 
 // Return the index of the pad with indices = (ix,iy)

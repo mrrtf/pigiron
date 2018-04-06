@@ -122,7 +122,23 @@ func (seg segmentation3) NofPads() int {
 }
 
 func (seg segmentation3) ForEachPadInDualSampa(dualSampaID int, padHandler func(paduid int)) {
-	for paduid := range seg.getPadUIDs(dualSampaID) {
+	for _, paduid := range seg.getPadUIDs(dualSampaID) {
 		padHandler(paduid)
 	}
+}
+
+func (seg segmentation3) PadDualSampaChannel(paduid int) int {
+	return seg.padGroupType(paduid).idByFastIndex(seg.padUID2PadGroupTypeFastIndex[paduid])
+}
+
+func (seg segmentation3) PadDualSampaID(paduid int) int {
+	return seg.padGroup(paduid).fecID
+}
+
+func (seg segmentation3) padGroup(paduid int) padGroup {
+	return seg.padGroups[seg.padUID2PadGroupIndex[paduid]]
+}
+
+func (seg segmentation3) padGroupType(paduid int) padGroupType {
+	return seg.padGroupTypes[seg.padGroup(paduid).padGroupTypeID]
 }
