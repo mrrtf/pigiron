@@ -1,6 +1,7 @@
 package mapping_test
 
 import (
+	"fmt"
 	"log"
 	"testing"
 
@@ -281,4 +282,30 @@ func TestInvalidFindPadByFEE(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should not get a valid pad here")
 	}
+}
+
+type Point struct {
+	x, y float64
+}
+
+func checkGaps(t *testing.T, seg *mapping.Segmentation) []Point {
+	return []Point{{1.0, 1.0}}
+}
+
+func dumpToFile(filename string, seg *mapping.Segmentation, points []Point) {
+}
+
+func TestNoGapWithinPads(t *testing.T) {
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
+		for _, isBendingPlane := range []bool{true, false} {
+			seg := mapping.NewSegmentation(detElemID, isBendingPlane)
+			g := checkGaps(t, &seg)
+			if len(g) != 0 {
+				dumpToFile(fmt.Sprintf("bug-gap-%v-%s.html",
+					detElemID,
+					mapping.PlaneAbbreviation(isBendingPlane)),
+					&seg, g)
+			}
+		}
+	})
 }

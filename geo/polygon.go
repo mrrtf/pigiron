@@ -33,7 +33,7 @@ func (p *Polygon) signedArea() float64 {
 	for i := 0; i < len(*p)-1; i++ {
 		current := (*p)[i]
 		next := (*p)[i+1]
-		area += current.x*next.y - next.x*current.y
+		area += current.X*next.Y - next.X*current.Y
 	}
 	return area * 0.5
 }
@@ -80,7 +80,7 @@ func closePolygon(p Polygon) (Polygon, error) {
 func (p *Polygon) String() string {
 	s := fmt.Sprintf("POLYGON (")
 	for i := 0; i < len(*p); i++ {
-		s += fmt.Sprintf("%f %f", (*p)[i].x, (*p)[i].y)
+		s += fmt.Sprintf("%f %f", (*p)[i].X, (*p)[i].Y)
 		if i < len(*p)-1 {
 			s += ","
 		}
@@ -104,10 +104,10 @@ func (p *Polygon) getVertices() []Vertex {
 func sortVertices(vertices []Vertex) []Vertex {
 	c := append([]Vertex{}, vertices...)
 	sort.Slice(c, func(i, j int) bool {
-		if EqualFloat(c[i].x, c[j].x) {
-			return c[i].y < c[j].y
+		if EqualFloat(c[i].X, c[j].X) {
+			return c[i].Y < c[j].Y
 		}
-		return c[i].x < c[j].x
+		return c[i].X < c[j].X
 	})
 	return c
 }
@@ -132,9 +132,9 @@ func (p *Polygon) Contains(xp, yp float64) (bool, error) {
 	j := len(*p) - 1
 	oddNodes := false
 	for i := 0; i < len(*p); i++ {
-		if ((*p)[i].y < yp && (*p)[j].y >= yp) || ((*p)[j].y < yp && (*p)[i].y >= yp) {
-			if (*p)[i].x+
-				(yp-(*p)[i].y)/((*p)[j].y-(*p)[i].y)*((*p)[j].x-(*p)[i].x) <
+		if ((*p)[i].Y < yp && (*p)[j].Y >= yp) || ((*p)[j].Y < yp && (*p)[i].Y >= yp) {
+			if (*p)[i].X+
+				(yp-(*p)[i].Y)/((*p)[j].Y-(*p)[i].Y)*((*p)[j].X-(*p)[i].X) <
 				xp {
 				oddNodes = !oddNodes
 			}

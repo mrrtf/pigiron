@@ -63,7 +63,7 @@ func (c *Contour) String() string {
 		p := (*c)[j]
 		s += "("
 		for i := 0; i < len(p); i++ {
-			s += fmt.Sprintf("%v %v", p[i].x, p[i].y)
+			s += fmt.Sprintf("%v %v", p[i].X, p[i].Y)
 			if i < len(p)-1 {
 				s += ","
 			}

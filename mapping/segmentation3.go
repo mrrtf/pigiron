@@ -22,7 +22,7 @@ type segmentation3 struct {
 	padUID2PadGroupIndex         []int
 }
 
-func (seg segmentation3) NofDualSampas() int {
+func (seg *segmentation3) NofDualSampas() int {
 	return len(seg.dualSampaIDs)
 }
 
@@ -40,7 +40,7 @@ func NewSegmentation(detElemID int, isBendingPlane bool) Segmentation {
 	return builder.Build(isBendingPlane)
 }
 
-func print(seg segmentation3) {
+func print(seg *segmentation3) {
 	fmt.Println("segmentation3 has ", len(seg.dualSampaIDs), " dual sampa ids")
 }
 
@@ -81,7 +81,7 @@ func (seg *segmentation3) init() {
 	}
 }
 
-func (seg segmentation3) getPadUIDs(dualSampaID int) []int {
+func (seg *segmentation3) getPadUIDs(dualSampaID int) []int {
 	pi := []int{}
 	for pgi := range seg.padGroups {
 		pg := seg.padGroups[pgi]
@@ -96,7 +96,7 @@ func (seg segmentation3) getPadUIDs(dualSampaID int) []int {
 	return pi
 }
 
-func (seg segmentation3) DualSampaID(dualSampaIndex int) (int, error) {
+func (seg *segmentation3) DualSampaID(dualSampaIndex int) (int, error) {
 	if dualSampaIndex >= len(seg.dualSampaIDs) {
 		return -1, fmt.Errorf("Incorrect dualSampaIndex %d (should be within 0-%d range", dualSampaIndex,
 			len(seg.dualSampaIDs))
@@ -104,7 +104,7 @@ func (seg segmentation3) DualSampaID(dualSampaIndex int) (int, error) {
 	return seg.dualSampaIDs[dualSampaIndex], nil
 }
 
-func (seg segmentation3) NofPads() int {
+func (seg *segmentation3) NofPads() int {
 	n := 0
 	for i := 0; i < seg.NofDualSampas(); i++ {
 		dsid, err := seg.DualSampaID(i)
@@ -116,32 +116,32 @@ func (seg segmentation3) NofPads() int {
 	return n
 }
 
-func (seg segmentation3) ForEachPadInDualSampa(dualSampaID int, padHandler func(paduid int)) {
+func (seg *segmentation3) ForEachPadInDualSampa(dualSampaID int, padHandler func(paduid int)) {
 	for _, paduid := range seg.getPadUIDs(dualSampaID) {
 		padHandler(paduid)
 	}
 }
 
-func (seg segmentation3) PadDualSampaChannel(paduid int) int {
+func (seg *segmentation3) PadDualSampaChannel(paduid int) int {
 	return seg.padGroupType(paduid).idByFastIndex(seg.padUID2PadGroupTypeFastIndex[paduid])
 }
 
-func (seg segmentation3) PadDualSampaID(paduid int) int {
+func (seg *segmentation3) PadDualSampaID(paduid int) int {
 	return seg.padGroup(paduid).fecID
 }
 
-func (seg segmentation3) padGroup(paduid int) padGroup {
+func (seg *segmentation3) padGroup(paduid int) padGroup {
 	return seg.padGroups[seg.padUID2PadGroupIndex[paduid]]
 }
 
-func (seg segmentation3) padGroupType(paduid int) padGroupType {
+func (seg *segmentation3) padGroupType(paduid int) padGroupType {
 	return seg.padGroupTypes[seg.padGroup(paduid).padGroupTypeID]
 }
 
-func (seg segmentation3) IsValid(paduid int) bool {
+func (seg *segmentation3) IsValid(paduid int) bool {
 	return paduid != InvalidPadUID
 }
-func (seg segmentation3) FindPadByFEE(dualSampaID, dualSampaChannel int) (int, error) {
+func (seg *segmentation3) FindPadByFEE(dualSampaID, dualSampaChannel int) (int, error) {
 	for _, paduid := range seg.getPadUIDs(dualSampaID) {
 		if seg.padGroupType(paduid).idByFastIndex(seg.padUID2PadGroupTypeFastIndex[paduid]) == dualSampaChannel {
 			return paduid, nil
@@ -151,6 +151,19 @@ func (seg segmentation3) FindPadByFEE(dualSampaID, dualSampaChannel int) (int, e
 }
 
 /// FIXME : to be implemented...
-func (seg segmentation3) FindPadByPosition(x, y float64) (int, error) {
+func (seg *segmentation3) FindPadByPosition(x, y float64) (int, error) {
 	return 0, fmt.Errorf("invalid pad")
+}
+
+func (seg *segmentation3) PadPositionX(paduid int) float64 {
+	return 0
+}
+func (seg *segmentation3) PadPositionY(paduid int) float64 {
+	return 0
+}
+func (seg *segmentation3) PadSizeX(paduid int) float64 {
+	return 0
+}
+func (seg *segmentation3) PadSizeY(paduid int) float64 {
+	return 0
 }

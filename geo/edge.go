@@ -35,7 +35,7 @@ func (h horizontalEdge) end() Vertex {
 }
 
 func isLeftEdge(v verticalEdge) bool {
-	return v.begin().y > v.end().y
+	return v.begin().Y > v.end().Y
 }
 
 func isTopToBottom(v verticalEdge) bool {
@@ -51,7 +51,7 @@ func isBottomToTop(v verticalEdge) bool {
 }
 
 func isLeftToRight(h horizontalEdge) bool {
-	return h.begin().x < h.end().x
+	return h.begin().X < h.end().X
 }
 
 func isRightToLeft(h horizontalEdge) bool {
@@ -59,19 +59,19 @@ func isRightToLeft(h horizontalEdge) bool {
 }
 
 func top(v verticalEdge) float64 {
-	return math.Max(v.begin().y, v.end().y)
+	return math.Max(v.begin().Y, v.end().Y)
 }
 
 func bottom(v verticalEdge) float64 {
-	return math.Min(v.begin().y, v.end().y)
+	return math.Min(v.begin().Y, v.end().Y)
 }
 
 func left(h horizontalEdge) float64 {
-	return math.Min(h.begin().x, h.end().x)
+	return math.Min(h.begin().X, h.end().X)
 }
 
 func right(h horizontalEdge) float64 {
-	return math.Max(h.begin().x, h.end().x)
+	return math.Max(h.begin().X, h.end().X)
 }
 
 func (h horizontalEdge) String() string {

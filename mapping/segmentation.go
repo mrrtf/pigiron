@@ -11,6 +11,10 @@ type Segmentation interface {
 	ForEachPadInDualSampa(dualSampaID int, padHandler func(paduid int))
 	PadDualSampaChannel(paduid int) int
 	PadDualSampaID(paduid int) int
+	PadPositionX(paduid int) float64
+	PadPositionY(paduid int) float64
+	PadSizeX(paduid int) float64
+	PadSizeY(paduid int) float64
 }
 
 // ForEachDetectionElement loops over all detection elements and call the detElemIdHandler function
@@ -35,4 +39,12 @@ func ForOneDetectionElementOfEachSegmentationType(detElemIDHandler func(detElemI
 	for _, detElemID := range []int{100, 300, 500, 501, 502, 503, 504, 600, 601, 602, 700, 701, 702, 703, 704, 705, 706, 902, 903, 904, 905} {
 		detElemIDHandler(detElemID)
 	}
+}
+
+// PlaneAbbreviation returns a short name for a bending/non-bending plane
+func PlaneAbbreviation(isBendingPlane bool) string {
+	if isBendingPlane {
+		return "B"
+	}
+	return "NB"
 }

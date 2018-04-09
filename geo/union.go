@@ -71,8 +71,8 @@ func sortVerticalEdges(edges []verticalEdge) {
 	sort.Slice(edges, func(i, j int) bool {
 		e1 := edges[i]
 		e2 := edges[j]
-		x1 := e1.begin().x
-		x2 := e2.begin().x
+		x1 := e1.begin().X
+		x2 := e2.begin().X
 		if EqualFloat(x1, x2) {
 			if isLeftEdge(e1) && isRightEdge(e2) {
 				return true
@@ -112,13 +112,13 @@ func verticalsToHorizontals(verticals []verticalEdge) []horizontalEdge {
 	sort.Slice(vertices, func(i, j int) bool {
 		lhs := vertices[i].first
 		rhs := vertices[j].first
-		if lhs.y < rhs.y {
+		if lhs.Y < rhs.Y {
 			return true
 		}
-		if rhs.y < lhs.y {
+		if rhs.Y < lhs.Y {
 			return false
 		}
-		return lhs.x < rhs.x
+		return lhs.X < rhs.X
 	})
 
 	for i := 0; i < len(vertices)/2; i++ {
@@ -126,13 +126,13 @@ func verticalsToHorizontals(verticals []verticalEdge) []horizontalEdge {
 		p1 := vertices[i*2]
 		p2 := vertices[i*2+1]
 		refEdge := verticals[p1.second]
-		e := p1.first.x
-		b := p2.first.x
-		if (EqualFloat(p1.first.y, bottom(refEdge)) && isLeftEdge(refEdge)) ||
-			(EqualFloat(p1.first.y, top(refEdge)) && isRightEdge(refEdge)) {
+		e := p1.first.X
+		b := p2.first.X
+		if (EqualFloat(p1.first.Y, bottom(refEdge)) && isLeftEdge(refEdge)) ||
+			(EqualFloat(p1.first.Y, top(refEdge)) && isRightEdge(refEdge)) {
 			e, b = b, e
 		}
-		h := horizontalEdge{p1.first.y, b, e}
+		h := horizontalEdge{p1.first.Y, b, e}
 		// which vertical edge is preceding this horizontal ?
 		preceding := p1.second
 		next := p2.second
@@ -226,8 +226,8 @@ func getPolygonVerticalEdges(polygon *Polygon) []verticalEdge {
 	for i := 0; i < len(*polygon)-1; i++ {
 		current := (*polygon)[i]
 		next := (*polygon)[i+1]
-		if EqualFloat(current.x, next.x) {
-			edges = append(edges, verticalEdge{current.x, current.y, next.y})
+		if EqualFloat(current.X, next.X) {
+			edges = append(edges, verticalEdge{current.X, current.Y, next.Y})
 		}
 	}
 	return edges
@@ -246,7 +246,7 @@ func getPolygonSliceYPositions(polygons []Polygon) []float64 {
 	ypos := []float64{}
 	for i := 0; i < len(polygons); i++ {
 		for j := 0; j < len(polygons[i]); j++ {
-			ypos = append(ypos, polygons[i][j].y)
+			ypos = append(ypos, polygons[i][j].Y)
 		}
 	}
 	sort.Float64s(ypos)
@@ -254,8 +254,8 @@ func getPolygonSliceYPositions(polygons []Polygon) []float64 {
 }
 
 func getInterval(v verticalEdge) interval {
-	y1 := v.begin().y
-	y2 := v.end().y
+	y1 := v.begin().Y
+	y2 := v.end().Y
 	if y2 > y1 {
 		return interval{y1, y2}
 	}
@@ -288,14 +288,14 @@ func sweep(segmentTree *node, polygonVerticalEdges []verticalEdge) []verticalEdg
 		}
 
 		if (isLeftEdge(edge) != isLeftEdge(e1)) ||
-			(!EqualFloat(edge.begin().x, e1.begin().x)) ||
+			(!EqualFloat(edge.begin().X, e1.begin().X)) ||
 			(i == len(polygonVerticalEdges)-1) {
 			for _, es := range edgeStack {
 				var newEdge verticalEdge
 				if isRightEdge(edge) {
-					newEdge = verticalEdge{edge.begin().x, es.begin(), es.end()}
+					newEdge = verticalEdge{edge.begin().X, es.begin(), es.end()}
 				} else {
-					newEdge = verticalEdge{edge.begin().x, es.end(), es.begin()}
+					newEdge = verticalEdge{edge.begin().X, es.end(), es.begin()}
 				}
 				contourVerticalEdges = append(contourVerticalEdges, newEdge)
 			}

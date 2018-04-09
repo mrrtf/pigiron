@@ -193,7 +193,7 @@ func squareDistanceTest(t *testing.T, p Polygon, point Vertex, expected float64)
 	d := SquaredDistancePointToPolygon(point, p)
 	if !EqualFloat(d, expected) {
 		t.Errorf("Expected distance from point (%f,%f) to polygon %s to be %f and got %f",
-			point.x, point.y, p.String(), expected, d)
+			point.X, point.Y, p.String(), expected, d)
 	}
 }
 func TestPointOutsidePolygonDistanceToPolygonClosestToOneSegment(t *testing.T) {
