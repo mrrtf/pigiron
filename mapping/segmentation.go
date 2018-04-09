@@ -6,8 +6,8 @@ type Segmentation interface {
 	NofDualSampas() int
 	DualSampaID(dualSampaIndex int) (int, error)
 	IsValid(padid int) bool
-	FindPadByFEE(dualSampaID int, dualSampaChannel int) (int, error)
-	FindPadByPosition(x float64, y float64) (int, error)
+	FindPadByFEE(dualSampaID, dualSampaChannel int) (int, error)
+	FindPadByPosition(x, y float64) (int, error)
 	ForEachPadInDualSampa(dualSampaID int, padHandler func(paduid int))
 	PadDualSampaChannel(paduid int) int
 	PadDualSampaID(paduid int) int

@@ -113,6 +113,9 @@ func checkAllChannels(t *testing.T, de DetectionElement) {
 }
 
 func TestDetectionElementChannels(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
+	}
 	path := filepath.Join("testdata", "test_de.json")
 	fmt.Print(path)
 	data, err := ioutil.ReadFile(path)

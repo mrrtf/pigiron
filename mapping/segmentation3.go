@@ -1,9 +1,14 @@
 package mapping
 
 import (
+	"errors"
 	"fmt"
 	"log"
 )
+
+var ErrInvalidPadUID = errors.New("invalid pad uid")
+
+const InvalidPadUID int = -1
 
 type segmentation3 struct {
 	segType                      int
@@ -76,16 +81,6 @@ func (seg *segmentation3) init() {
 	}
 }
 
-func (seg segmentation3) IsValid(padid int) bool {
-	return false
-}
-func (seg segmentation3) FindPadByFEE(dualSampaID int, dualSampaChannel int) (int, error) {
-	return 0, fmt.Errorf("invalid pad")
-}
-func (seg segmentation3) FindPadByPosition(x float64, y float64) (int, error) {
-	return 0, fmt.Errorf("invalid pad")
-}
-
 func (seg segmentation3) getPadUIDs(dualSampaID int) []int {
 	pi := []int{}
 	for pgi := range seg.padGroups {
@@ -141,4 +136,21 @@ func (seg segmentation3) padGroup(paduid int) padGroup {
 
 func (seg segmentation3) padGroupType(paduid int) padGroupType {
 	return seg.padGroupTypes[seg.padGroup(paduid).padGroupTypeID]
+}
+
+func (seg segmentation3) IsValid(paduid int) bool {
+	return paduid != InvalidPadUID
+}
+func (seg segmentation3) FindPadByFEE(dualSampaID, dualSampaChannel int) (int, error) {
+	for _, paduid := range seg.getPadUIDs(dualSampaID) {
+		if seg.padGroupType(paduid).idByFastIndex(seg.padUID2PadGroupTypeFastIndex[paduid]) == dualSampaChannel {
+			return paduid, nil
+		}
+	}
+	return InvalidPadUID, ErrInvalidPadUID
+}
+
+/// FIXME : to be implemented...
+func (seg segmentation3) FindPadByPosition(x, y float64) (int, error) {
+	return 0, fmt.Errorf("invalid pad")
 }
