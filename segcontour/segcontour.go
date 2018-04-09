@@ -42,13 +42,12 @@ func getPadPolygons(seg *mapping.Segmentation) [][]geo.Polygon {
 			y := (*seg).PadPositionY(paduid)
 			dx := (*seg).PadSizeX(paduid) / 2
 			dy := (*seg).PadSizeY(paduid) / 2
-
 			pads = append(pads, geo.Polygon{
-				{x - dx, y - dy},
-				{x + dx, y - dy},
-				{x + dx, y + dy},
-				{x - dx, y + dy},
-				{x - dx, y - dy}})
+				{X: x - dx, Y: y - dy},
+				{X: x + dx, Y: y - dy},
+				{X: x + dx, Y: y + dy},
+				{X: x - dx, Y: y + dy},
+				{X: x - dx, Y: y - dy}})
 		})
 		dualSampaPads[len(dualSampaPads)-1] = append(dualSampaPads[len(dualSampaPads)-1], pads...)
 	}

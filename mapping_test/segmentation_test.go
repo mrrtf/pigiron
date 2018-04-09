@@ -1,8 +1,10 @@
 package mapping_test
 
 import (
+	"bufio"
 	"fmt"
 	"log"
+	"os"
 	"testing"
 
 	"github.com/aphecetche/pigiron/mapping"
@@ -289,10 +291,19 @@ type Point struct {
 }
 
 func checkGaps(t *testing.T, seg *mapping.Segmentation) []Point {
-	return []Point{{1.0, 1.0}}
+	return []Point{}
 }
 
 func dumpToFile(filename string, seg *mapping.Segmentation, points []Point) {
+	f, err := os.Create(filename)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	w := bufio.NewWriter(f)
+	w.WriteString("toto")
+	w.Flush()
 }
 
 func TestNoGapWithinPads(t *testing.T) {
