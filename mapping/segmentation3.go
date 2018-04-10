@@ -83,8 +83,7 @@ func (seg *segmentation3) init() {
 
 func (seg *segmentation3) getPadUIDs(dualSampaID int) []int {
 	pi := []int{}
-	for pgi := range seg.padGroups {
-		pg := seg.padGroups[pgi]
+	for pgi, pg := range seg.padGroups {
 		if pg.fecID == dualSampaID {
 			pgt := seg.padGroupTypes[pg.padGroupTypeID]
 			i1 := seg.padGroupIndex2PadUIDIndex[pgi]
