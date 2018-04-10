@@ -17,7 +17,7 @@ func TestCreateContourGeneratesEmptyContourForEmptyInput(t *testing.T) {
 }
 
 func TestCreateContourMustErrorIfInputPolygonsAreNotCounterClockwiseOriented(t *testing.T) {
-	clockwisePolygon := []Polygon{Polygon{{0, 0}, {0, 1}, {1, 1}, {1, 0}, {0, 0}}}
+	clockwisePolygon := []Polygon{{{0, 0}, {0, 1}, {1, 1}, {1, 0}, {0, 0}}}
 	_, err := CreateContour(clockwisePolygon)
 	if err != ErrWrongOrientation {
 		t.Error("should fail for wrongly oriented polygons")
@@ -25,7 +25,7 @@ func TestCreateContourMustErrorIfInputPolygonsAreNotCounterClockwiseOriented(t *
 }
 
 func TestCreateContourReturnsInputIfInputIsASinglePolygon(t *testing.T) {
-	onePolygon := []Polygon{Polygon{{0, 0}, {1, 0}, {1, 1}, {0, 1}, {0, 0}}}
+	onePolygon := []Polygon{{{0, 0}, {1, 0}, {1, 1}, {0, 1}, {0, 0}}}
 	c, err := CreateContour(onePolygon)
 	if err != nil {
 		t.Error("was not expecting an error here")
