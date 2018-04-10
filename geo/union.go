@@ -68,24 +68,24 @@ func NewContour(polygons []Polygon) (Contour, error) {
 // Mind your steps ! This sorting is critical to the contour merging algorithm !
 func sortVerticalEdges(edges []verticalEdge) {
 	sort.Slice(edges, func(i, j int) bool {
-		e1 := edges[i]
-		e2 := edges[j]
-		x1 := e1.begin().X
-		x2 := e2.begin().X
+		ei := edges[i]
+		ej := edges[j]
+		xi := ei.begin().X
+		xj := ej.begin().X
 
 		switch {
-		case EqualFloat(x1, x2):
-			if isLeftEdge(e1) && isRightEdge(e2) {
+		case EqualFloat(xi, xj):
+			if isLeftEdge(ei) && isRightEdge(ej) {
 				return true
 			}
-			if isRightEdge(e1) && isLeftEdge(e2) {
+			if isRightEdge(ei) && isLeftEdge(ej) {
 				return false
 			}
-			y1 := bottom(e1)
-			y2 := bottom(e2)
-			return y1 < y2
+			yi := bottom(ei)
+			yj := bottom(ej)
+			return yi < yj
 
-		case x1 < x2:
+		case xi < xj:
 			return true
 
 		default:
