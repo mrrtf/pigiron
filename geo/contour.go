@@ -13,7 +13,7 @@ func (c Contour) Contains(x, y float64) bool {
 	for _, p := range c {
 		inside, err := p.Contains(x, y)
 		if err != nil {
-			log.Fatal("got an invalid polygon") // should not happen
+			log.Fatalf("got an invalid polygon: %v", err) // should not happen
 			// as we "control" the construction of a contour ?
 			return false
 		}
