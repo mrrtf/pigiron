@@ -59,7 +59,7 @@ func (n *node) setCardinality(c int) {
 func buildNode(values []float64, b, e int) *node {
 	mid := ((b + e) / 2)
 	node := newNode(values[b], values[e], values[mid])
-	if (e - b) == 1 {
+	if e-b == 1 {
 		return node
 	}
 	node.setLeft(buildNode(values, b, mid)).setRight(buildNode(values, mid, e))
