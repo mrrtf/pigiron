@@ -21,15 +21,15 @@ func newInterval(b, e float64) (interval, error) {
 	return interval{b, e}, nil
 }
 
-func (i *interval) begin() float64 {
+func (i interval) begin() float64 {
 	return i.b
 }
 
-func (i *interval) end() float64 {
+func (i interval) end() float64 {
 	return i.e
 }
 
-func (i *interval) isFullyContainedIn(j interval) bool {
+func (i interval) isFullyContainedIn(j interval) bool {
 	return (j.begin() < i.begin() || EqualFloat(j.begin(), i.begin())) &&
 		(i.end() < j.end() || EqualFloat(j.end(), i.end()))
 }
@@ -42,7 +42,7 @@ func (i *interval) extend(j interval) bool {
 	return false
 }
 
-func (i *interval) String() string {
+func (i interval) String() string {
 	return fmt.Sprintf("[%v,%v]", i.begin(), i.end())
 }
 
