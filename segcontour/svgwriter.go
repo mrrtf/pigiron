@@ -31,9 +31,8 @@ func svgDetectionElements(w *geo.SVGWriter, de *geo.Contour) {
 
 // SVGSegmentation creates a SVG representation of segmentation
 func SVGSegmentation(seg mapping.Segmentation, w *geo.SVGWriter, show ShowFlags) {
-
 	if show.des {
-		deContour := GetSegmentationEnvelop(seg)
+		deContour := Contour(seg)
 		svgDetectionElements(w, &deContour)
 	}
 	if show.pads {

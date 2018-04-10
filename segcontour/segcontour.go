@@ -7,14 +7,14 @@ import (
 	"github.com/aphecetche/pigiron/mapping"
 )
 
-// GetSegmentationBBox returns the bounding box of the segmentation
-func GetSegmentationBBox(seg mapping.Segmentation) geo.BBox {
-	contour := GetSegmentationEnvelop(seg)
+// BBox returns the bounding box of the segmentation
+func BBox(seg mapping.Segmentation) geo.BBox {
+	contour := Contour(seg)
 	return contour.BBox()
 }
 
-// GetSegmentationEnvelop returns the contour of the segmentation
-func GetSegmentationEnvelop(seg mapping.Segmentation) geo.Contour {
+// Contour returns the contour of the segmentation
+func Contour(seg mapping.Segmentation) geo.Contour {
 	polygons := []geo.Polygon{}
 	for _, c := range getDualSampaContours(seg) {
 		for _, p := range c {
@@ -23,7 +23,7 @@ func GetSegmentationEnvelop(seg mapping.Segmentation) geo.Contour {
 	}
 	contour, err := geo.CreateContour(polygons)
 	if err != nil {
-		log.Fatalf("could not get envelop of segmentation: %v", err)
+		log.Fatalf("could not get contour of segmentation: %v", err)
 	}
 	return contour
 }
