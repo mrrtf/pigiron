@@ -154,17 +154,38 @@ func (seg *segmentation3) FindPadByPosition(x, y float64) (int, error) {
 }
 
 func (seg *segmentation3) PadPositionX(paduid int) float64 {
-	panic("not implemented")
+	x, _ := seg.padPositionXY(paduid)
+	return x
 }
 
 func (seg *segmentation3) PadPositionY(paduid int) float64 {
-	panic("not implemented")
+	_, y := seg.padPositionXY(paduid)
+	return y
+}
+
+func (seg *segmentation3) padPositionXY(paduid int) (float64, float64) {
+	pgrp := seg.padGroup(paduid)
+	ptyp := seg.padGroupType(paduid)
+	idx := seg.padUID2PadGroupTypeFastIndex[paduid]
+	psiz := seg.padSizes[pgrp.padSizeID]
+	x := pgrp.x + (float64(ptyp.ix(idx))+0.5)*psiz.x
+	y := pgrp.y + (float64(ptyp.iy(idx))+0.5)*psiz.y
+	return x, y
 }
 
 func (seg *segmentation3) PadSizeX(paduid int) float64 {
-	panic("not implemented")
+	pgrp := seg.padGroup(paduid)
+	return seg.padSizes[pgrp.padSizeID].x
 }
 
 func (seg *segmentation3) PadSizeY(paduid int) float64 {
-	panic("not implemented")
+	pgrp := seg.padGroup(paduid)
+	return seg.padSizes[pgrp.padSizeID].y
+}
+
+func (seg *segmentation3) squaredDistance(paduid int, x, y float64) float64 {
+	px, py := seg.padPositionXY(paduid)
+	px -= x
+	py -= y
+	return px*px + py*py
 }
