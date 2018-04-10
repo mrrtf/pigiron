@@ -71,7 +71,8 @@ func createSegmentTree(values []float64) (*node, error) {
 		return nil, errors.New("must get at least two values")
 	}
 	// make a copy of the slice to leave it unsorted for the caller
-	s := append([]float64{}, values...)
+	s := make([]float64, len(values))
+	copy(s, values)
 	sort.Float64s(s)
 	return buildNode(values, 0, len(values)-1), nil
 }
