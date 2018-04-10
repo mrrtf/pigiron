@@ -148,9 +148,11 @@ func verticalsToHorizontals(verticals []verticalEdge) []horizontalEdge {
 	return horizontals
 }
 
-func firstFalse(b []bool) int {
+// indexBool returns the index of the first instance of c in b,
+// or -1 if c is not present in s.
+func indexBool(b []bool, c bool) int {
 	for i, v := range b {
-		if v == false {
+		if v == c {
 			return i
 		}
 	}
@@ -200,7 +202,7 @@ func finalizeContour(v []verticalEdge, h []horizontalEdge) (Contour, error) {
 				return nil, errClosingPolygon
 			}
 			contour = append(contour, p)
-			iCurrent = firstFalse(alreadyAdded)
+			iCurrent = indexBool(alreadyAdded, false)
 			inorder = []int{}
 			if iCurrent > 0 {
 				startSegment = all[iCurrent]
