@@ -262,14 +262,14 @@ func TestMustErrorIfDualSampaChannelIsNotBetween0And63(t *testing.T) {
 func TestPositionOfOnePadInDE100Bending(t *testing.T) {
 	p1, err := seg.FindPadByFEE(76, 9)
 	if err != nil {
-		t.Error("Should get a valid pad")
+		t.Errorf("Should get a valid pad: %v", err)
 	}
 	p2, err := seg.FindPadByPosition(1.575, 18.69)
 	if err != nil {
-		t.Error("Should get a valid pad")
+		t.Errorf("Should get a valid pad: %v", err)
 	}
 	if p1 != p2 {
-		t.Error("Should get the same pads here")
+		t.Errorf("Should get the same pads here (p1=%v, p2=%v)", p1, p2)
 	}
 }
 
