@@ -150,20 +150,22 @@ func (seg *segmentation3) FindPadByFEE(dualSampaID, dualSampaChannel int) (int, 
 	return InvalidPadUID, ErrInvalidPadUID
 }
 
-/// FIXME : to be implemented...
 func (seg *segmentation3) FindPadByPosition(x, y float64) (int, error) {
 	return 0, fmt.Errorf("invalid pad")
 }
 
 func (seg *segmentation3) PadPositionX(paduid int) float64 {
-	return 0
+	panic("not implemented")
 }
+
 func (seg *segmentation3) PadPositionY(paduid int) float64 {
-	return 0
+	panic("not implemented")
 }
+
 func (seg *segmentation3) PadSizeX(paduid int) float64 {
-	return 0
+	panic("not implemented")
 }
+
 func (seg *segmentation3) PadSizeY(paduid int) float64 {
-	return 0
+	panic("not implemented")
 }
