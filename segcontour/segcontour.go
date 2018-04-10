@@ -23,7 +23,7 @@ func GetSegmentationEnvelop(seg mapping.Segmentation) geo.Contour {
 	}
 	contour, err := geo.CreateContour(polygons)
 	if err != nil {
-		log.Fatal("could not get envelop of segmentation")
+		log.Fatalf("could not get envelop of segmentation: %v", err)
 	}
 	return contour
 }
@@ -35,7 +35,7 @@ func getPadPolygons(seg mapping.Segmentation) [][]geo.Polygon {
 		var pads []geo.Polygon
 		dsID, err := seg.DualSampaID(i)
 		if err != nil {
-			log.Fatal("sth's wrong")
+			log.Fatalf("could not get dual sampa ID: %v", err)
 		}
 		seg.ForEachPadInDualSampa(dsID, func(paduid int) {
 			x := seg.PadPositionX(paduid)
@@ -60,7 +60,7 @@ func getDualSampaContours(seg mapping.Segmentation) []geo.Contour {
 	for _, p := range padPolygons {
 		c, err := geo.CreateContour(p)
 		if err != nil {
-			log.Fatal("could not create contour")
+			log.Fatalf("could not create contour: %v", err)
 		}
 		contours = append(contours, c)
 	}
