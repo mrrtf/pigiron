@@ -61,17 +61,17 @@ func (c Contour) String() string {
 	s := "MULTIPOLYGON"
 	for j := 0; j < len(c); j++ {
 		p := c[j]
-		s += "("
-		for i := 0; i < len(p); i++ {
-			s += fmt.Sprintf("%v %v", p[i].X, p[i].Y)
-			if i < len(p)-1 {
-				s += ","
-			}
-		}
-		s += ")"
-		if j < len(c)-1 {
+		if j > 0 {
 			s += ","
 		}
+		s += "("
+		for i := 0; i < len(p); i++ {
+			if i > 0 {
+				s += ","
+			}
+			s += fmt.Sprintf("%v %v", p[i].X, p[i].Y)
+		}
+		s += ")"
 	}
 	s += ")"
 	return s
