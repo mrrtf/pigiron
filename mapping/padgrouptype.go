@@ -28,13 +28,14 @@ func validIndices(v []int) []int {
 
 // NewPadGroupType returns a pad group type
 func NewPadGroupType(nofPadsX int, nofPadsY int, ids []int) padGroupType {
-	pgt := new(padGroupType)
-	pgt.fastID = ids
-	pgt.fastIndices = validIndices(pgt.fastID)
-	pgt.nofPads = len(pgt.fastIndices)
-	pgt.nofPadsX = nofPadsX
-	pgt.nofPadsY = nofPadsY
-	return *pgt
+	fast := validIndices(ids)
+	return padGroupType{
+		fastID:      ids,
+		fastIndices: fast,
+		nofPads:     len(fast),
+		nofPadsX:    nofPadsX,
+		nofPadsY:    nofPadsY,
+	}
 }
 
 func (pgt *padGroupType) String() string {
