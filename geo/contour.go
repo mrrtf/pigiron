@@ -9,8 +9,8 @@ import (
 type Contour []Polygon
 
 // Contains returns true if the point (x,y) is inside the contour
-func (c *Contour) Contains(x, y float64) bool {
-	for _, p := range *c {
+func (c Contour) Contains(x, y float64) bool {
+	for _, p := range c {
 		inside, err := p.Contains(x, y)
 		if err != nil {
 			log.Fatal("got an invalid polygon") // should not happen
@@ -24,15 +24,15 @@ func (c *Contour) Contains(x, y float64) bool {
 	return false
 }
 
-func (c *Contour) getVertices() []Vertex {
-	v := []Vertex{}
-	for _, p := range *c {
+func (c Contour) getVertices() []Vertex {
+	var v []Vertex
+	for _, p := range c {
 		v = append(v, p.getVertices()...)
 	}
 	return v
 }
 
-func (c *Contour) getSortedVertices() []Vertex {
+func (c Contour) getSortedVertices() []Vertex {
 	return sortVertices(c.getVertices())
 }
 
@@ -57,10 +57,10 @@ func EqualContour(c1, c2 Contour) bool {
 	return true
 }
 
-func (c *Contour) String() string {
+func (c Contour) String() string {
 	s := "MULTIPOLYGON"
-	for j := 0; j < len(*c); j++ {
-		p := (*c)[j]
+	for j := 0; j < len(c); j++ {
+		p := c[j]
 		s += "("
 		for i := 0; i < len(p); i++ {
 			s += fmt.Sprintf("%v %v", p[i].X, p[i].Y)
@@ -69,7 +69,7 @@ func (c *Contour) String() string {
 			}
 		}
 		s += ")"
-		if j < len(*c)-1 {
+		if j < len(c)-1 {
 			s += ","
 		}
 	}
@@ -78,6 +78,6 @@ func (c *Contour) String() string {
 }
 
 // BBox returns the bounding box of this contour
-func (c *Contour) BBox() BBox {
+func (c Contour) BBox() BBox {
 	return getVerticesBBox(c.getVertices())
 }
