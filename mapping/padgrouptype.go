@@ -62,3 +62,11 @@ func (pgt padGroupType) idByFastIndex(fastIndex int) int {
 func (pgt padGroupType) idByIndices(ix int, iy int) int {
 	return pgt.idByFastIndex(pgt.fastIndex(ix, iy))
 }
+
+func (pgt padGroupType) iy(fastIndex int) int {
+	return fastIndex / pgt.nofPadsX
+}
+
+func (pgt padGroupType) ix(fastIndex int) int {
+	return fastIndex - pgt.iy(fastIndex)*pgt.nofPadsX
+}
