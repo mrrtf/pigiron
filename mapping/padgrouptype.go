@@ -17,7 +17,7 @@ func (pgt padGroupType) NofPads() int {
 }
 
 func validIndices(v []int) []int {
-	valid := []int{}
+	valid := make([]int, 0, len(v))
 	for i := 0; i < len(v); i++ {
 		if v[i] >= 0 {
 			valid = append(valid, v[i])
