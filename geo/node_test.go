@@ -46,13 +46,13 @@ func TestPromoteNode(t *testing.T) {
 	if testNode.cardinality != 1 {
 		t.Error("promoted testNode should have cardinality of 1")
 	}
-	if testNode.leftChild.cardinality != dummyCardinality-1 {
+	if testNode.left.cardinality != dummyCardinality-1 {
 		t.Errorf("promoted left node should have cardinality of %d but got %d",
-			dummyCardinality-1, testNode.leftChild.cardinality)
+			dummyCardinality-1, testNode.left.cardinality)
 	}
-	if testNode.rightChild.cardinality != dummyCardinality-1 {
+	if testNode.right.cardinality != dummyCardinality-1 {
 		t.Errorf("promoted right node should have cardinality of %d but got %d",
-			dummyCardinality-1, testNode.rightChild.cardinality)
+			dummyCardinality-1, testNode.right.cardinality)
 	}
 }
 
@@ -63,13 +63,13 @@ func TestDemoteNode(t *testing.T) {
 	if testNode.cardinality != 0 {
 		t.Error("demoted testNode should have cardinality of 0")
 	}
-	if testNode.leftChild.cardinality != dummyCardinality {
+	if testNode.left.cardinality != dummyCardinality {
 		t.Errorf("demoted left node should have cardinality of %d but got %d",
-			dummyCardinality, testNode.leftChild.cardinality)
+			dummyCardinality, testNode.left.cardinality)
 	}
-	if testNode.rightChild.cardinality != dummyCardinality {
+	if testNode.right.cardinality != dummyCardinality {
 		t.Errorf("demoted right node should have cardinality of %d but got %d",
-			dummyCardinality, testNode.rightChild.cardinality)
+			dummyCardinality, testNode.right.cardinality)
 	}
 	if !testNode.potent {
 		t.Error("demoted node should be potent")
@@ -82,7 +82,7 @@ func TestMidPointOfANodeIsNotHalfPoint(t *testing.T) {
 	if err != nil {
 		t.Fatal("could not create segment tree")
 	}
-	right := node.rightChild
+	right := node.right
 	if (right.interval != interval{-1.5, 0.0}) {
 		t.Errorf("right node interval expected to be -1.5,0 but is %f,%f",
 			right.interval.b, right.interval.e)
