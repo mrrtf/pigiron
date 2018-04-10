@@ -5,9 +5,9 @@ import (
 	"testing"
 )
 
-func TestCreateContourGeneratesEmptyContourForEmptyInput(t *testing.T) {
+func TestNewContourGeneratesEmptyContourForEmptyInput(t *testing.T) {
 	polygons := []Polygon{}
-	c, err := CreateContour(polygons)
+	c, err := NewContour(polygons)
 	if err != nil {
 		t.Error("should not trigger an error here")
 	}
@@ -16,17 +16,17 @@ func TestCreateContourGeneratesEmptyContourForEmptyInput(t *testing.T) {
 	}
 }
 
-func TestCreateContourMustErrorIfInputPolygonsAreNotCounterClockwiseOriented(t *testing.T) {
+func TestNewContourMustErrorIfInputPolygonsAreNotCounterClockwiseOriented(t *testing.T) {
 	clockwisePolygon := []Polygon{{{0, 0}, {0, 1}, {1, 1}, {1, 0}, {0, 0}}}
-	_, err := CreateContour(clockwisePolygon)
+	_, err := NewContour(clockwisePolygon)
 	if err != ErrWrongOrientation {
 		t.Error("should fail for wrongly oriented polygons")
 	}
 }
 
-func TestCreateContourReturnsInputIfInputIsASinglePolygon(t *testing.T) {
+func TestNewContourReturnsInputIfInputIsASinglePolygon(t *testing.T) {
 	onePolygon := []Polygon{{{0, 0}, {1, 0}, {1, 1}, {0, 1}, {0, 0}}}
-	c, err := CreateContour(onePolygon)
+	c, err := NewContour(onePolygon)
 	if err != nil {
 		t.Error("was not expecting an error here")
 	}
@@ -128,7 +128,7 @@ func TestFinalizeContourWithOneCommonVertex(t *testing.T) {
 	contourFromVerticals(t, verticals, expected)
 }
 
-func TestCreateContourWithOneCommonVertex(t *testing.T) {
+func TestNewContourWithOneCommonVertex(t *testing.T) {
 	input := []Polygon{
 		{{0, 0}, {1, 0}, {1, 1}, {0, 1}, {0, 0}},
 		{{0, 1}, {1, 1}, {1, 2}, {0, 2}, {0, 1}},
@@ -138,7 +138,7 @@ func TestCreateContourWithOneCommonVertex(t *testing.T) {
 	expected := Contour{{{0, 2}, {0, 0}, {1, 0}, {1, 2}, {0, 2}},
 		{{1, 4}, {1, 2}, {2, 2}, {2, 4}, {1, 4}}}
 
-	contour, err := CreateContour(input)
+	contour, err := NewContour(input)
 	if err != nil {
 		t.Fatalf("could not create contour : %v", err)
 	}

@@ -26,8 +26,8 @@ var (
 	errClosingPolygon = errors.New("closing polygon")
 )
 
-// CreateContour returns the boolean union of the polygons
-func CreateContour(polygons []Polygon) (Contour, error) {
+// NewContour returns the boolean union of the polygons
+func NewContour(polygons []Polygon) (Contour, error) {
 
 	if len(polygons) == 0 {
 		return Contour{}, nil
@@ -313,7 +313,7 @@ func getContourSliceEnvelop(contours []Contour) Contour {
 			polygons = append(polygons, p)
 		}
 	}
-	envelop, err := CreateContour(polygons)
+	envelop, err := NewContour(polygons)
 	if err != nil {
 		log.Fatal("could not create envelop")
 		return nil
