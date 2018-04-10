@@ -105,23 +105,24 @@ func verticalsToHorizontals(verticals []verticalEdge) []horizontalEdge {
 		second int
 	}
 
-	vertices := []vertexWithRef{}
-
+	vertices := make([]vertexWithRef, 0, len(verticals)*2)
 	for i, e := range verticals {
-		vertices = append(vertices, vertexWithRef{e.begin(), i})
-		vertices = append(vertices, vertexWithRef{e.end(), i})
+		vertices = append(vertices,
+			vertexWithRef{e.begin(), i},
+			vertexWithRef{e.end(), i},
+		)
 	}
 
 	sort.Slice(vertices, func(i, j int) bool {
-		lhs := vertices[i].first
-		rhs := vertices[j].first
-		if lhs.Y < rhs.Y {
+		vxi := vertices[i].first
+		vxj := vertices[j].first
+		if vxi.Y < vxj.Y {
 			return true
 		}
-		if rhs.Y < lhs.Y {
+		if vxj.Y < vxi.Y {
 			return false
 		}
-		return lhs.X < rhs.X
+		return vxi.X < vxj.X
 	})
 
 	for i := 0; i < len(vertices)/2; i++ {
