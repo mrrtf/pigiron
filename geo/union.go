@@ -59,8 +59,7 @@ func NewContour(polygons []Polygon) (Contour, error) {
 	// Deduce the horizontal edges from the vertical ones
 	contourHorizontalEdges := verticalsToHorizontals(contourVerticalEdges)
 
-	c, err := finalizeContour(contourVerticalEdges, contourHorizontalEdges)
-	return c, err
+	return finalizeContour(contourVerticalEdges, contourHorizontalEdges)
 }
 
 // sort vertical edges in ascending x order
@@ -73,7 +72,9 @@ func sortVerticalEdges(edges []verticalEdge) {
 		e2 := edges[j]
 		x1 := e1.begin().X
 		x2 := e2.begin().X
-		if EqualFloat(x1, x2) {
+
+		switch {
+		case EqualFloat(x1, x2):
 			if isLeftEdge(e1) && isRightEdge(e2) {
 				return true
 			}
@@ -83,9 +84,11 @@ func sortVerticalEdges(edges []verticalEdge) {
 			y1 := bottom(e1)
 			y2 := bottom(e2)
 			return y1 < y2
-		} else if x1 < x2 {
+
+		case x1 < x2:
 			return true
-		} else {
+
+		default:
 			return false
 		}
 	})
