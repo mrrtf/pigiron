@@ -149,8 +149,8 @@ func verticalsToHorizontals(verticals []verticalEdge) []horizontalEdge {
 }
 
 func firstFalse(b []bool) int {
-	for i := 0; i < len(b); i++ {
-		if b[i] == false {
+	for i, v := range b {
+		if v == false {
 			return i
 		}
 	}
@@ -168,26 +168,19 @@ func finalizeContour(v []verticalEdge, h []horizontalEdge) (Contour, error) {
 		}
 	}
 
-	all := []manhattanEdge{}
-
+	all := make([]manhattanEdge, 0, len(v)*2)
 	for i := 0; i < len(v); i++ {
-		all = append(all, v[i])
-		all = append(all, h[i])
+		all = append(all, v[i], h[i])
 	}
 
-	alreadyAdded := make([]bool, len(all))
-	for i := range alreadyAdded {
-		alreadyAdded[i] = false
-	}
-
-	inorder := []int{}
-
-	var nofUsed int
-	var iCurrent int
-
-	startSegment := all[iCurrent]
-
-	contour := Contour{}
+	var (
+		alreadyAdded = make([]bool, len(all))
+		inorder      []int
+		nofUsed      = 0
+		iCurrent     = 0
+		startSegment = all[iCurrent]
+		contour      Contour
+	)
 
 	for nofUsed < len(all) {
 		currentSegment := all[iCurrent]
@@ -213,8 +206,8 @@ func finalizeContour(v []verticalEdge, h []horizontalEdge) (Contour, error) {
 				startSegment = all[iCurrent]
 			}
 		}
-		for i := 0; i < len(alreadyAdded); i++ {
-			if i != iCurrent && alreadyAdded[i] == false {
+		for i, added := range alreadyAdded {
+			if i != iCurrent && !added {
 				if EqualVertex(currentSegment.end(), all[i].begin()) {
 					iCurrent = i
 					break
@@ -225,11 +218,11 @@ func finalizeContour(v []verticalEdge, h []horizontalEdge) (Contour, error) {
 	return contour, nil
 }
 
-func getPolygonVerticalEdges(polygon *Polygon) []verticalEdge {
+func getPolygonVerticalEdges(polygon Polygon) []verticalEdge {
 	edges := []verticalEdge{}
-	for i := 0; i < len(*polygon)-1; i++ {
-		current := (*polygon)[i]
-		next := (*polygon)[i+1]
+	for i := 0; i < len(polygon)-1; i++ {
+		current := polygon[i]
+		next := polygon[i+1]
 		if EqualFloat(current.X, next.X) {
 			edges = append(edges, verticalEdge{current.X, current.Y, next.Y})
 		}
@@ -240,7 +233,7 @@ func getPolygonVerticalEdges(polygon *Polygon) []verticalEdge {
 func getPolygonSliceVerticalEdges(polygons []Polygon) []verticalEdge {
 	edges := []verticalEdge{}
 	for _, p := range polygons {
-		e := getPolygonVerticalEdges(&p)
+		e := getPolygonVerticalEdges(p)
 		edges = append(edges, e...)
 	}
 	return edges
@@ -248,9 +241,9 @@ func getPolygonSliceVerticalEdges(polygons []Polygon) []verticalEdge {
 
 func getPolygonSliceYPositions(polygons []Polygon) []float64 {
 	ypos := []float64{}
-	for i := 0; i < len(polygons); i++ {
-		for j := 0; j < len(polygons[i]); j++ {
-			ypos = append(ypos, polygons[i][j].Y)
+	for _, p := range polygons {
+		for _, vtx := range p {
+			ypos = append(ypos, vtx.Y)
 		}
 	}
 	sort.Float64s(ypos)
@@ -319,7 +312,7 @@ func getContourSliceEnvelop(contours []Contour) Contour {
 	}
 	envelop, err := NewContour(polygons)
 	if err != nil {
-		log.Fatal("could not create envelop")
+		log.Fatalf("could not create envelop: %v", err)
 		return nil
 	}
 	return envelop
