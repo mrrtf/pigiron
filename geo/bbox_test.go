@@ -50,7 +50,7 @@ func TestBBoxWH(t *testing.T) {
 
 func TestBBoxString(t *testing.T) {
 
-	expected := "bottomLeft: -15.000000,-10.000000 topRight: 5.000000,20.000000"
+	expected := "bottomLeft:  -15.00, -10.00 topRight:    5.00,  20.00"
 	if b.String() != expected {
 		t.Errorf("expected string:%s but got:%s",
 			expected, b.String())
@@ -65,5 +65,15 @@ func TestBBoxIntersect(t *testing.T) {
 		t.Errorf("Intersect not as expected : %s", inter.String())
 		log.Println("expected", expected)
 		log.Println("inter", inter)
+	}
+	three, _ := NewBBox(0.5, 0.5, 3.5, 1.5)
+	inter, _ = Intersect(one, three)
+	if !EqualBBox(inter, three) {
+		t.Errorf("intersection should equal the smallest and contained box")
+	}
+	four, _ := NewBBox(10, 10, 20, 20)
+	i, _ := Intersect(one, four)
+	if i != nil {
+		t.Errorf("intersection should be empty here")
 	}
 }

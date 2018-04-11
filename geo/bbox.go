@@ -16,6 +16,7 @@ type BBox interface {
 	Xmax() float64
 	Ymin() float64
 	Ymax() float64
+	Contains(x, y float64) bool
 	fmt.Stringer
 }
 
@@ -39,6 +40,14 @@ func NewBBox(xmin, ymin, xmax, ymax float64) (BBox, error) {
 		return nil, errTopLowerThanBottom
 	}
 	return &bbox{xmin, xmax, ymin, ymax}, nil
+}
+
+// NewBBoxUnchecked return a bbox that might contain
+// garbage (mostly used in test to ease declaration of multiple
+// bounding boxes)
+func NewBBoxUnchecked(xmin, ymin, xmax, ymax float64) BBox {
+	b, _ := NewBBox(xmin, ymin, xmax, ymax)
+	return b
 }
 
 func (b bbox) Xcenter() float64 {
@@ -78,8 +87,13 @@ func Intersect(a, b BBox) (BBox, error) {
 		math.Min(a.Ymax(), b.Ymax()))
 }
 
+// Contains returns true if (x,y) is inside the box
+func (b bbox) Contains(x, y float64) bool {
+	return IsInRangeFloat64(x, b.xmin, b.xmax) && IsInRangeFloat64(y, b.ymin, b.ymax)
+}
+
 func (b bbox) String() string {
-	return fmt.Sprintf("bottomLeft: %f,%f topRight: %f,%f",
+	return fmt.Sprintf("bottomLeft: %7.2f,%7.2f topRight: %7.2f,%7.2f",
 		b.Xmin(), b.Ymin(), b.Xmax(), b.Ymax())
 }
 

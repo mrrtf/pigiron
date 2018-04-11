@@ -1,7 +1,13 @@
 package mapping
 
+import (
+	"fmt"
+	"io"
+)
+
 // Segmentation is the main entry point to the MCH mapping
 type Segmentation interface {
+	DetElemID() int
 	NofPads() int
 	NofDualSampas() int
 	DualSampaID(dualSampaIndex int) (int, error)
@@ -15,6 +21,7 @@ type Segmentation interface {
 	PadPositionY(paduid int) float64
 	PadSizeX(paduid int) float64
 	PadSizeY(paduid int) float64
+	setDetElemID(de int)
 }
 
 // ForEachDetectionElement loops over all detection elements and call the detElemIdHandler function
@@ -47,4 +54,21 @@ func PlaneAbbreviation(isBendingPlane bool) string {
 		return "B"
 	}
 	return "NB"
+}
+
+// PrintPad prints all known information about a pad
+func PrintPad(out io.Writer, seg Segmentation, paduid int) {
+	if !seg.IsValid(paduid) {
+		fmt.Printf("invalid pad")
+		return
+	}
+	fmt.Fprintf(out, "DE %4d DSID %4d CH %2d X %7.2f Y %7.2f DX %7.2f DY %7.2f\n",
+		seg.DetElemID(),
+		seg.PadDualSampaID(paduid),
+		seg.PadDualSampaChannel(paduid),
+		seg.PadPositionX(paduid),
+		seg.PadPositionY(paduid),
+		seg.PadSizeX(paduid),
+		seg.PadSizeY(paduid))
+
 }
