@@ -1,6 +1,7 @@
 package mapping_test
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -8,10 +9,11 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/aphecetche/pigiron/geo"
 	"github.com/aphecetche/pigiron/mapping"
 )
 
-func assertInputForDetElemIsCorrect(m Mch) {
+func assertInputForDetElemIsCorrect(m TestChannelList) {
 	const NDES int = 156
 	const NFEC int = 16828
 	const NPADS int = 1064008
@@ -116,14 +118,14 @@ func TestDetectionElementChannels(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode")
 	}
-	path := filepath.Join("testdata", "test_de.json")
+	path := filepath.Join("testdata", "test_channel_list.json")
 	fmt.Print(path)
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Fatal("could not read test file")
 	}
 
-	detElems, err := UnmarshalMch(data)
+	detElems, err := UnmarshalTestChannelList(data)
 	if err != nil {
 		log.Fatal("could not decode test file")
 	}
@@ -142,5 +144,59 @@ func TestDetectionElementChannels(t *testing.T) {
 		t.Run(fmt.Sprintf("checkAllChannels(%d)", de.ID), func(t *testing.T) {
 			checkAllChannels(t, de)
 		})
+	}
+}
+
+func testOnePosition(t *testing.T, tp Testposition) int {
+	seg := mapping.NewSegmentation(int(tp.De), tp.isBendingPlane())
+
+	paduid, err := seg.FindPadByPosition(tp.X, tp.Y)
+
+	if err != nil && err != mapping.ErrInvalidPadUID {
+		t.Fatalf("Unexpected error:%s", err)
+		return 1
+	}
+
+	if seg.IsValid(paduid) && tp.isOutside() {
+		t.Errorf("found a pad at position where there should not be one : %v", tp)
+		return 1
+	}
+
+	if !seg.IsValid(paduid) && !tp.isOutside() {
+		t.Errorf("did not find a pad at position where there should be one : %v", tp)
+		return 1
+	}
+
+	if seg.IsValid(paduid) && (!geo.EqualFloat(seg.PadPositionX(paduid), tp.PX) ||
+		!geo.EqualFloat(seg.PadPositionY(paduid), tp.PY)) {
+
+		buf := new(bytes.Buffer)
+		mapping.PrintPad(buf, seg, paduid)
+		s := buf.String()
+
+		t.Errorf("\nExpected %v\nGot %v", tp.String(), s)
+		return 1
+	}
+	return 0
+}
+
+func TestPositions(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
+	}
+	path := filepath.Join("testdata", "test_random_pos.json")
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+
+	testfile, err := UnmarshalTestRandomPos(data)
+	if err != nil {
+		log.Fatal("could not decode test file")
+	}
+
+	var notok int
+	for _, testpos := range testfile.Testpositions {
+		notok += testOnePosition(t, testpos)
 	}
 }

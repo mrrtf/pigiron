@@ -15,8 +15,8 @@ func BBox(seg mapping.Segmentation) geo.BBox {
 
 // Contour returns the contour of the segmentation
 func Contour(seg mapping.Segmentation) geo.Contour {
-	polygons := []geo.Polygon{}
-	for _, c := range getDualSampaContours(seg) {
+	var polygons []geo.Polygon
+	for _, c := range getAllDualSampaContours(seg) {
 		for _, p := range c {
 			polygons = append(polygons, p)
 		}
@@ -28,39 +28,53 @@ func Contour(seg mapping.Segmentation) geo.Contour {
 	return contour
 }
 
-func getPadPolygons(seg mapping.Segmentation) [][]geo.Polygon {
+func getDualSampaPadPolygons(seg mapping.Segmentation, dualSampaID int) []geo.Polygon {
+	var pads []geo.Polygon
+	seg.ForEachPadInDualSampa(dualSampaID, func(paduid int) {
+		x := seg.PadPositionX(paduid)
+		y := seg.PadPositionY(paduid)
+		dx := seg.PadSizeX(paduid) / 2
+		dy := seg.PadSizeY(paduid) / 2
+		pads = append(pads, geo.Polygon{
+			{X: x - dx, Y: y - dy},
+			{X: x + dx, Y: y - dy},
+			{X: x + dx, Y: y + dy},
+			{X: x - dx, Y: y + dy},
+			{X: x - dx, Y: y - dy}})
+	})
+	return pads
+}
+
+// GetDualSampaContour returns the contour of one FEC.
+func GetDualSampaContour(seg mapping.Segmentation, dualSampaID int) geo.Contour {
+	pads := getDualSampaPadPolygons(seg, dualSampaID)
+	c, err := geo.NewContour(pads)
+	if err != nil {
+		log.Fatalf("could not create contour : %v", err)
+	}
+	return c
+}
+
+func getAllDualSampaPadPolygons(seg mapping.Segmentation) [][]geo.Polygon {
 	dualSampaPads := [][]geo.Polygon{}
 	for i := 0; i < seg.NofDualSampas(); i++ {
 		dualSampaPads = append(dualSampaPads, []geo.Polygon{})
-		var pads []geo.Polygon
 		dsID, err := seg.DualSampaID(i)
 		if err != nil {
 			log.Fatalf("could not get dual sampa ID: %v", err)
 		}
-		seg.ForEachPadInDualSampa(dsID, func(paduid int) {
-			x := seg.PadPositionX(paduid)
-			y := seg.PadPositionY(paduid)
-			dx := seg.PadSizeX(paduid) / 2
-			dy := seg.PadSizeY(paduid) / 2
-			pads = append(pads, geo.Polygon{
-				{X: x - dx, Y: y - dy},
-				{X: x + dx, Y: y - dy},
-				{X: x + dx, Y: y + dy},
-				{X: x - dx, Y: y + dy},
-				{X: x - dx, Y: y - dy}})
-		})
-		dualSampaPads[len(dualSampaPads)-1] = append(dualSampaPads[len(dualSampaPads)-1], pads...)
+		dualSampaPads[len(dualSampaPads)-1] = append(dualSampaPads[len(dualSampaPads)-1], getDualSampaPadPolygons(seg, dsID)...)
 	}
 	return dualSampaPads
 }
 
-func getDualSampaContours(seg mapping.Segmentation) []geo.Contour {
-	contours := []geo.Contour{}
-	padPolygons := getPadPolygons(seg)
-	for _, p := range padPolygons {
-		c, err := geo.NewContour(p)
-		if err != nil {
-			log.Fatalf("could not create contour: %v", err)
+func getAllDualSampaContours(seg mapping.Segmentation) []geo.Contour {
+	var contours = []geo.Contour{}
+	for i := 0; i < seg.NofDualSampas(); i++ {
+		dsID, err := seg.DualSampaID(i)
+		var c geo.Contour
+		if err == nil {
+			c = GetDualSampaContour(seg, dsID)
 		}
 		contours = append(contours, c)
 	}
