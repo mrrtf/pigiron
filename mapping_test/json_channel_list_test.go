@@ -5,8 +5,8 @@ import (
 	"sort"
 )
 
-func UnmarshalMch(data []byte) (Mch, error) {
-	var r Mch
+func UnmarshalTestChannelList(data []byte) (TestChannelList, error) {
+	var r TestChannelList
 	err := json.Unmarshal(data, &r)
 	if err == nil {
 		r.init()
@@ -14,15 +14,15 @@ func UnmarshalMch(data []byte) (Mch, error) {
 	return r, err
 }
 
-func (r *Mch) Marshal() ([]byte, error) {
+func (r *TestChannelList) Marshal() ([]byte, error) {
 	return json.Marshal(r)
 }
 
-type Mch struct {
+type TestChannelList struct {
 	DetectionElements []DetectionElement `json:"detection_elements"`
 }
 
-func (m *Mch) init() {
+func (m *TestChannelList) init() {
 	for i, _ := range m.DetectionElements {
 		m.DetectionElements[i].init()
 	}

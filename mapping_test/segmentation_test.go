@@ -320,3 +320,10 @@ func TestNoGapWithinPads(t *testing.T) {
 		}
 	})
 }
+
+func TestMe(t *testing.T) {
+	seg := mapping.NewSegmentation(706, false)
+	if seg.NofPads() != 42 {
+		t.Fail()
+	}
+}

@@ -11,7 +11,7 @@ import (
 	"github.com/aphecetche/pigiron/mapping"
 )
 
-func assertInputForDetElemIsCorrect(m Mch) {
+func assertInputForDetElemIsCorrect(m TestChannelList) {
 	const NDES int = 156
 	const NFEC int = 16828
 	const NPADS int = 1064008
@@ -116,14 +116,14 @@ func TestDetectionElementChannels(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode")
 	}
-	path := filepath.Join("testdata", "test_de.json")
+	path := filepath.Join("testdata", "test_channel_list.json")
 	fmt.Print(path)
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Fatal("could not read test file")
 	}
 
-	detElems, err := UnmarshalMch(data)
+	detElems, err := UnmarshalTestChannelList(data)
 	if err != nil {
 		log.Fatal("could not decode test file")
 	}
@@ -142,5 +142,46 @@ func TestDetectionElementChannels(t *testing.T) {
 		t.Run(fmt.Sprintf("checkAllChannels(%d)", de.ID), func(t *testing.T) {
 			checkAllChannels(t, de)
 		})
+	}
+}
+
+func testOnePosition(t *testing.T, tp Testposition) {
+	seg := mapping.NewSegmentation(int(tp.De), tp.isBendingPlane())
+
+	paduid, err := seg.FindPadByPosition(tp.X, tp.Y)
+
+	if err != mapping.ErrInvalidPadUID {
+		t.Fatalf("Unexpected error:%s", err)
+	}
+
+	if seg.IsValid(paduid) && tp.isOutside() {
+		t.Errorf("DE %v : found a pad at position %v,%v where there should not be one",
+			tp.De, tp.X, tp.Y)
+	}
+
+	if !seg.IsValid(paduid) && !tp.isOutside() {
+		t.Errorf("DE %v : did not find a pad at position %v,%v where there should be one",
+			tp.De, tp.X, tp.Y)
+
+	}
+}
+
+func TestPositions(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
+	}
+	path := filepath.Join("testdata", "test_random_pos.json")
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+
+	testfile, err := UnmarshalTestRandomPos(data)
+	if err != nil {
+		log.Fatal("could not decode test file")
+	}
+
+	for _, testpos := range testfile.Testpositions {
+		testOnePosition(t, testpos)
 	}
 }

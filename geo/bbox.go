@@ -41,6 +41,14 @@ func NewBBox(xmin, ymin, xmax, ymax float64) (BBox, error) {
 	return &bbox{xmin, xmax, ymin, ymax}, nil
 }
 
+// NewBBoxUnchecked return a bbox that might contain
+// garbage (mostly used in test to ease declaration of multiple
+// bounding boxes)
+func NewBBoxUnchecked(xmin, ymin, xmax, ymax float64) BBox {
+	b, _ := NewBBox(xmin, ymin, xmax, ymax)
+	return b
+}
+
 func (b bbox) Xcenter() float64 {
 	return (b.xmin + b.xmax) / 2
 }
@@ -79,7 +87,7 @@ func Intersect(a, b BBox) (BBox, error) {
 }
 
 func (b bbox) String() string {
-	return fmt.Sprintf("bottomLeft: %f,%f topRight: %f,%f",
+	return fmt.Sprintf("bottomLeft: %7.2f,%7.2f topRight: %7.2f,%7.2f",
 		b.Xmin(), b.Ymin(), b.Xmax(), b.Ymax())
 }
 
