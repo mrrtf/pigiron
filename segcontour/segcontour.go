@@ -7,14 +7,14 @@ import (
 	"github.com/aphecetche/pigiron/mapping"
 )
 
-// GetSegmentationBBox returns the bounding box of the segmentation
-func GetSegmentationBBox(seg *mapping.Segmentation) geo.BBox {
-	contour := GetSegmentationEnvelop(seg)
+// BBox returns the bounding box of the segmentation
+func BBox(seg mapping.Segmentation) geo.BBox {
+	contour := Contour(seg)
 	return contour.BBox()
 }
 
-// GetSegmentationEnvelop returns the contour of the segmentation
-func GetSegmentationEnvelop(seg *mapping.Segmentation) geo.Contour {
+// Contour returns the contour of the segmentation
+func Contour(seg mapping.Segmentation) geo.Contour {
 	polygons := []geo.Polygon{}
 	for _, c := range getDualSampaContours(seg) {
 		for _, p := range c {
@@ -23,25 +23,25 @@ func GetSegmentationEnvelop(seg *mapping.Segmentation) geo.Contour {
 	}
 	contour, err := geo.CreateContour(polygons)
 	if err != nil {
-		log.Fatal("could not get envelop of segmentation")
+		log.Fatalf("could not get contour of segmentation: %v", err)
 	}
 	return contour
 }
 
-func getPadPolygons(seg *mapping.Segmentation) [][]geo.Polygon {
+func getPadPolygons(seg mapping.Segmentation) [][]geo.Polygon {
 	dualSampaPads := [][]geo.Polygon{}
-	for i := 0; i < (*seg).NofDualSampas(); i++ {
+	for i := 0; i < seg.NofDualSampas(); i++ {
 		dualSampaPads = append(dualSampaPads, []geo.Polygon{})
-		pads := []geo.Polygon{}
-		dsID, err := (*seg).DualSampaID(i)
+		var pads []geo.Polygon
+		dsID, err := seg.DualSampaID(i)
 		if err != nil {
-			log.Fatal("sth's wrong")
+			log.Fatalf("could not get dual sampa ID: %v", err)
 		}
-		(*seg).ForEachPadInDualSampa(dsID, func(paduid int) {
-			x := (*seg).PadPositionX(paduid)
-			y := (*seg).PadPositionY(paduid)
-			dx := (*seg).PadSizeX(paduid) / 2
-			dy := (*seg).PadSizeY(paduid) / 2
+		seg.ForEachPadInDualSampa(dsID, func(paduid int) {
+			x := seg.PadPositionX(paduid)
+			y := seg.PadPositionY(paduid)
+			dx := seg.PadSizeX(paduid) / 2
+			dy := seg.PadSizeY(paduid) / 2
 			pads = append(pads, geo.Polygon{
 				{X: x - dx, Y: y - dy},
 				{X: x + dx, Y: y - dy},
@@ -54,13 +54,13 @@ func getPadPolygons(seg *mapping.Segmentation) [][]geo.Polygon {
 	return dualSampaPads
 }
 
-func getDualSampaContours(seg *mapping.Segmentation) []geo.Contour {
+func getDualSampaContours(seg mapping.Segmentation) []geo.Contour {
 	contours := []geo.Contour{}
 	padPolygons := getPadPolygons(seg)
 	for _, p := range padPolygons {
 		c, err := geo.CreateContour(p)
 		if err != nil {
-			log.Fatal("could not create contour")
+			log.Fatalf("could not create contour: %v", err)
 		}
 		contours = append(contours, c)
 	}
