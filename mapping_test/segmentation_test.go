@@ -260,6 +260,8 @@ func TestMustErrorIfDualSampaChannelIsNotBetween0And63(t *testing.T) {
 }
 
 func TestPositionOfOnePadInDE100Bending(t *testing.T) {
+	t.Skipf("temporarily disabled")
+
 	p1, err := seg.FindPadByFEE(76, 9)
 	if err != nil {
 		t.Error("Should get a valid pad")
