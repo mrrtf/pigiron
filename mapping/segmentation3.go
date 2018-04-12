@@ -4,6 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
+
+	"github.com/aphecetche/pigiron/geo"
 )
 
 var ErrInvalidPadUID = errors.New("invalid pad uid")
@@ -83,8 +86,7 @@ func (seg *segmentation3) init() {
 
 func (seg *segmentation3) getPadUIDs(dualSampaID int) []int {
 	pi := []int{}
-	for pgi := range seg.padGroups {
-		pg := seg.padGroups[pgi]
+	for pgi, pg := range seg.padGroups {
 		if pg.fecID == dualSampaID {
 			pgt := seg.padGroupTypes[pg.padGroupTypeID]
 			i1 := seg.padGroupIndex2PadUIDIndex[pgi]
@@ -150,20 +152,83 @@ func (seg *segmentation3) FindPadByFEE(dualSampaID, dualSampaChannel int) (int, 
 	return InvalidPadUID, ErrInvalidPadUID
 }
 
-/// FIXME : to be implemented...
 func (seg *segmentation3) FindPadByPosition(x, y float64) (int, error) {
-	return 0, fmt.Errorf("invalid pad")
+	const epsilon = 1e-4
+	xmin := x - epsilon
+	xmax := x + epsilon
+	ymin := y - epsilon
+	ymax := y + epsilon
+	box, err := geo.NewBBox(xmin, ymin, xmax, ymax)
+	if err != nil {
+		return -1, fmt.Errorf("could not create bounding box: %v", err)
+	}
+	var pads []int
+	for paduid := range seg.padGroups {
+		pgrp := seg.padGroup(paduid)
+		psiz := seg.padSizes[pgrp.padSizeID]
+		x, y := seg.padPositionXY(paduid)
+		xsiz := psiz.x * 0.5
+		ysiz := psiz.y * 0.5
+		b, err := geo.NewBBox(x-xsiz, y-ysiz, x+xsiz, y+ysiz)
+		if err != nil {
+			return -1, fmt.Errorf("could not create bounding box: %v", err)
+		}
+		_, err = geo.Intersect(b, box)
+		if err == nil {
+			pads = append(pads, paduid)
+		}
+	}
+
+	dmin := +math.MaxFloat64
+	id := InvalidPadUID
+	for _, paduid := range pads {
+		d := seg.squaredDistance(paduid, x, y)
+		if d < dmin {
+			dmin = d
+			id = paduid
+		}
+	}
+
+	if id == InvalidPadUID {
+		return InvalidPadUID, fmt.Errorf("could not find pad")
+	}
+
+	return id, nil
 }
 
 func (seg *segmentation3) PadPositionX(paduid int) float64 {
-	return 0
+	x, _ := seg.padPositionXY(paduid)
+	return x
 }
+
 func (seg *segmentation3) PadPositionY(paduid int) float64 {
-	return 0
+	_, y := seg.padPositionXY(paduid)
+	return y
 }
+
+func (seg *segmentation3) padPositionXY(paduid int) (float64, float64) {
+	pgrp := seg.padGroup(paduid)
+	ptyp := seg.padGroupType(paduid)
+	idx := seg.padUID2PadGroupTypeFastIndex[paduid]
+	psiz := seg.padSizes[pgrp.padSizeID]
+	x := pgrp.x + (float64(ptyp.ix(idx))+0.5)*psiz.x
+	y := pgrp.y + (float64(ptyp.iy(idx))+0.5)*psiz.y
+	return x, y
+}
+
 func (seg *segmentation3) PadSizeX(paduid int) float64 {
-	return 0
+	pgrp := seg.padGroup(paduid)
+	return seg.padSizes[pgrp.padSizeID].x
 }
+
 func (seg *segmentation3) PadSizeY(paduid int) float64 {
-	return 0
+	pgrp := seg.padGroup(paduid)
+	return seg.padSizes[pgrp.padSizeID].y
+}
+
+func (seg *segmentation3) squaredDistance(paduid int, x, y float64) float64 {
+	px, py := seg.padPositionXY(paduid)
+	px -= x
+	py -= y
+	return px*px + py*py
 }

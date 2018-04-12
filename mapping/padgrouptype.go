@@ -17,7 +17,7 @@ func (pgt padGroupType) NofPads() int {
 }
 
 func validIndices(v []int) []int {
-	valid := []int{}
+	valid := make([]int, 0, len(v))
 	for i := 0; i < len(v); i++ {
 		if v[i] >= 0 {
 			valid = append(valid, v[i])
@@ -28,13 +28,14 @@ func validIndices(v []int) []int {
 
 // NewPadGroupType returns a pad group type
 func NewPadGroupType(nofPadsX int, nofPadsY int, ids []int) padGroupType {
-	pgt := new(padGroupType)
-	pgt.fastID = ids
-	pgt.fastIndices = validIndices(pgt.fastID)
-	pgt.nofPads = len(pgt.fastIndices)
-	pgt.nofPadsX = nofPadsX
-	pgt.nofPadsY = nofPadsY
-	return *pgt
+	fast := validIndices(ids)
+	return padGroupType{
+		fastID:      ids,
+		fastIndices: fast,
+		nofPads:     len(fast),
+		nofPadsX:    nofPadsX,
+		nofPadsY:    nofPadsY,
+	}
 }
 
 func (pgt *padGroupType) String() string {
@@ -61,4 +62,12 @@ func (pgt padGroupType) idByFastIndex(fastIndex int) int {
 // or -1 if not found
 func (pgt padGroupType) idByIndices(ix int, iy int) int {
 	return pgt.idByFastIndex(pgt.fastIndex(ix, iy))
+}
+
+func (pgt padGroupType) iy(fastIndex int) int {
+	return fastIndex / pgt.nofPadsX
+}
+
+func (pgt padGroupType) ix(fastIndex int) int {
+	return fastIndex - pgt.iy(fastIndex)*pgt.nofPadsX
 }
