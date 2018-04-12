@@ -66,3 +66,7 @@ func (pgt *padGroupType) iy(fastIndex int) int {
 func (pgt *padGroupType) ix(fastIndex int) int {
 	return fastIndex - pgt.iy(fastIndex)*pgt.NofPadsX
 }
+
+func (pgt *padGroupType) areIndicesPossible(ix, iy int) bool {
+	return ix >= 0 && ix < pgt.NofPadsX && iy >= 0 && iy < pgt.NofPadsY
+}

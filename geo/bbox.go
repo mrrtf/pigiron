@@ -16,6 +16,7 @@ type BBox interface {
 	Xmax() float64
 	Ymin() float64
 	Ymax() float64
+	Contains(x, y float64) bool
 	fmt.Stringer
 }
 
@@ -84,6 +85,11 @@ func Intersect(a, b BBox) (BBox, error) {
 		math.Max(a.Ymin(), b.Ymin()),
 		math.Min(a.Xmax(), b.Xmax()),
 		math.Min(a.Ymax(), b.Ymax()))
+}
+
+// Contains returns true if (x,y) is inside the box
+func (b bbox) Contains(x, y float64) bool {
+	return IsInRangeFloat64(x, b.xmin, b.xmax) && IsInRangeFloat64(y, b.ymin, b.ymax)
 }
 
 func (b bbox) String() string {

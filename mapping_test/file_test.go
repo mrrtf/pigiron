@@ -150,20 +150,31 @@ func testOnePosition(t *testing.T, tp Testposition) {
 
 	paduid, err := seg.FindPadByPosition(tp.X, tp.Y)
 
-	if err != mapping.ErrInvalidPadUID {
+	if err != nil && err != mapping.ErrInvalidPadUID {
 		t.Fatalf("Unexpected error:%s", err)
 	}
 
 	if seg.IsValid(paduid) && tp.isOutside() {
-		t.Errorf("DE %v : found a pad at position %v,%v where there should not be one",
-			tp.De, tp.X, tp.Y)
+		t.Errorf("found a pad at position where there should not be one : %v", tp)
 	}
 
 	if !seg.IsValid(paduid) && !tp.isOutside() {
-		t.Errorf("DE %v : did not find a pad at position %v,%v where there should be one",
-			tp.De, tp.X, tp.Y)
-
+		t.Errorf("did not find a pad at position where there should be one : %v", tp)
 	}
+}
+
+func TestDebugPosition(t *testing.T) {
+	tp := Testposition{De: 100,
+		Bending: "true",
+		X:       40.258,
+		Y:       12.699,
+		// X:       40.258104944919107,
+		// Y:       12.6994892333624,
+		Dsid:    38,
+		Dsch:    11,
+		Outside: "false",
+	}
+	testOnePosition(t, tp)
 }
 
 func TestPositions(t *testing.T) {

@@ -57,11 +57,15 @@ func TestSegmentationBBox(t *testing.T) {
 		{904, false, geo.NewBBoxUnchecked(-100, -20, 100, 20)},
 		{905, false, geo.NewBBoxUnchecked(-80, -20, 80, 20)},
 	} {
-		if test.detElemID != 706 || test.isBending != false {
+		if test.detElemID != 706 && test.detElemID != 500 {
+			continue
+		}
+
+		if test.isBending == true {
 			continue
 		}
 		seg := mapping.NewSegmentation(test.detElemID, test.isBending)
-		bbox := GetSegmentationBBox(&seg)
+		bbox := BBox(seg)
 		if !geo.EqualBBox(bbox, test.want) {
 			t.Errorf("segmentation %3d - %v : wrong bbox got\n%v but want\n%v", test.detElemID,
 				mapping.PlaneAbbreviation(test.isBending), bbox.String(), test.want.String())

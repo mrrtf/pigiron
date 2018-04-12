@@ -1,6 +1,11 @@
 package mapping_test
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+
+	"github.com/aphecetche/pigiron/mapping"
+)
 
 func UnmarshalTestRandomPos(data []byte) (TestRandomPos, error) {
 	var r TestRandomPos
@@ -24,6 +29,12 @@ type Testposition struct {
 	Outside BoolString `json:"isoutside,omitempty"`
 	Dsid    int64      `json:"dsid"`
 	Dsch    int64      `json:"dsch"`
+}
+
+func (tp Testposition) String() string {
+	return fmt.Sprintf("DE %4d %s X %v Y %v Outside %v fecID %d fecChannel %d",
+		tp.De, mapping.PlaneAbbreviation(tp.isBendingPlane()), tp.X, tp.Y, tp.Outside == "true",
+		tp.Dsid, tp.Dsch)
 }
 
 func (tp Testposition) isBendingPlane() bool {

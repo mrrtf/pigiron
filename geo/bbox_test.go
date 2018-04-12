@@ -66,4 +66,14 @@ func TestBBoxIntersect(t *testing.T) {
 		log.Println("expected", expected)
 		log.Println("inter", inter)
 	}
+	three, _ := NewBBox(0.5, 0.5, 3.5, 1.5)
+	inter, _ = Intersect(one, three)
+	if !EqualBBox(inter, three) {
+		t.Errorf("intersection should equal the smallest and contained box")
+	}
+	four, _ := NewBBox(10, 10, 20, 20)
+	_, err := Intersect(one, four)
+	if err != nil {
+		t.Errorf("intersection should be empty here")
+	}
 }
