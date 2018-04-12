@@ -32,7 +32,7 @@ func EqualFloat64Slice(a, b []float64) bool {
 }
 
 func removeDuplicates(in []float64) []float64 {
-	out := []float64{}
+	out := make([]float64, 0, len(in))
 	for i := 0; i < len(in); i++ {
 		already := false
 		for j := 0; j < len(out); j++ {

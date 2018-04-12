@@ -14,8 +14,8 @@ import (
 // an invalid node). We just assume we're good citizen within this package
 // and just use newNode function whenever we need a (properly constructed) node
 type node struct {
-	leftChild   *node
-	rightChild  *node
+	left        *node
+	right       *node
 	interval    interval
 	midpoint    float64 // midpoint (not necessarily exactly half)
 	cardinality int
@@ -29,8 +29,8 @@ func newNode(b, e, m float64) *node {
 		return nil
 	}
 	return &node{
-		leftChild:   nil,
-		rightChild:  nil,
+		left:        nil,
+		right:       nil,
 		interval:    iv,
 		midpoint:    m,
 		cardinality: 0,
@@ -43,12 +43,12 @@ func (n *node) isActive() bool {
 }
 
 func (n *node) setLeft(left *node) *node {
-	n.leftChild = left
+	n.left = left
 	return n
 }
 
 func (n *node) setRight(right *node) *node {
-	n.rightChild = right
+	n.right = right
 	return n
 }
 
@@ -59,7 +59,7 @@ func (n *node) setCardinality(c int) {
 func buildNode(values []float64, b, e int) *node {
 	mid := ((b + e) / 2)
 	node := newNode(values[b], values[e], values[mid])
-	if (e - b) == 1 {
+	if e-b == 1 {
 		return node
 	}
 	node.setLeft(buildNode(values, b, mid)).setRight(buildNode(values, mid, e))
@@ -71,26 +71,27 @@ func createSegmentTree(values []float64) (*node, error) {
 		return nil, errors.New("must get at least two values")
 	}
 	// make a copy of the slice to leave it unsorted for the caller
-	s := append([]float64{}, values...)
+	s := make([]float64, len(values))
+	copy(s, values)
 	sort.Float64s(s)
 	return buildNode(values, 0, len(values)-1), nil
 }
 
 func (n *node) promote() {
-	n.leftChild.cardinality--
-	n.rightChild.cardinality--
+	n.left.cardinality--
+	n.right.cardinality--
 	n.cardinality++
 }
 
 func (n *node) demote() {
-	n.leftChild.cardinality++
-	n.rightChild.cardinality++
+	n.left.cardinality++
+	n.right.cardinality++
 	n.cardinality--
 	n.potent = true
 }
 
 func (n *node) isLeaf() bool {
-	return n.leftChild == nil && n.rightChild == nil
+	return n.left == nil && n.right == nil
 }
 
 func (n *node) PaddedString(pad int) string {
@@ -110,8 +111,8 @@ func (n *node) PaddedString(pad int) string {
 	}
 	s += "\n"
 	if !n.isLeaf() {
-		s += n.leftChild.PaddedString(pad + 6)
-		s += n.rightChild.PaddedString(pad + 6)
+		s += n.left.PaddedString(pad + 6)
+		s += n.right.PaddedString(pad + 6)
 	}
 	return s
 }
@@ -144,10 +145,10 @@ func (n *node) contribution(ival interval, edgeStack *[]interval) {
 		}
 	} else {
 		if n.goLeft(ival) {
-			n.leftChild.contribution(ival, edgeStack)
+			n.left.contribution(ival, edgeStack)
 		}
 		if n.goRight(ival) {
-			n.rightChild.contribution(ival, edgeStack)
+			n.right.contribution(ival, edgeStack)
 		}
 	}
 }
@@ -157,10 +158,10 @@ func (n *node) insertInterval(ival interval) {
 		n.cardinality++
 	} else {
 		if n.goLeft(ival) {
-			n.leftChild.insertInterval(ival)
+			n.left.insertInterval(ival)
 		}
 		if n.goRight(ival) {
-			n.rightChild.insertInterval(ival)
+			n.right.insertInterval(ival)
 		}
 	}
 	n.update()
@@ -174,22 +175,22 @@ func (n *node) deleteInterval(ival interval) {
 			n.demote()
 		}
 		if n.goLeft(ival) {
-			n.leftChild.deleteInterval(ival)
+			n.left.deleteInterval(ival)
 		}
 		if n.goRight(ival) {
-			n.rightChild.deleteInterval(ival)
+			n.right.deleteInterval(ival)
 		}
 	}
 	n.update()
 }
 
 func (n *node) update() {
-	if n.leftChild == nil {
+	if n.left == nil {
 		n.potent = false
 	} else {
-		if n.leftChild.cardinality > 0 && n.rightChild.cardinality > 0 {
+		if n.left.cardinality > 0 && n.right.cardinality > 0 {
 			n.promote()
 		}
-		n.potent = !(!n.leftChild.isActive() && !n.rightChild.isActive())
+		n.potent = !(!n.left.isActive() && !n.right.isActive())
 	}
 }

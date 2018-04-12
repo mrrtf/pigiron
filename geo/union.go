@@ -26,8 +26,8 @@ var (
 	errClosingPolygon = errors.New("closing polygon")
 )
 
-// CreateContour returns the boolean union of the polygons
-func CreateContour(polygons []Polygon) (Contour, error) {
+// NewContour returns the boolean union of the polygons
+func NewContour(polygons []Polygon) (Contour, error) {
 
 	if len(polygons) == 0 {
 		return Contour{}, nil
@@ -59,8 +59,7 @@ func CreateContour(polygons []Polygon) (Contour, error) {
 	// Deduce the horizontal edges from the vertical ones
 	contourHorizontalEdges := verticalsToHorizontals(contourVerticalEdges)
 
-	c, err := finalizeContour(contourVerticalEdges, contourHorizontalEdges)
-	return c, err
+	return finalizeContour(contourVerticalEdges, contourHorizontalEdges)
 }
 
 // sort vertical edges in ascending x order
@@ -69,23 +68,27 @@ func CreateContour(polygons []Polygon) (Contour, error) {
 // Mind your steps ! This sorting is critical to the contour merging algorithm !
 func sortVerticalEdges(edges []verticalEdge) {
 	sort.Slice(edges, func(i, j int) bool {
-		e1 := edges[i]
-		e2 := edges[j]
-		x1 := e1.begin().X
-		x2 := e2.begin().X
-		if EqualFloat(x1, x2) {
-			if isLeftEdge(e1) && isRightEdge(e2) {
+		ei := edges[i]
+		ej := edges[j]
+		xi := ei.begin().X
+		xj := ej.begin().X
+
+		switch {
+		case EqualFloat(xi, xj):
+			if isLeftEdge(ei) && isRightEdge(ej) {
 				return true
 			}
-			if isRightEdge(e1) && isLeftEdge(e2) {
+			if isRightEdge(ei) && isLeftEdge(ej) {
 				return false
 			}
-			y1 := bottom(e1)
-			y2 := bottom(e2)
-			return y1 < y2
-		} else if x1 < x2 {
+			yi := bottom(ei)
+			yj := bottom(ej)
+			return yi < yj
+
+		case xi < xj:
 			return true
-		} else {
+
+		default:
 			return false
 		}
 	})
@@ -102,23 +105,24 @@ func verticalsToHorizontals(verticals []verticalEdge) []horizontalEdge {
 		second int
 	}
 
-	vertices := []vertexWithRef{}
-
+	vertices := make([]vertexWithRef, 0, len(verticals)*2)
 	for i, e := range verticals {
-		vertices = append(vertices, vertexWithRef{e.begin(), i})
-		vertices = append(vertices, vertexWithRef{e.end(), i})
+		vertices = append(vertices,
+			vertexWithRef{e.begin(), i},
+			vertexWithRef{e.end(), i},
+		)
 	}
 
 	sort.Slice(vertices, func(i, j int) bool {
-		lhs := vertices[i].first
-		rhs := vertices[j].first
-		if lhs.Y < rhs.Y {
+		vxi := vertices[i].first
+		vxj := vertices[j].first
+		if vxi.Y < vxj.Y {
 			return true
 		}
-		if rhs.Y < lhs.Y {
+		if vxj.Y < vxi.Y {
 			return false
 		}
-		return lhs.X < rhs.X
+		return vxi.X < vxj.X
 	})
 
 	for i := 0; i < len(vertices)/2; i++ {
@@ -144,9 +148,11 @@ func verticalsToHorizontals(verticals []verticalEdge) []horizontalEdge {
 	return horizontals
 }
 
-func firstFalse(b []bool) int {
-	for i := 0; i < len(b); i++ {
-		if b[i] == false {
+// indexBool returns the index of the first instance of c in b,
+// or -1 if c is not present in s.
+func indexBool(b []bool, c bool) int {
+	for i, v := range b {
+		if v == c {
 			return i
 		}
 	}
@@ -164,26 +170,19 @@ func finalizeContour(v []verticalEdge, h []horizontalEdge) (Contour, error) {
 		}
 	}
 
-	all := []manhattanEdge{}
-
+	all := make([]manhattanEdge, 0, len(v)*2)
 	for i := 0; i < len(v); i++ {
-		all = append(all, v[i])
-		all = append(all, h[i])
+		all = append(all, v[i], h[i])
 	}
 
-	alreadyAdded := make([]bool, len(all))
-	for i := range alreadyAdded {
-		alreadyAdded[i] = false
-	}
-
-	inorder := []int{}
-
-	var nofUsed int
-	var iCurrent int
-
-	startSegment := all[iCurrent]
-
-	contour := Contour{}
+	var (
+		alreadyAdded = make([]bool, len(all))
+		inorder      []int
+		nofUsed      = 0
+		iCurrent     = 0
+		startSegment = all[iCurrent]
+		contour      Contour
+	)
 
 	for nofUsed < len(all) {
 		currentSegment := all[iCurrent]
@@ -203,14 +202,14 @@ func finalizeContour(v []verticalEdge, h []horizontalEdge) (Contour, error) {
 				return nil, errClosingPolygon
 			}
 			contour = append(contour, p)
-			iCurrent = firstFalse(alreadyAdded)
+			iCurrent = indexBool(alreadyAdded, false)
 			inorder = []int{}
 			if iCurrent > 0 {
 				startSegment = all[iCurrent]
 			}
 		}
-		for i := 0; i < len(alreadyAdded); i++ {
-			if i != iCurrent && alreadyAdded[i] == false {
+		for i, added := range alreadyAdded {
+			if i != iCurrent && !added {
 				if EqualVertex(currentSegment.end(), all[i].begin()) {
 					iCurrent = i
 					break
@@ -221,11 +220,11 @@ func finalizeContour(v []verticalEdge, h []horizontalEdge) (Contour, error) {
 	return contour, nil
 }
 
-func getPolygonVerticalEdges(polygon *Polygon) []verticalEdge {
+func getPolygonVerticalEdges(polygon Polygon) []verticalEdge {
 	edges := []verticalEdge{}
-	for i := 0; i < len(*polygon)-1; i++ {
-		current := (*polygon)[i]
-		next := (*polygon)[i+1]
+	for i := 0; i < len(polygon)-1; i++ {
+		current := polygon[i]
+		next := polygon[i+1]
 		if EqualFloat(current.X, next.X) {
 			edges = append(edges, verticalEdge{current.X, current.Y, next.Y})
 		}
@@ -236,7 +235,7 @@ func getPolygonVerticalEdges(polygon *Polygon) []verticalEdge {
 func getPolygonSliceVerticalEdges(polygons []Polygon) []verticalEdge {
 	edges := []verticalEdge{}
 	for _, p := range polygons {
-		e := getPolygonVerticalEdges(&p)
+		e := getPolygonVerticalEdges(p)
 		edges = append(edges, e...)
 	}
 	return edges
@@ -244,9 +243,9 @@ func getPolygonSliceVerticalEdges(polygons []Polygon) []verticalEdge {
 
 func getPolygonSliceYPositions(polygons []Polygon) []float64 {
 	ypos := []float64{}
-	for i := 0; i < len(polygons); i++ {
-		for j := 0; j < len(polygons[i]); j++ {
-			ypos = append(ypos, polygons[i][j].Y)
+	for _, p := range polygons {
+		for _, vtx := range p {
+			ypos = append(ypos, vtx.Y)
 		}
 	}
 	sort.Float64s(ypos)
@@ -313,9 +312,9 @@ func getContourSliceEnvelop(contours []Contour) Contour {
 			polygons = append(polygons, p)
 		}
 	}
-	envelop, err := CreateContour(polygons)
+	envelop, err := NewContour(polygons)
 	if err != nil {
-		log.Fatal("could not create envelop")
+		log.Fatalf("could not create envelop: %v", err)
 		return nil
 	}
 	return envelop

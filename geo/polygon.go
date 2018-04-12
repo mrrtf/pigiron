@@ -11,35 +11,35 @@ import (
 // with a specific orientation
 type Polygon []Vertex
 
-func (p *Polygon) isManhattan() bool {
-	for i := 0; i < len(*p)-1; i++ {
-		if !isVerticalSegment((*p)[i], (*p)[i+1]) &&
-			!isHorizontalSegment((*p)[i], (*p)[i+1]) {
+func (p Polygon) isManhattan() bool {
+	for i := 0; i < len(p)-1; i++ {
+		if !isVerticalSegment(p[i], p[i+1]) &&
+			!isHorizontalSegment(p[i], p[i+1]) {
 			return false
 		}
 	}
 	return true
 }
 
-func (p *Polygon) isCounterClockwiseOriented() bool {
+func (p Polygon) isCounterClockwiseOriented() bool {
 	return p.signedArea() > 0
 }
 
-func (p *Polygon) signedArea() float64 {
+func (p Polygon) signedArea() float64 {
 	/// Compute the signed area of this polygon
 	/// Algorithm from F. Feito, J.C. Torres and A. Urena,
 	/// Comput. & Graphics, Vol. 19, pp. 595-600, 1995
 	area := 0.0
-	for i := 0; i < len(*p)-1; i++ {
-		current := (*p)[i]
-		next := (*p)[i+1]
+	for i := 0; i < len(p)-1; i++ {
+		current := p[i]
+		next := p[i+1]
 		area += current.X*next.Y - next.X*current.Y
 	}
 	return area * 0.5
 }
 
-func (p *Polygon) isClosed() bool {
-	return (*p)[0] == (*p)[len(*p)-1]
+func (p Polygon) isClosed() bool {
+	return p[0] == p[len(p)-1]
 }
 
 // EqualPolygon checks if two polygon are the same
@@ -77,27 +77,25 @@ func closePolygon(p Polygon) (Polygon, error) {
 	return np, nil
 }
 
-func (p *Polygon) String() string {
+func (p Polygon) String() string {
 	s := fmt.Sprintf("POLYGON (")
-	for i := 0; i < len(*p); i++ {
-		s += fmt.Sprintf("%f %f", (*p)[i].X, (*p)[i].Y)
-		if i < len(*p)-1 {
+	for i, v := range p {
+		if i > 0 {
 			s += ","
 		}
+		s += fmt.Sprintf("%f %f", v.X, v.Y)
 	}
 	s += ")"
 	return s
 }
 
-func (p *Polygon) getVertices() []Vertex {
-	size := len(*p)
+func (p Polygon) getVertices() []Vertex {
+	size := len(p)
 	if p.isClosed() {
 		size--
 	}
-	c := []Vertex{}
-	for i := 0; i < size; i++ {
-		c = append(c, (*p)[i])
-	}
+	c := make([]Vertex, size)
+	copy(c, p)
 	return c
 }
 
@@ -112,7 +110,7 @@ func sortVertices(vertices []Vertex) []Vertex {
 	return c
 }
 
-func (p *Polygon) getSortedVertices() []Vertex {
+func (p Polygon) getSortedVertices() []Vertex {
 	return sortVertices(p.getVertices())
 }
 
@@ -124,28 +122,26 @@ func (p *Polygon) getSortedVertices() []Vertex {
 //
 // TODO : look e.g. to http://alienryderflex.com/polygon/ for some possible optimizations
 // (e.g. pre-computation)
-func (p *Polygon) Contains(xp, yp float64) (bool, error) {
+func (p Polygon) Contains(xp, yp float64) (bool, error) {
 	if !p.isClosed() {
 		return false, errors.New("Contains can only work with closed polygons")
 	}
 
-	j := len(*p) - 1
+	pj := p[len(p)-1]
 	oddNodes := false
-	for i := 0; i < len(*p); i++ {
-		if ((*p)[i].Y < yp && (*p)[j].Y >= yp) || ((*p)[j].Y < yp && (*p)[i].Y >= yp) {
-			if (*p)[i].X+
-				(yp-(*p)[i].Y)/((*p)[j].Y-(*p)[i].Y)*((*p)[j].X-(*p)[i].X) <
-				xp {
+	for _, pi := range p {
+		if (pi.Y < yp && pj.Y >= yp) || (pj.Y < yp && pi.Y >= yp) {
+			if pi.X+(yp-pi.Y)/(pj.Y-pi.Y)*(pj.X-pi.X) < xp {
 				oddNodes = !oddNodes
 			}
 		}
-		j = i
+		pj = pi
 	}
 	return oddNodes, nil
 }
 
 // BBox returns the bounding box of the polygon.
-func (p *Polygon) BBox() BBox {
+func (p Polygon) BBox() BBox {
 	return getVerticesBBox(p.getVertices())
 }
 

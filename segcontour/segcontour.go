@@ -21,7 +21,7 @@ func Contour(seg mapping.Segmentation) geo.Contour {
 			polygons = append(polygons, p)
 		}
 	}
-	contour, err := geo.CreateContour(polygons)
+	contour, err := geo.NewContour(polygons)
 	if err != nil {
 		log.Fatalf("could not get contour of segmentation: %v", err)
 	}
@@ -58,7 +58,7 @@ func getDualSampaContours(seg mapping.Segmentation) []geo.Contour {
 	contours := []geo.Contour{}
 	padPolygons := getPadPolygons(seg)
 	for _, p := range padPolygons {
-		c, err := geo.CreateContour(p)
+		c, err := geo.NewContour(p)
 		if err != nil {
 			log.Fatalf("could not create contour: %v", err)
 		}
