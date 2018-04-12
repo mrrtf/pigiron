@@ -2,7 +2,7 @@ package geo
 
 import (
 	"fmt"
-	"os"
+	"io"
 )
 
 // SVGWriter is a utility object to create SVG output
@@ -56,20 +56,20 @@ func (w *SVGWriter) Contour(c *Contour) {
 }
 
 // WriteSVG output
-func (w *SVGWriter) WriteSVG(file *os.File) {
-	s := fmt.Sprintf("<svg width=\"%v\" height=\"%v\" viewBox=\"%v %v %v %v\">",
-		w.Width, w.Height(), w.BBox.Xmin(), w.BBox.Ymin(), w.BBox.Xmax(), w.BBox.Ymax())
-	s += w.buffer
-	s += "</svg>"
-	file.WriteString(s)
+func (w *SVGWriter) WriteSVG(out io.Writer) {
+	fmt.Fprintf(
+		out,
+		"<svg width=\"%v\" height=\"%v\" viewBox=\"%v %v %v %v\">\n",
+		w.Width, w.Height(), w.BBox.Xmin(), w.BBox.Ymin(), w.BBox.Xmax(), w.BBox.Ymax(),
+	)
+	fmt.Fprintf(out, "%s\n</svg>\n", w.buffer)
 }
 
 // WriteHTML output
-func (w *SVGWriter) WriteHTML(file *os.File) {
-	file.WriteString("<html>\n")
-	// w.WriteStyle(file)
-	file.WriteString("<body>\n")
-	w.WriteSVG(file)
-	file.WriteString("</body>\n")
-	file.WriteString("</html>\n")
+func (w *SVGWriter) WriteHTML(out io.Writer) {
+	fmt.Fprintf(out, "<html>\n")
+	// w.WriteStyle(out)
+	fmt.Fprintf(out, "<body>\n")
+	w.WriteSVG(out)
+	fmt.Fprintf(out, "</body>\n</html>\n")
 }
