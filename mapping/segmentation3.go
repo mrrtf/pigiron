@@ -173,26 +173,7 @@ func (seg *segmentation3) fillIndexSlices() {
 }
 
 func (seg *segmentation3) fillGrid(bbox geo.BBox) {
-	/*
-		box, err := getPadBox(ix, iy, pg.x, pg.y, dx, dy)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Printf("box:%s\n", box.String())
-			gx := int(box.Xcenter() / seg.gridSizeX)
-			gy := int(box.Ycenter() / seg.gridSizeY)
-			if seg.grid == nil {
-				seg.grid = [][]cellSlice{}
-			}
-			if seg.grid[gx] == nil {
-				seg.grid[gx] = []cellSlice{}
-			}
-			if seg.grid[gx][gy] == nil {
-				seg.grid[gx][gy] = cellSlice{}
-			}
-			fmt.Printf("padGroupIndex %3d gx %3d gy %3d", padGroupIndex, gx, gy)
-			seg.grid[gx][gy] = append(seg.grid[gx][gy], cell{box, paduid})
-	*/
+	panic("FILL ME")
 }
 
 func (seg *segmentation3) getPadUIDs(dualSampaID int) []int {
