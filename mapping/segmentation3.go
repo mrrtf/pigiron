@@ -4,6 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
+
+	"github.com/aphecetche/pigiron/geo"
 )
 
 var ErrInvalidPadUID = errors.New("invalid pad uid")
@@ -150,7 +153,47 @@ func (seg *segmentation3) FindPadByFEE(dualSampaID, dualSampaChannel int) (int, 
 }
 
 func (seg *segmentation3) FindPadByPosition(x, y float64) (int, error) {
-	return 0, fmt.Errorf("invalid pad")
+	const epsilon = 1e-4
+	xmin := x - epsilon
+	xmax := x + epsilon
+	ymin := y - epsilon
+	ymax := y + epsilon
+	box, err := geo.NewBBox(xmin, ymin, xmax, ymax)
+	if err != nil {
+		return -1, fmt.Errorf("could not create bounding box: %v", err)
+	}
+	var pads []int
+	for paduid := range seg.padGroups {
+		pgrp := seg.padGroup(paduid)
+		psiz := seg.padSizes[pgrp.padSizeID]
+		x, y := seg.padPositionXY(paduid)
+		xsiz := psiz.x * 0.5
+		ysiz := psiz.y * 0.5
+		b, err := geo.NewBBox(x-xsiz, y-ysiz, x+xsiz, y+ysiz)
+		if err != nil {
+			return -1, fmt.Errorf("could not create bounding box: %v", err)
+		}
+		_, err = geo.Intersect(b, box)
+		if err == nil {
+			pads = append(pads, paduid)
+		}
+	}
+
+	dmin := +math.MaxFloat64
+	id := InvalidPadUID
+	for _, paduid := range pads {
+		d := seg.squaredDistance(paduid, x, y)
+		if d < dmin {
+			dmin = d
+			id = paduid
+		}
+	}
+
+	if id == InvalidPadUID {
+		return InvalidPadUID, fmt.Errorf("could not find pad")
+	}
+
+	return id, nil
 }
 
 func (seg *segmentation3) PadPositionX(paduid int) float64 {
