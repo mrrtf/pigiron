@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	seg = mapping.NewSegmentation(100, true)
+// seg = mapping.NewSegmentation(100, true)
 )
 
 func TestNumberOfDetectionElementIs156(t *testing.T) {
@@ -249,6 +249,7 @@ func TestDualSampasWithLessThan64Pads(t *testing.T) {
 }
 
 func TestMustErrorIfDualSampaChannelIsNotBetween0And63(t *testing.T) {
+	seg := mapping.NewSegmentation(100, true)
 	_, err := seg.FindPadByFEE(102, -1)
 	if err == nil {
 		t.Errorf("Should _not_ get a valid pad here")
@@ -260,6 +261,7 @@ func TestMustErrorIfDualSampaChannelIsNotBetween0And63(t *testing.T) {
 }
 
 func TestPositionOfOnePadInDE100Bending(t *testing.T) {
+	seg := mapping.NewSegmentation(100, true)
 	p1, err := seg.FindPadByFEE(76, 9)
 	if err != nil {
 		t.Error("Should get a valid pad")
@@ -269,17 +271,21 @@ func TestPositionOfOnePadInDE100Bending(t *testing.T) {
 		t.Error("Should get a valid pad")
 	}
 	if p1 != p2 {
-		t.Error("Should get the same pads here")
+		t.Errorf("Should get the same pads here p1=%v p2=%v", p1, p2)
+		mapping.PrintPad(os.Stdout, seg, p1)
+		mapping.PrintPad(os.Stdout, seg, p2)
 	}
 }
 
 func TestValidFindPadByFEE(t *testing.T) {
+	seg := mapping.NewSegmentation(100, true)
 	_, err := seg.FindPadByFEE(102, 3)
 	if err != nil {
 		t.Errorf("Should get a valid pad here")
 	}
 }
 func TestInvalidFindPadByFEE(t *testing.T) {
+	seg := mapping.NewSegmentation(100, true)
 	_, err := seg.FindPadByFEE(214, 14)
 	if err == nil {
 		t.Errorf("Should not get a valid pad here")
@@ -319,11 +325,4 @@ func TestNoGapWithinPads(t *testing.T) {
 			}
 		}
 	})
-}
-
-func TestMe(t *testing.T) {
-	seg := mapping.NewSegmentation(706, false)
-	if seg.NofPads() != 42 {
-		t.Fail()
-	}
 }

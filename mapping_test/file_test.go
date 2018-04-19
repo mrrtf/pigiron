@@ -1,6 +1,7 @@
 package mapping_test
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -8,6 +9,7 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/aphecetche/pigiron/geo"
 	"github.com/aphecetche/pigiron/mapping"
 )
 
@@ -145,36 +147,37 @@ func TestDetectionElementChannels(t *testing.T) {
 	}
 }
 
-func testOnePosition(t *testing.T, tp Testposition) {
+func testOnePosition(t *testing.T, tp Testposition) int {
 	seg := mapping.NewSegmentation(int(tp.De), tp.isBendingPlane())
 
 	paduid, err := seg.FindPadByPosition(tp.X, tp.Y)
 
 	if err != nil && err != mapping.ErrInvalidPadUID {
 		t.Fatalf("Unexpected error:%s", err)
+		return 1
 	}
 
 	if seg.IsValid(paduid) && tp.isOutside() {
 		t.Errorf("found a pad at position where there should not be one : %v", tp)
+		return 1
 	}
 
 	if !seg.IsValid(paduid) && !tp.isOutside() {
 		t.Errorf("did not find a pad at position where there should be one : %v", tp)
+		return 1
 	}
-}
 
-func TestDebugPosition(t *testing.T) {
-	tp := Testposition{De: 100,
-		Bending: "true",
-		X:       40.258,
-		Y:       12.699,
-		// X:       40.258104944919107,
-		// Y:       12.6994892333624,
-		Dsid:    38,
-		Dsch:    11,
-		Outside: "false",
+	if seg.IsValid(paduid) && (!geo.EqualFloat(seg.PadPositionX(paduid), tp.PX) ||
+		!geo.EqualFloat(seg.PadPositionY(paduid), tp.PY)) {
+
+		buf := new(bytes.Buffer)
+		mapping.PrintPad(buf, seg, paduid)
+		s := buf.String()
+
+		t.Errorf("\nExpected %v\nGot %v", tp.String(), s)
+		return 1
 	}
-	testOnePosition(t, tp)
+	return 0
 }
 
 func TestPositions(t *testing.T) {
@@ -192,7 +195,8 @@ func TestPositions(t *testing.T) {
 		log.Fatal("could not decode test file")
 	}
 
+	var notok int
 	for _, testpos := range testfile.Testpositions {
-		testOnePosition(t, testpos)
+		notok += testOnePosition(t, testpos)
 	}
 }

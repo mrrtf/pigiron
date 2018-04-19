@@ -24,17 +24,21 @@ type TestRandomPos struct {
 type Testposition struct {
 	De      int64      `json:"de"`
 	Bending BoolString `json:"bending"`
+	Outside BoolString `json:"isoutside,omitempty"`
 	X       float64    `json:"x"`
 	Y       float64    `json:"y"`
-	Outside BoolString `json:"isoutside,omitempty"`
+	PX      float64    `json:"px"`
+	PY      float64    `json:"py"`
+	SX      float64    `json:"sx"`
+	SY      float64    `json:"sy"`
 	Dsid    int64      `json:"dsid"`
 	Dsch    int64      `json:"dsch"`
 }
 
 func (tp Testposition) String() string {
-	return fmt.Sprintf("DE %4d %s X %v Y %v Outside %v fecID %d fecChannel %d",
+	return fmt.Sprintf("DE %4d %s X %v Y %v Outside %v -> fecID %d fecChannel %d PX %v PY %v SX %v SY %v",
 		tp.De, mapping.PlaneAbbreviation(tp.isBendingPlane()), tp.X, tp.Y, tp.Outside == "true",
-		tp.Dsid, tp.Dsch)
+		tp.Dsid, tp.Dsch, tp.PX, tp.PY, tp.SX, tp.SY)
 }
 
 func (tp Testposition) isBendingPlane() bool {

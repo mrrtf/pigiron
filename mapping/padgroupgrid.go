@@ -19,7 +19,9 @@ type padGroupGrid struct {
 
 func (g *padGroupGrid) cellBox(index int) geo.BBox {
 	ix, iy := g.getIndices(index)
-	box, err := geo.NewBBox(float64(ix)*g.gx, float64(iy)*g.gy, float64(ix+1)*g.gx, float64(iy+1)*g.gy)
+	x := g.bbox.Xmin() + float64(ix)*g.gx
+	y := g.bbox.Ymin() + float64(iy)*g.gy
+	box, err := geo.NewBBox(x, y, x+g.gx, y+g.gy)
 	if err != nil {
 		panic(err)
 	}
@@ -27,8 +29,7 @@ func (g *padGroupGrid) cellBox(index int) geo.BBox {
 }
 
 func newPadGroupGrid(bbox geo.BBox) *padGroupGrid {
-
-	gx, gy := 20.0, 20.0
+	gx, gy := 10.0, 10.0
 	eps := 1E-4
 	ix, iy := getGridIndices(bbox.Width()-eps, bbox.Height()-eps, gx, gy)
 	pgg := &padGroupGrid{
@@ -63,7 +64,7 @@ func (g *padGroupGrid) getGridIndices(x, y float64) (int, int, error) {
 }
 
 func (g *padGroupGrid) getIndices(index int) (int, int) {
-	//i := ix + iy*g.nx
+	//index := ix + iy*g.nx
 	iy := index / g.nx
 	ix := index - iy*g.nx
 	return ix, iy
@@ -73,7 +74,7 @@ func (g *padGroupGrid) Print(out io.Writer) {
 	fmt.Fprintf(out, "padGroupGrid: nx %v ny %v %v bins bbox %v\n", g.nx, g.ny, len(g.cells), g.bbox)
 	for i, c := range g.cells {
 		ix, iy := g.getIndices(i)
-		fmt.Fprintf(out, "cell %3d (%2d,%2d) has %5d elements\n", i, ix, iy, len(c))
+		fmt.Fprintf(out, "padGroupGrid: cell %3d (%2d,%2d) has %5d elements\n", i, ix, iy, len(c))
 	}
 }
 

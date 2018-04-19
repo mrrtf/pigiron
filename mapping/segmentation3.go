@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"math"
-	"os"
 
 	"github.com/aphecetche/pigiron/geo"
 )
@@ -28,15 +27,22 @@ type segmentation3 struct {
 	padUID2PadGroupTypeFastIndex []int
 	padUID2PadGroupIndex         []int
 	grid                         padGroupGrid
+	detElemID                    int
 }
 
+func (seg *segmentation3) DetElemID() int {
+	return seg.detElemID
+}
+
+func (seg *segmentation3) setDetElemID(de int) {
+	seg.detElemID = de
+}
 func (seg *segmentation3) NofDualSampas() int {
 	return len(seg.dualSampaIDs)
 }
 
 // NewSegmentation creates a segmentation object for the given detection element plane
 func NewSegmentation(detElemID int, isBendingPlane bool) Segmentation {
-
 	segType, err := detElemID2SegType(detElemID)
 	if err != nil {
 		return nil
@@ -45,11 +51,26 @@ func NewSegmentation(detElemID int, isBendingPlane bool) Segmentation {
 	if builder == nil {
 		return nil
 	}
-	return builder.Build(isBendingPlane)
+	seg := builder.Build(isBendingPlane)
+	seg.setDetElemID(detElemID)
+	return seg
 }
 
 func (seg *segmentation3) Print(out io.Writer) {
-	fmt.Fprintf(out, "segmentation3 has %v dual sampa ids\n", len(seg.dualSampaIDs))
+	fmt.Fprintf(out, "segmentation3 has %v dual sampa ids = %v\n", len(seg.dualSampaIDs), seg.dualSampaIDs)
+	d := make(map[int]int)
+	for i := 0; i < seg.NofDualSampas(); i++ {
+		dsid, err := seg.DualSampaID(i)
+		if err != nil {
+			panic(err)
+		}
+		d[dsid] = 1
+	}
+	fmt.Fprintf(out, "cells=%v\n", seg.grid.cells)
+	for c := range seg.grid.cells {
+		fmt.Fprintf(out, "%v ", seg.padGroups[c].fecID)
+	}
+	fmt.Fprintf(out, "\n")
 	seg.grid.Print(out)
 }
 
@@ -70,7 +91,7 @@ func newSegmentation(segType int, isBendingPlane bool, padGroups []padGroup,
 		seg.dualSampaIDs = append(seg.dualSampaIDs, key)
 	}
 	seg.init()
-	seg.Print(os.Stdout)
+	//seg.Print(os.Stdout)
 	return seg
 }
 
@@ -133,11 +154,11 @@ func (seg *segmentation3) fillIndexSlices() {
 func (seg *segmentation3) padGroupBox(i int) geo.BBox {
 	pg := seg.padGroups[i]
 	pgt := seg.padGroupTypes[pg.padGroupTypeID]
-	dx := seg.padSizes[pg.padSizeID].x * float64(pgt.NofPadsX) / 2.0
-	dy := seg.padSizes[pg.padSizeID].y * float64(pgt.NofPadsY) / 2.0
+	dx := seg.padSizes[pg.padSizeID].x * float64(pgt.NofPadsX)
+	dy := seg.padSizes[pg.padSizeID].y * float64(pgt.NofPadsY)
 	x := pg.x
 	y := pg.y
-	box, err := geo.NewBBox(x-dx, y-dy, x+dx, y+dy)
+	box, err := geo.NewBBox(x, y, x+dx, y+dy)
 	if err != nil {
 		panic(err)
 	}
@@ -146,10 +167,9 @@ func (seg *segmentation3) padGroupBox(i int) geo.BBox {
 
 func (seg *segmentation3) fillGrid(bbox geo.BBox) {
 	// for each cell in the grid we find out which
-	// padgroup has its bounding box intersecting with
-	// the cell bounding box and insert it in that cell
+	// padgroups have their bounding box intersecting with
+	// the cell bounding box and insert them in that cell
 	// if the intersect is not nil
-	// FIXME simplify this code to make it more readable!
 
 	seg.grid = *(newPadGroupGrid(bbox))
 	for index := range seg.grid.cells {
@@ -240,28 +260,35 @@ func (seg *segmentation3) padGroupType(paduid int) *padGroupType {
 }
 
 func (seg *segmentation3) FindPadByPosition(x, y float64) (int, error) {
-	print(seg)
 	pgis := seg.grid.padGroupIndex(x, y)
-	fmt.Printf("# of elements in grid cell : %v\n", len(pgis))
-	for i := range pgis {
-		fmt.Printf("%v,", seg.padGroups[pgis[i]].fecID)
-	}
-	fmt.Println()
 	var pgti []int
 	for pgi := range pgis {
-		pg := seg.padGroups[pgis[pgi]]
+		pgIndex := pgis[pgi]
+		pg := seg.padGroups[pgIndex]
 		pgt := seg.padGroupTypes[pg.padGroupTypeID]
 		lx := x - pg.x
 		ly := y - pg.y
 		ix := int(math.Trunc(lx / seg.padSizes[pg.padSizeID].x))
 		iy := int(math.Trunc(ly / seg.padSizes[pg.padSizeID].y))
-		valid := pgt.areIndicesPossible(ix, iy)
+		valid := pgt.areIndicesPossible(ix, iy) && lx >= 0.0 && ly >= 0.0
 		if valid {
-			fmt.Printf("x %v y %v lx %v ly %v ix %v iy %v fecid %d valid %v\n", x, y, lx, ly, ix, iy, pg.fecID, valid)
-		}
-		valid = valid && lx >= 0.0 && ly >= 0.0
-		if valid {
-			pgti = append(pgti, pgt.idByIndices(ix, iy))
+			// find in padUID2PadGroupTypeFastIndex array, starting at seg.padGroupIndex2PadUIDIndex[pgis[pgi]]
+			// the paduid corresponding to pgt.fastIndex(ix,iy)
+			// FIXME : that is wrong.
+			a := seg.padGroupIndex2PadUIDIndex[pgIndex]
+			asize := len(seg.padGroupIndex2PadUIDIndex) - 1
+			var b int
+			if pgIndex >= asize-1 {
+				b = seg.NofPads() - 1
+			} else {
+				b = seg.padGroupIndex2PadUIDIndex[pgIndex+1]
+			}
+			for j := a; j <= b; j++ {
+				if pgt.fastIndex(ix, iy) == seg.padUID2PadGroupTypeFastIndex[j] {
+					pgti = append(pgti, j)
+					break
+				}
+			}
 		}
 	}
 	if len(pgti) > 1 {

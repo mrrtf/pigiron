@@ -13,7 +13,7 @@ type padGroupType struct {
 }
 
 func validIndices(v []int) []int {
-	valid := []int{}
+	valid := make([]int, 0, len(v))
 	for i := 0; i < len(v); i++ {
 		if v[i] >= 0 {
 			valid = append(valid, v[i])
@@ -24,13 +24,14 @@ func validIndices(v []int) []int {
 
 // NewPadGroupType returns a pad group type
 func NewPadGroupType(nofPadsX int, nofPadsY int, ids []int) padGroupType {
-	pgt := new(padGroupType)
-	pgt.FastID = ids
-	pgt.FastIndices = validIndices(pgt.FastID)
-	pgt.NofPads = len(pgt.FastIndices)
-	pgt.NofPadsX = nofPadsX
-	pgt.NofPadsY = nofPadsY
-	return *pgt
+	fast := validIndices(ids)
+	return padGroupType{
+		FastID:      ids,
+		FastIndices: fast,
+		NofPads:     len(fast),
+		NofPadsX:    nofPadsX,
+		NofPadsY:    nofPadsY,
+	}
 }
 
 func (pgt *padGroupType) String() string {
