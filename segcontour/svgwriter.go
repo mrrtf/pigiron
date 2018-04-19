@@ -36,7 +36,7 @@ func SVGSegmentation(seg mapping.Segmentation, w *geo.SVGWriter, show ShowFlags)
 		svgDetectionElements(w, &deContour)
 	}
 	if show.pads {
-		dualSampaPads := getPadPolygons(seg)
+		dualSampaPads := getAllDualSampaPadPolygons(seg)
 		svgDualSampaPads(w, &dualSampaPads)
 	}
 }

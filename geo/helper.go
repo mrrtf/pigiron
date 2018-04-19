@@ -12,6 +12,11 @@ func IsStrictlyBelowFloat(a, b float64) bool {
 	return (a < b) && !EqualFloat(a, b)
 }
 
+// IsInRangeFloat64 returns true if a<=x<=b
+func IsInRangeFloat64(x, a, b float64) bool {
+	return x >= a && x <= b
+}
+
 // EqualFloat64Slice checks if two float64 slices are equal
 // (same elements in exact same order)
 func EqualFloat64Slice(a, b []float64) bool {
