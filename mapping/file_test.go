@@ -147,24 +147,20 @@ func TestDetectionElementChannels(t *testing.T) {
 	}
 }
 
-func testOnePosition(t *testing.T, tp Testposition) int {
-	seg := mapping.NewSegmentation(int(tp.De), tp.isBendingPlane())
+func testOnePosition(seg mapping.Segmentation, tp Testposition) error {
 
 	paduid, err := seg.FindPadByPosition(tp.X, tp.Y)
 
 	if err != nil && err != mapping.ErrInvalidPadUID {
-		t.Fatalf("Unexpected error:%s", err)
-		return 1
+		return fmt.Errorf("Unexpected error:%s", err)
 	}
 
 	if seg.IsValid(paduid) && tp.isOutside() {
-		t.Errorf("found a pad at position where there should not be one : %v", tp)
-		return 1
+		return fmt.Errorf("found a pad at position where there should not be one : %v", tp)
 	}
 
 	if !seg.IsValid(paduid) && !tp.isOutside() {
-		t.Errorf("did not find a pad at position where there should be one : %v", tp)
-		return 1
+		return fmt.Errorf("did not find a pad at position where there should be one : %v", tp)
 	}
 
 	if seg.IsValid(paduid) && (!geo.EqualFloat(seg.PadPositionX(paduid), tp.PX) ||
@@ -174,10 +170,9 @@ func testOnePosition(t *testing.T, tp Testposition) int {
 		mapping.PrintPad(buf, seg, paduid)
 		s := buf.String()
 
-		t.Errorf("\nExpected %v\nGot %v", tp.String(), s)
-		return 1
+		return fmt.Errorf("\nExpected %v\nGot %v", tp.String(), s)
 	}
-	return 0
+	return nil
 }
 
 func TestPositions(t *testing.T) {
@@ -196,7 +191,12 @@ func TestPositions(t *testing.T) {
 	}
 
 	var notok int
-	for _, testpos := range testfile.Testpositions {
-		notok += testOnePosition(t, testpos)
+	for _, tp := range testfile.Testpositions {
+		seg := mapping.NewSegmentation(int(tp.De), tp.isBendingPlane())
+		err = testOnePosition(seg, tp)
+		if err != nil {
+			t.Log(err)
+			notok++
+		}
 	}
 }
