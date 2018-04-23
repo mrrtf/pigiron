@@ -106,31 +106,8 @@ func (seg *segmentation3) init() {
 	// within the correct grid cellSlice
 
 	seg.fillIndexSlices()
-	bbox := seg.computeBbox()
+	bbox := ComputeBbox(seg)
 	seg.fillGrid(bbox)
-}
-
-func (seg *segmentation3) computeBbox() geo.BBox {
-	xmin := math.MaxFloat64
-	ymin := xmin
-	xmax := -xmin
-	ymax := -ymin
-	for paduid := range seg.padUID2PadGroupTypeFastIndex {
-		x := seg.PadPositionX(paduid)
-		y := seg.PadPositionY(paduid)
-		dx := seg.PadSizeX(paduid) / 2
-		dy := seg.PadSizeY(paduid) / 2
-		xmin = math.Min(xmin, x-dx)
-		xmax = math.Max(xmax, x+dx)
-		ymin = math.Min(ymin, y-dy)
-		ymax = math.Max(ymax, y+dy)
-	}
-
-	bbox, err := geo.NewBBox(xmin, ymin, xmax, ymax)
-	if err != nil {
-		panic(err)
-	}
-	return bbox
 }
 
 func (seg *segmentation3) fillIndexSlices() {
@@ -185,7 +162,7 @@ func (seg *segmentation3) fillGrid(bbox geo.BBox) {
 }
 
 func (seg *segmentation3) getPadUIDs(dualSampaID int) []int {
-	pi := []int{}
+	pi := make([]int, 0, 64)
 	for pgi, pg := range seg.padGroups {
 		if pg.fecID == dualSampaID {
 			pgt := seg.padGroupTypes[pg.padGroupTypeID]
@@ -279,7 +256,7 @@ func (seg *segmentation3) FindPadByPosition(x, y float64) (int, error) {
 			asize := len(seg.padGroupIndex2PadUIDIndex) - 1
 			var b int
 			if pgIndex >= asize-1 {
-				b = seg.NofPads() - 1
+				b = len(seg.padUID2PadGroupIndex) - 1
 			} else {
 				b = seg.padGroupIndex2PadUIDIndex[pgIndex+1]
 			}
@@ -292,7 +269,18 @@ func (seg *segmentation3) FindPadByPosition(x, y float64) (int, error) {
 		}
 	}
 	if len(pgti) > 1 {
-		log.Fatalf("more than one match ! %v", pgti)
+		var imin int
+		var dmin = math.MaxFloat64
+		for i := 0; i < len(pgti); i++ {
+			px := seg.PadPositionX(pgti[i])
+			py := seg.PadPositionY(pgti[i])
+			d := (x-px)*(x-px) + (y-py)*(y-py)
+			if d < dmin {
+				imin = i
+				dmin = d
+			}
+		}
+		return pgti[imin], nil
 	}
 	if len(pgti) > 0 {
 		return pgti[0], nil
@@ -312,4 +300,10 @@ func (seg *segmentation3) PadPositionY(paduid int) float64 {
 	pgt := seg.padGroupType(paduid)
 	return pg.y + (float64(pgt.iy(seg.padUID2PadGroupTypeFastIndex[paduid]))+0.5)*
 		seg.padSizes[pg.padSizeID].y
+}
+
+func (seg *segmentation3) ForEachPad(padHandler func(paduid int)) {
+	for p := 0; p < len(seg.padUID2PadGroupIndex); p++ {
+		padHandler(p)
+	}
 }

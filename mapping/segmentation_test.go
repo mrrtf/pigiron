@@ -326,3 +326,18 @@ func TestNoGapWithinPads(t *testing.T) {
 		}
 	})
 }
+
+func TestForEachPad(t *testing.T) {
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
+		for _, b := range []bool{true, false} {
+			seg := mapping.NewSegmentation(detElemID, b)
+			npads := 0
+			seg.ForEachPad(func(paduid int) {
+				npads++
+			})
+			if npads != seg.NofPads() {
+				t.Errorf("DE %v isBending %v : expected %v pads but got %v from ForEachPad loop", detElemID, b, seg.NofPads(), npads)
+			}
+		}
+	})
+}

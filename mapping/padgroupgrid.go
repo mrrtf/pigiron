@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"math"
 
 	"github.com/aphecetche/pigiron/geo"
@@ -87,6 +88,10 @@ func (g *padGroupGrid) getIndex(x, y float64) int {
 	if i < 0 {
 		panic(fmt.Sprintf("x %v y %v grid=%v", x, y, g))
 	}
+	if i >= len(g.cells) {
+		return invalidIndex
+	}
+
 	return i
 }
 
@@ -94,6 +99,9 @@ func (g *padGroupGrid) padGroupIndex(x, y float64) []int {
 	i := g.getIndex(x, y)
 	if i == invalidIndex {
 		return nil
+	}
+	if i < 0 || i >= len(g.cells) {
+		log.Fatalf("i out of bounds %d vs %d", i, len(g.cells))
 	}
 	return g.cells[i]
 }

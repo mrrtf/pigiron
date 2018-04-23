@@ -3,6 +3,9 @@ package mapping
 import (
 	"fmt"
 	"io"
+	"math"
+
+	"github.com/aphecetche/pigiron/geo"
 )
 
 // Segmentation is the main entry point to the MCH mapping
@@ -14,6 +17,7 @@ type Segmentation interface {
 	IsValid(padid int) bool
 	FindPadByFEE(dualSampaID, dualSampaChannel int) (int, error)
 	FindPadByPosition(x, y float64) (int, error)
+	ForEachPad(padHandler func(paduid int))
 	ForEachPadInDualSampa(dualSampaID int, padHandler func(paduid int))
 	PadDualSampaChannel(paduid int) int
 	PadDualSampaID(paduid int) int
@@ -71,4 +75,26 @@ func PrintPad(out io.Writer, seg Segmentation, paduid int) {
 		seg.PadSizeX(paduid),
 		seg.PadSizeY(paduid))
 
+}
+
+func ComputeBbox(seg Segmentation) geo.BBox {
+	xmin := math.MaxFloat64
+	ymin := xmin
+	xmax := -xmin
+	ymax := -ymin
+	seg.ForEachPad(func(paduid int) {
+		x := seg.PadPositionX(paduid)
+		y := seg.PadPositionY(paduid)
+		dx := seg.PadSizeX(paduid) / 2
+		dy := seg.PadSizeY(paduid) / 2
+		xmin = math.Min(xmin, x-dx)
+		xmax = math.Max(xmax, x+dx)
+		ymin = math.Min(ymin, y-dy)
+		ymax = math.Max(ymax, y+dy)
+	})
+	bbox, err := geo.NewBBox(xmin, ymin, xmax, ymax)
+	if err != nil {
+		panic(err)
+	}
+	return bbox
 }
