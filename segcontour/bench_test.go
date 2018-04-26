@@ -1,17 +1,14 @@
 package segcontour_test
 
 import (
-	"fmt"
 	"strconv"
 	"testing"
 
-	"github.com/aphecetche/pigiron/segcontour"
-
 	"github.com/aphecetche/pigiron/mapping"
+	"github.com/aphecetche/pigiron/segcontour"
 )
 
 func getSegs() map[int]mapping.Segmentation {
-	fmt.Println("getSegs")
 	segs := make(map[int]mapping.Segmentation)
 	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
 		segs[detElemID] = mapping.NewSegmentation(detElemID, true)
