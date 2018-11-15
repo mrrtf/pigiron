@@ -71,15 +71,34 @@ type DC struct {
 	C int
 }
 
+var (
+	detElemIds []int
+)
+
+func init() {
+
+	detElemIds = []int{100, 300, 501, 1025}
+}
+
 func BenchmarkByFEE(b *testing.B) {
-	dc := []DC{}
-	seg := mapping.NewSegmentation(100, true)
-	seg.ForEachPad(func(paduid int) {
-		dc = append(dc, DC{D: seg.PadDualSampaID(paduid), C: seg.PadDualSampaChannel(paduid)})
-	})
-	for i := 0; i < b.N; i++ {
-		for _, pad := range dc {
-			seg.FindPadByFEE(pad.D, pad.C)
+	for _, deid := range detElemIds {
+		for _, isBendingPlane := range []bool{true, false} {
+			planeName := "B"
+			if isBendingPlane == false {
+				planeName = "NB"
+			}
+			seg := mapping.NewSegmentation(deid, isBendingPlane)
+			var dcs []DC
+			seg.ForEachPad(func(paduid int) {
+				dcs = append(dcs, DC{D: seg.PadDualSampaID(paduid), C: seg.PadDualSampaChannel(paduid)})
+			})
+			b.Run(strconv.Itoa(deid)+planeName, func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					for _, pad := range dcs {
+						seg.FindPadByFEE(pad.D, pad.C)
+					}
+				}
+			})
 		}
 	}
 }
