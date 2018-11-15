@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"math"
+	"sort"
 
 	"github.com/aphecetche/pigiron/geo"
 )
@@ -22,7 +23,8 @@ type segmentation3 struct {
 	padGroups                    []padGroup
 	padGroupTypes                []padGroupType
 	padSizes                     []padSize
-	dualSampaIDs                 []int
+	dualSampaIDs                 sort.IntSlice
+	dualSampaPadUIDs             [][]int
 	padGroupIndex2PadUIDIndex    []int
 	padUID2PadGroupTypeFastIndex []int
 	padUID2PadGroupIndex         []int
@@ -87,11 +89,17 @@ func newSegmentation(segType int, isBendingPlane bool, padGroups []padGroup,
 	for i := range padGroups {
 		uniq[padGroups[i].fecID] = empty
 	}
+	dsids := make([]int, 0, len(uniq))
 	for key := range uniq {
-		seg.dualSampaIDs = append(seg.dualSampaIDs, key)
+		dsids = append(dsids, key)
 	}
 	seg.init()
-	//seg.Print(os.Stdout)
+	seg.dualSampaIDs = sort.IntSlice(dsids[0:])
+	seg.dualSampaIDs.Sort()
+	seg.dualSampaPadUIDs = make([][]int, len(seg.dualSampaIDs))
+	for i, dsid := range seg.dualSampaIDs {
+		seg.dualSampaPadUIDs[i] = append(seg.dualSampaPadUIDs[i], seg.createPadUIDs(dsid)...)
+	}
 	return seg
 }
 
@@ -161,7 +169,7 @@ func (seg *segmentation3) fillGrid(bbox geo.BBox) {
 	}
 }
 
-func (seg *segmentation3) getPadUIDs(dualSampaID int) []int {
+func (seg *segmentation3) createPadUIDs(dualSampaID int) []int {
 	pi := make([]int, 0, 64)
 	for pgi, pg := range seg.padGroups {
 		if pg.fecID == dualSampaID {
@@ -173,6 +181,19 @@ func (seg *segmentation3) getPadUIDs(dualSampaID int) []int {
 		}
 	}
 	return pi
+}
+
+func (seg *segmentation3) getDualSampaIndex(dualSampaID int) int {
+	i := seg.dualSampaIDs.Search(dualSampaID)
+	if i < len(seg.dualSampaIDs) {
+		return i
+	}
+	panic("should always find our ids within this internal code!")
+}
+
+func (seg *segmentation3) getPadUIDs(dualSampaID int) []int {
+	dsIndex := seg.getDualSampaIndex(dualSampaID)
+	return seg.dualSampaPadUIDs[dsIndex]
 }
 
 func (seg *segmentation3) DualSampaID(dualSampaIndex int) (int, error) {
@@ -219,6 +240,7 @@ func (seg *segmentation3) PadSizeY(paduid int) float64 {
 func (seg *segmentation3) IsValid(paduid int) bool {
 	return paduid != InvalidPadUID
 }
+
 func (seg *segmentation3) FindPadByFEE(dualSampaID, dualSampaChannel int) (int, error) {
 	for _, paduid := range seg.getPadUIDs(dualSampaID) {
 		if seg.padGroupType(paduid).idByFastIndex(seg.padUID2PadGroupTypeFastIndex[paduid]) == dualSampaChannel {

@@ -65,3 +65,37 @@ func BenchmarkPositions(b *testing.B) {
 		}
 	})
 }
+
+	// seg.ForEachPad(func(paduid int) {
+	// 	x := seg.PadPositionX(paduid)
+	// 	y := seg.PadPositionY(paduid)
+	// 	dx := seg.PadSizeX(paduid) / 2
+	// 	dy := seg.PadSizeY(paduid) / 2
+	// 	xmin = math.Min(xmin, x-dx)
+	// 	xmax = math.Max(xmax, x+dx)
+	// 	ymin = math.Min(ymin, y-dy)
+	// 	ymax = math.Max(ymax, y+dy)
+	// })
+
+	type DC struct {
+		D int
+		C int
+	}
+func BenchmarkByFEE(b *testing.B) {
+
+    dc := []DC{}
+
+    seg := mapping.NewSegmentation(100,true)
+
+	seg.ForEachPad(func(paduid int){
+		dc = append(dc,DC{D:seg.PadDualSampaID(paduid),C:seg.PadDualSampaChannel(paduid)})
+	})
+
+	for i := 0; i < b.N; i++ {
+		for _,pad := range dc {
+			seg.FindPadByFEE(pad.D,pad.C)
+	}
+	}
+
+}
+
