@@ -119,7 +119,6 @@ func TestDetectionElementChannels(t *testing.T) {
 		t.Skip("skipping test in short mode")
 	}
 	path := filepath.Join("testdata", "test_channel_list.json")
-	fmt.Print(path)
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Fatal("could not read test file")
