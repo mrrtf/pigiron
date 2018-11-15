@@ -6,7 +6,7 @@ import (
 	"io"
 	"log"
 	"math"
-	"sort"
+	"strconv"
 
 	"github.com/aphecetche/pigiron/geo"
 )
@@ -23,7 +23,8 @@ type segmentation3 struct {
 	padGroups                    []padGroup
 	padGroupTypes                []padGroupType
 	padSizes                     []padSize
-	dualSampaIDs                 sort.IntSlice
+	dualSampaIDs                 []int
+	dualSampaIDmap               map[int]int
 	dualSampaPadUIDs             [][]int
 	padGroupIndex2PadUIDIndex    []int
 	padUID2PadGroupTypeFastIndex []int
@@ -60,14 +61,6 @@ func NewSegmentation(detElemID int, isBendingPlane bool) Segmentation {
 
 func (seg *segmentation3) Print(out io.Writer) {
 	fmt.Fprintf(out, "segmentation3 has %v dual sampa ids = %v\n", len(seg.dualSampaIDs), seg.dualSampaIDs)
-	d := make(map[int]int)
-	for i := 0; i < seg.NofDualSampas(); i++ {
-		dsid, err := seg.DualSampaID(i)
-		if err != nil {
-			panic(err)
-		}
-		d[dsid] = 1
-	}
 	fmt.Fprintf(out, "cells=%v\n", seg.grid.cells)
 	for c := range seg.grid.cells {
 		fmt.Fprintf(out, "%v ", seg.padGroups[c].fecID)
@@ -89,16 +82,16 @@ func newSegmentation(segType int, isBendingPlane bool, padGroups []padGroup,
 	for i := range padGroups {
 		uniq[padGroups[i].fecID] = empty
 	}
-	dsids := make([]int, 0, len(uniq))
-	for key := range uniq {
-		dsids = append(dsids, key)
-	}
 	seg.init()
-	seg.dualSampaIDs = sort.IntSlice(dsids[0:])
-	seg.dualSampaIDs.Sort()
-	seg.dualSampaPadUIDs = make([][]int, len(seg.dualSampaIDs))
-	for i, dsid := range seg.dualSampaIDs {
+	seg.dualSampaPadUIDs = make([][]int, len(uniq))
+	seg.dualSampaIDmap = make(map[int]int, len(uniq))
+	seg.dualSampaIDs = make([]int, len(uniq))
+	i := 0
+	for dsid := range uniq {
+		seg.dualSampaIDs[i] = dsid
+		seg.dualSampaIDmap[dsid] = i
 		seg.dualSampaPadUIDs[i] = append(seg.dualSampaPadUIDs[i], seg.createPadUIDs(dsid)...)
+		i++
 	}
 	return seg
 }
@@ -184,11 +177,11 @@ func (seg *segmentation3) createPadUIDs(dualSampaID int) []int {
 }
 
 func (seg *segmentation3) getDualSampaIndex(dualSampaID int) int {
-	i := seg.dualSampaIDs.Search(dualSampaID)
-	if i < len(seg.dualSampaIDs) {
-		return i
+	i, ok := seg.dualSampaIDmap[dualSampaID]
+	if ok == false {
+		panic("should always find our ids within this internal code! dualSampaID " + strconv.Itoa(dualSampaID) + " not found")
 	}
-	panic("should always find our ids within this internal code!")
+	return i
 }
 
 func (seg *segmentation3) getPadUIDs(dualSampaID int) []int {
