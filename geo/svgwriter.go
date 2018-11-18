@@ -48,11 +48,25 @@ func (w *SVGWriter) Polygon(p *Polygon) {
 	w.buffer += "\"/>\n"
 }
 
+func (w *SVGWriter) Circle(x, y, radius float64) {
+	w.buffer += fmt.Sprintf("<circle cx=\"%f\" cy=\"%f\" r=\"%f\" />", x, y, radius)
+}
+
 // Contour adds one polygon object per sub-contour
 func (w *SVGWriter) Contour(c *Contour) {
 	for _, p := range *c {
 		w.Polygon(&p)
 	}
+}
+
+// Style add some style
+func (w *SVGWriter) Style(style string) {
+	w.styleBuffer += style
+}
+
+// WriteStyle outputs <style> options
+func (w *SVGWriter) WriteStyle(out io.Writer) {
+	fmt.Fprintf(out, "<style>%s</style>\n", w.styleBuffer)
 }
 
 // WriteSVG output
@@ -68,7 +82,7 @@ func (w *SVGWriter) WriteSVG(out io.Writer) {
 // WriteHTML output
 func (w *SVGWriter) WriteHTML(out io.Writer) {
 	fmt.Fprintf(out, "<html>\n")
-	// w.WriteStyle(out)
+	w.WriteStyle(out)
 	fmt.Fprintf(out, "<body>\n")
 	w.WriteSVG(out)
 	fmt.Fprintf(out, "</body>\n</html>\n")
