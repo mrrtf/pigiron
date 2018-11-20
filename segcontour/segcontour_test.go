@@ -1,6 +1,7 @@
 package segcontour
 
 import (
+	"os"
 	"testing"
 
 	"github.com/aphecetche/pigiron/geo"
@@ -71,4 +72,44 @@ func TestSegmentationBBox(t *testing.T) {
 				mapping.PlaneAbbreviation(test.isBending), bbox.String(), test.want.String())
 		}
 	}
+}
+
+type padSize struct {
+	x, y float64
+}
+
+func TestPadSizes(t *testing.T) {
+
+	padsizes := make(map[padSize]int)
+
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
+		for _, isBending := range []bool{true, false} {
+			seg := mapping.NewSegmentation(detElemID, isBending)
+			seg.ForEachPad(func(paduid int) {
+				ps := &padSize{seg.PadSizeX(paduid), seg.PadSizeY(paduid)}
+				padsizes[*ps]++
+			})
+		}
+	})
+
+	if len(padsizes) != 18 {
+		t.Errorf("wanted 18 padsizes - got %d", len(padsizes))
+	}
+
+	b, _ := geo.NewBBox(0, 0, 12, 12)
+	svg := geo.SVGWriter{Width: 1024, BBox: b}
+
+	svg.Style(`
+rect {
+stroke: red;
+stroke-width: 0.02;
+fill: none;
+}`)
+
+	for ps := range padsizes {
+		svg.Rect(1.0, 1.0, ps.x, ps.y)
+	}
+
+	f, _ := os.Create("padsizes.html")
+	svg.WriteHTML(f)
 }
