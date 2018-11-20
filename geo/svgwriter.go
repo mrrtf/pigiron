@@ -31,7 +31,7 @@ func (w *SVGWriter) GroupEnd() {
 
 // Rect adds a rectangle object
 func (w *SVGWriter) Rect(x, y, width, height float64) {
-	w.buffer += fmt.Sprintf("<ref x=\"%v\" y=\"%v\" width=\"%v\" height=\"%v\" /> ", x, y, width, height)
+	w.buffer += fmt.Sprintf("<rect x=\"%v\" y=\"%v\" width=\"%v\" height=\"%v\" /> ", x, y, width, height)
 }
 
 // Text adds a text object
