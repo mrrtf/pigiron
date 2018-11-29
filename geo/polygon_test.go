@@ -204,3 +204,21 @@ func TestPointOutsidePolygonDistanceToPolygonClosestToOneSegmentEndPoint(t *test
 	squareDistanceTest(t, testPolygon2, Vertex{-1, -14}, 17)
 	squareDistanceTest(t, testPolygon2, Vertex{7, -14}, 20)
 }
+
+func TestPolygonTranslate(t *testing.T) {
+	expected := Polygon{
+		{-0.0, 0.0},
+		{-0.0, -12.0},
+		{5.0, -12.0},
+		{5.0, -20.0},
+		{10.0, -20.0},
+		{10.0, 00.0},
+		{0.0, 00.0}}
+
+	tr := testPolygon2.Translate(5, -10)
+
+	if !EqualPolygon(expected, tr) {
+		t.Errorf("Translated polygon not as expected")
+		t.Errorf("Want %s - Got %s", expected.String(), tr.String())
+	}
+}

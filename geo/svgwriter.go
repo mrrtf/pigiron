@@ -10,8 +10,24 @@ import (
 type SVGWriter struct {
 	Width int
 	BBox
+	AtOrigin    bool
 	buffer      string
 	styleBuffer string
+	x0          float64
+	y0          float64
+}
+
+func NewSVGWriter(width int, b BBox, atOrigin bool) *SVGWriter {
+	var x0, y0 float64
+	if atOrigin {
+		x0 = b.Xmin()
+		y0 = b.Ymin()
+	}
+	b0, err := NewBBox(b.Xmin()-x0, b.Ymin()-y0, b.Xmax()-x0, b.Ymax()-y0)
+	if err != nil {
+		panic(err)
+	}
+	return &SVGWriter{Width: width, BBox: b0, x0: x0, y0: y0}
 }
 
 // Height returns the height of this SVG object
@@ -31,25 +47,36 @@ func (w *SVGWriter) GroupEnd() {
 
 // Rect adds a rectangle object
 func (w *SVGWriter) Rect(x, y, width, height float64) {
-	w.buffer += fmt.Sprintf("<rect x=\"%v\" y=\"%v\" width=\"%v\" height=\"%v\" /> ", x, y, width, height)
+	w.buffer += fmt.Sprintf("<rect x=\"%v\" y=\"%v\" width=\"%v\" height=\"%v\" /> ", x-w.x0, y-w.y0, width, height)
 }
 
 // Text adds a text object
 func (w *SVGWriter) Text(text string, x, y float64) {
-	w.buffer += fmt.Sprintf("<text x=\"%v\" y=\"%f\">%s</text>", x, y, text)
+	w.buffer += fmt.Sprintf("<text x=\"%v\" y=\"%f\">%s</text>", x-w.x0, y-w.y0, text)
+}
+
+func (w *SVGWriter) addPolygonPoint(p *Polygon) {
+	for _, v := range p.getVertices() {
+		w.buffer += fmt.Sprintf("%v,%v ", v.X-w.x0, v.Y-w.y0)
+	}
 }
 
 // Polygon adds a polygon object
 func (w *SVGWriter) Polygon(p *Polygon) {
 	w.buffer += fmt.Sprintf("<polygon points=\"")
-	for _, v := range p.getVertices() {
-		w.buffer += fmt.Sprintf("%v,%v ", v.X, v.Y)
-	}
+	w.addPolygonPoint(p)
+	w.buffer += "\"/>\n"
+}
+
+// PolygonWithClass adds a polygon object with a given CSS class
+func (w *SVGWriter) PolygonWithClass(p *Polygon, class string) {
+	w.buffer += fmt.Sprintf("<polygon class=\"%s\" points=\"", class)
+	w.addPolygonPoint(p)
 	w.buffer += "\"/>\n"
 }
 
 func (w *SVGWriter) Circle(x, y, radius float64) {
-	w.buffer += fmt.Sprintf("<circle cx=\"%f\" cy=\"%f\" r=\"%f\" />", x, y, radius)
+	w.buffer += fmt.Sprintf("<circle cx=\"%f\" cy=\"%f\" r=\"%f\" />", x-w.x0, y-w.y0, radius)
 }
 
 // Contour adds one polygon object per sub-contour

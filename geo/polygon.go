@@ -145,6 +145,25 @@ func (p Polygon) BBox() BBox {
 	return getVerticesBBox(p.getVertices())
 }
 
+// Translate returns a new polygon shifted by the given offset
+func (p Polygon) Translate(x, y float64) Polygon {
+	var t Polygon
+	for i := 0; i < len(p); i++ {
+		v := Vertex{p[i].X + x, p[i].Y + y}
+		t = append(t, v)
+	}
+	return t
+}
+
+func Translate(src []Polygon, x, y float64) []Polygon {
+	var dest []Polygon
+	for i := 0; i < len(src); i++ {
+		p := src[i]
+		dest = append(dest, p.Translate(x, y))
+	}
+	return dest
+}
+
 // SquaredDistancePointToPolygon return the square of the distance
 // between a point and a polygon
 func SquaredDistancePointToPolygon(point Vertex, p Polygon) float64 {
