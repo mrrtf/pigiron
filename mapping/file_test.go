@@ -1,5 +1,7 @@
 package mapping_test
 
+// All the tests that require an input file
+
 import (
 	"bytes"
 	"fmt"
@@ -7,6 +9,7 @@ import (
 	"log"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"testing"
 
 	"github.com/aphecetche/pigiron/geo"
@@ -174,6 +177,9 @@ func testOnePosition(seg mapping.Segmentation, tp Testposition) error {
 	return nil
 }
 
+// TestPositions reads in test position from an external
+// json file and checks that the FindPadByPosition function
+// agrees with the results in that file.
 func TestPositions(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode")
@@ -197,5 +203,110 @@ func TestPositions(t *testing.T) {
 			t.Log(err)
 			notok++
 		}
+	}
+}
+
+// TestNeighbours reads in an external json file containing
+// for each pad the list of its neighbours and checks that
+// the GetNeighbours function agrees with the results in
+// that file
+func TestNeighbours(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
+	}
+	ntest := 0
+	nfail := 0
+	for _, deid := range []int{100, 300, 500, 501, 502, 503, 504, 600, 601, 602, 700, 701, 702, 703, 704, 705, 706, 902, 903, 904, 905} {
+		testNeighboursOneDE(t, deid, &ntest, &nfail)
+	}
+	fmt.Println("tested:", ntest, "failed:", nfail)
+}
+
+type dsIDCh struct {
+	id int
+	ch int
+}
+
+func jsonGetNeighbours(tnei TestNeighbourStruct, deid int, dsid int, dsch int) []dsIDCh {
+	var neighbours []dsIDCh
+	for _, nei := range tnei.Neighbours {
+		if nei.Deid != deid {
+			continue
+		}
+		for _, ds := range nei.Ds {
+			if ds.ID != dsid {
+				continue
+			}
+			for _, channels := range ds.Channels {
+				if channels.Ch != dsch {
+					continue
+				}
+				for _, n := range channels.Nei {
+					neighbours = append(neighbours, dsIDCh{n.Dsid, n.Dsch})
+				}
+			}
+		}
+	}
+	return neighbours
+}
+
+func compareNeighbours(nref []dsIDCh, n []int, seg mapping.Segmentation) error {
+	if len(nref) != len(n) {
+		return fmt.Errorf("Want %d neighbours - Got %d", len(nref), len(n))
+	}
+
+	var n2 []int
+	// convert dsIDCh to paduids
+	for _, dsch := range nref {
+		paduid, err := seg.FindPadByFEE(dsch.id, dsch.ch)
+		if err != nil {
+			return fmt.Errorf("Got an invalid pad for DS %4d CH %2d", dsch.id, dsch.ch)
+		}
+		n2 = append(n2, paduid)
+	}
+
+	sort.Ints(n2)
+	sort.Ints(n)
+
+	for i := 0; i < len(n); i++ {
+		if n[i] != n2[i] {
+			return fmt.Errorf("Wanted %d - Got %d", n2[i], n[i])
+		}
+	}
+	return nil
+}
+
+func testNeighboursOneDE(t *testing.T, deid int, ntest, nfail *int) {
+	path := filepath.Join("testdata", "test_neighbours_list_"+strconv.Itoa(deid)+".json")
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+
+	tnei, err := UnmarshalTestNeighbours(data)
+	if err != nil {
+		log.Fatal("could not decode test file")
+	}
+
+	for _, bending := range []bool{true, false} {
+		seg := mapping.NewSegmentation(deid, bending)
+		seg.ForEachPad(func(paduid int) {
+			*ntest++
+			dsid := seg.PadDualSampaID(paduid)
+			dsch := seg.PadDualSampaChannel(paduid)
+			nref := jsonGetNeighbours(tnei, deid, dsid, dsch)
+			n := seg.GetNeighbours(paduid)
+			err := compareNeighbours(nref, n, seg)
+			if err != nil {
+				t.Errorf("Problem for DE %4d DS %4d CH %2d : %s", deid, dsid, dsch, err.Error())
+				t.Errorf("%v", nref)
+				msg := ">"
+				for _, paduid := range n {
+					msg += fmt.Sprintf("(%v %v) ", seg.PadDualSampaID(paduid), seg.PadDualSampaChannel(paduid))
+				}
+				t.Errorf(msg)
+				*nfail++
+			}
+		})
 	}
 }
