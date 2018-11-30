@@ -25,6 +25,7 @@ type Segmentation interface {
 	PadPositionY(paduid int) float64
 	PadSizeX(paduid int) float64
 	PadSizeY(paduid int) float64
+	GetNeighbours(paduid int) []int
 	setDetElemID(de int)
 }
 

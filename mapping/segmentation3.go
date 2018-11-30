@@ -322,3 +322,52 @@ func (seg *segmentation3) ForEachPad(padHandler func(paduid int)) {
 		padHandler(p)
 	}
 }
+
+// GetNeighbours returns the list of neighbours of given pad.
+// paduid is not checked here so it is assumed to be correct.
+//
+// Algorithm asserts pads at test positions (Left,Top,Right,Bottom)
+// relative to pad's center (O) where we'll try to get a neighbouring pad,
+// by getting a little bit outside the pad itself.
+// The pad density can only decrease when going from left to right except
+// for round slates where it is the opposite.
+// The pad density can only decrease when going from bottom to top but
+// to be symmetric we also consider the opposite.
+// 4- 5- 6-7
+// |       |
+// 3       8
+// |   0   |
+// 2       9
+// |       |
+// 1-12-11-10
+func (seg *segmentation3) GetNeighbours(paduid int) []int {
+	var neighbours []int
+	const eps float64 = 2 * 1E-5
+	px := seg.PadPositionX(paduid)
+	py := seg.PadPositionY(paduid)
+	dx := seg.PadSizeX(paduid) / 2.0
+	dy := seg.PadSizeY(paduid) / 2.0
+	previous := -1
+	for _, shift := range []struct{ x, y float64 }{
+		{-1, -1},
+		{-1, -1 / 3.0},
+		{-1, 1 / 3.0},
+		{-1, 1},
+		{-1 / 3.0, 1},
+		{1 / 3.0, 1},
+		{1, 1},
+		{1, 1 / 3.0},
+		{1, -1 / 3.0},
+		{1, -1},
+		{1 / 3.0, -1},
+		{-1 / 3.0, -1}} {
+		xtest := px + (dx+eps)*shift.x
+		ytest := py + (dy+eps)*shift.y
+		uid, err := seg.FindPadByPosition(xtest, ytest)
+		if err == nil && uid != previous {
+			previous = uid
+			neighbours = append(neighbours, previous)
+		}
+	}
+	return neighbours
+}
