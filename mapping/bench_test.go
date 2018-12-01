@@ -15,8 +15,8 @@ func BenchmarkSegmentationCreationPerDE(b *testing.B) {
 	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
 		b.Run(strconv.Itoa(detElemID), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				_ = mapping.NewSegmentation(detElemID, true)
-				_ = mapping.NewSegmentation(detElemID, false)
+				_ = mapping.NewCathodeSegmentation(detElemID, true)
+				_ = mapping.NewCathodeSegmentation(detElemID, false)
 			}
 		})
 	})
@@ -26,13 +26,13 @@ func BenchmarkSegmentationCreation(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
-			_ = mapping.NewSegmentation(detElemID, true)
-			_ = mapping.NewSegmentation(detElemID, false)
+			_ = mapping.NewCathodeSegmentation(detElemID, true)
+			_ = mapping.NewCathodeSegmentation(detElemID, false)
 		})
 	}
 }
 
-type SegPair map[bool]mapping.Segmentation
+type SegPair map[bool]mapping.CathodeSegmentation
 
 type TestPoint struct {
 	x, y float64
@@ -53,7 +53,7 @@ func BenchmarkPositions(b *testing.B) {
 		const n = 100000
 		for _, isBendingPlane := range []bool{true, false} {
 			b.Run(fmt.Sprintf("findPadByPositions(%d,%v)", detElemID, isBendingPlane), func(b *testing.B) {
-				seg := mapping.NewSegmentation(detElemID, isBendingPlane)
+				seg := mapping.NewCathodeSegmentation(detElemID, isBendingPlane)
 				bbox := mapping.ComputeBbox(seg)
 				testpoints := generateUniformTestPoints(n, bbox)
 				for i := 0; i < b.N; i++ {
@@ -87,7 +87,7 @@ func BenchmarkByFEE(b *testing.B) {
 			if isBendingPlane == false {
 				planeName = "NB"
 			}
-			seg := mapping.NewSegmentation(deid, isBendingPlane)
+			seg := mapping.NewCathodeSegmentation(deid, isBendingPlane)
 			var dcs []DC
 			seg.ForEachPad(func(paduid int) {
 				dcs = append(dcs, DC{D: seg.PadDualSampaID(paduid), C: seg.PadDualSampaChannel(paduid)})

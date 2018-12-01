@@ -8,10 +8,10 @@ import (
 	"github.com/aphecetche/pigiron/segcontour"
 )
 
-func getSegs() map[int]mapping.Segmentation {
-	segs := make(map[int]mapping.Segmentation)
+func getSegs() map[int]mapping.CathodeSegmentation {
+	segs := make(map[int]mapping.CathodeSegmentation)
 	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
-		segs[detElemID] = mapping.NewSegmentation(detElemID, true)
+		segs[detElemID] = mapping.NewCathodeSegmentation(detElemID, true)
 	})
 	return segs
 }

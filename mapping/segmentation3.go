@@ -45,12 +45,12 @@ func (seg *segmentation3) NofDualSampas() int {
 }
 
 // NewSegmentation creates a segmentation object for the given detection element plane
-func NewSegmentation(detElemID int, isBendingPlane bool) Segmentation {
+func NewCathodeSegmentation(detElemID int, isBendingPlane bool) CathodeSegmentation {
 	segType, err := detElemID2SegType(detElemID)
 	if err != nil {
 		return nil
 	}
-	builder := getSegmentationBuilder(segType)
+	builder := getCathodeSegmentationBuilder(segType)
 	if builder == nil {
 		return nil
 	}
@@ -69,7 +69,7 @@ func (seg *segmentation3) Print(out io.Writer) {
 	seg.grid.Print(out)
 }
 
-func newSegmentation(segType int, isBendingPlane bool, padGroups []padGroup,
+func newCathodeSegmentation(segType int, isBendingPlane bool, padGroups []padGroup,
 	padGroupTypes []padGroupType, padSizes []padSize) *segmentation3 {
 	seg := &segmentation3{
 		segType:        segType,

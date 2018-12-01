@@ -4,15 +4,15 @@ import (
 	"fmt"
 )
 
-type segmentationBuilder interface {
-	Build(isBendingPlane bool) Segmentation
+type cathodeSegmentationBuilder interface {
+	Build(isBendingPlane bool) CathodeSegmentation
 }
 
-var builderRegistry map[int]segmentationBuilder
+var builderRegistry map[int]cathodeSegmentationBuilder
 
-func registerSegmentationBuilder(segType int, builder segmentationBuilder) {
+func registerCathodeSegmentationBuilder(segType int, builder cathodeSegmentationBuilder) {
 	if builderRegistry == nil {
-		builderRegistry = make(map[int]segmentationBuilder)
+		builderRegistry = make(map[int]cathodeSegmentationBuilder)
 	}
 	_, alreadyThere := builderRegistry[segType]
 	if alreadyThere {
@@ -22,6 +22,6 @@ func registerSegmentationBuilder(segType int, builder segmentationBuilder) {
 	builderRegistry[segType] = builder
 }
 
-func getSegmentationBuilder(segType int) segmentationBuilder {
+func getCathodeSegmentationBuilder(segType int) cathodeSegmentationBuilder {
 	return builderRegistry[segType]
 }

@@ -27,20 +27,20 @@ func TestNumberOfDetectionElementIs156(t *testing.T) {
 
 func TestNewSegmentationMustNotErrorIfDetElemIdIsValid(t *testing.T) {
 
-	seg := mapping.NewSegmentation(100, true)
-	if seg == nil {
+	cseg := mapping.NewCathodeSegmentation(100, true)
+	if cseg == nil {
 		t.Fatalf("Could not create segmentation")
 	}
 }
 
 func TestNewSegmentationMustErrorIfDetElemIdIsNotValid(t *testing.T) {
 
-	seg := mapping.NewSegmentation(-1, true)
-	if seg != nil {
+	cseg := mapping.NewCathodeSegmentation(-1, true)
+	if cseg != nil {
 		t.Fatalf("Should have failed here")
 	}
-	seg = mapping.NewSegmentation(121, true)
-	if seg != nil {
+	cseg = mapping.NewCathodeSegmentation(121, true)
+	if cseg != nil {
 		t.Fatalf("Should have failed here")
 	}
 }
@@ -51,8 +51,8 @@ var detElemIDs = []int{100, 300, 500, 501, 502, 503, 504, 600, 601, 602, 700,
 func TestCreateSegmentation(t *testing.T) {
 	for _, de := range detElemIDs {
 		for _, plane := range []bool{true, false} {
-			seg := mapping.NewSegmentation(de, plane)
-			if seg == nil {
+			cseg := mapping.NewCathodeSegmentation(de, plane)
+			if cseg == nil {
 				t.Fatalf("could not create segmentation for DE %d", de)
 			}
 		}
@@ -89,8 +89,8 @@ func TestNofPads(t *testing.T) {
 	}
 
 	for _, tt := range tv {
-		b := mapping.NewSegmentation(tt.de, true)
-		nb := mapping.NewSegmentation(tt.de, false)
+		b := mapping.NewCathodeSegmentation(tt.de, true)
+		nb := mapping.NewCathodeSegmentation(tt.de, false)
 		if b.NofPads() != tt.nofBendingPads {
 			t.Errorf("DE %d : expected %d pads in bending plane. Got %d", tt.de, b.NofPads(), tt.nofBendingPads)
 		}
@@ -112,8 +112,8 @@ func TestTotalNofBendingFECInSegTypes(t *testing.T) {
 	for _, tt := range tv {
 		n := 0
 		for _, de := range detElemIDs {
-			seg := mapping.NewSegmentation(de, tt.plane)
-			n += seg.NofDualSampas()
+			cseg := mapping.NewCathodeSegmentation(de, tt.plane)
+			n += cseg.NofDualSampas()
 		}
 		if n != tt.nofDualSampas {
 			t.Errorf("Expected %d got %d", tt.nofDualSampas, n)
@@ -151,8 +151,8 @@ func TestNofFEC(t *testing.T) {
 	}
 
 	for _, tt := range tv {
-		b := mapping.NewSegmentation(tt.de, true)
-		nb := mapping.NewSegmentation(tt.de, false)
+		b := mapping.NewCathodeSegmentation(tt.de, true)
+		nb := mapping.NewCathodeSegmentation(tt.de, false)
 		if b.NofDualSampas() != tt.nofBendingDualSampas {
 			t.Errorf("DE %d : expected %d dual sampas in bending plane. Got %d", tt.de, b.NofDualSampas(), tt.nofBendingDualSampas)
 		}
@@ -166,11 +166,11 @@ func TestNofPadsInSegmentations(t *testing.T) {
 	npads := 0
 	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
 		for _, plane := range []bool{true, false} {
-			seg := mapping.NewSegmentation(detElemID, plane)
-			if seg == nil {
+			cseg := mapping.NewCathodeSegmentation(detElemID, plane)
+			if cseg == nil {
 				log.Fatalf("Got nil seg for detElemId %d plane %v", detElemID, plane)
 			}
-			npads += seg.NofPads()
+			npads += cseg.NofPads()
 		}
 
 	})
@@ -194,11 +194,11 @@ func TestDualSampasWithLessThan64Pads(t *testing.T) {
 	non64 := make(map[int]int)
 	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
 		for _, plane := range []bool{true, false} {
-			seg := mapping.NewSegmentation(detElemID, plane)
-			for i := 0; i < seg.NofDualSampas(); i++ {
+			cseg := mapping.NewCathodeSegmentation(detElemID, plane)
+			for i := 0; i < cseg.NofDualSampas(); i++ {
 				n := 0
-				dualSampaID, _ := seg.DualSampaID(i)
-				seg.ForEachPadInDualSampa(dualSampaID, func(paduid int) {
+				dualSampaID, _ := cseg.DualSampaID(i)
+				cseg.ForEachPadInDualSampa(dualSampaID, func(paduid int) {
 					n++
 				})
 				if n != 64 {
@@ -249,44 +249,44 @@ func TestDualSampasWithLessThan64Pads(t *testing.T) {
 }
 
 func TestMustErrorIfDualSampaChannelIsNotBetween0And63(t *testing.T) {
-	seg := mapping.NewSegmentation(100, true)
-	_, err := seg.FindPadByFEE(102, -1)
+	cseg := mapping.NewCathodeSegmentation(100, true)
+	_, err := cseg.FindPadByFEE(102, -1)
 	if err == nil {
 		t.Errorf("Should _not_ get a valid pad here")
 	}
-	_, err = seg.FindPadByFEE(102, 64)
+	_, err = cseg.FindPadByFEE(102, 64)
 	if err == nil {
 		t.Errorf("Should _not_ get a valid pad here")
 	}
 }
 
 func TestPositionOfOnePadInDE100Bending(t *testing.T) {
-	seg := mapping.NewSegmentation(100, true)
-	p1, err := seg.FindPadByFEE(76, 9)
+	cseg := mapping.NewCathodeSegmentation(100, true)
+	p1, err := cseg.FindPadByFEE(76, 9)
 	if err != nil {
 		t.Errorf("Should get a valid pad: %v", err)
 	}
-	p2, err := seg.FindPadByPosition(1.575, 18.69)
+	p2, err := cseg.FindPadByPosition(1.575, 18.69)
 	if err != nil {
 		t.Errorf("Should get a valid pad: %v", err)
 	}
 	if p1 != p2 {
 		t.Errorf("Should get the same pads here p1=%v p2=%v", p1, p2)
-		mapping.PrintPad(os.Stdout, seg, p1)
-		mapping.PrintPad(os.Stdout, seg, p2)
+		mapping.PrintPad(os.Stdout, cseg, p1)
+		mapping.PrintPad(os.Stdout, cseg, p2)
 	}
 }
 
 func TestValidFindPadByFEE(t *testing.T) {
-	seg := mapping.NewSegmentation(100, true)
-	_, err := seg.FindPadByFEE(102, 3)
+	cseg := mapping.NewCathodeSegmentation(100, true)
+	_, err := cseg.FindPadByFEE(102, 3)
 	if err != nil {
 		t.Errorf("Should get a valid pad here")
 	}
 }
 func TestInvalidFindPadByFEE(t *testing.T) {
-	seg := mapping.NewSegmentation(100, true)
-	_, err := seg.FindPadByFEE(214, 14)
+	cseg := mapping.NewCathodeSegmentation(100, true)
+	_, err := cseg.FindPadByFEE(214, 14)
 	if err == nil {
 		t.Errorf("Should not get a valid pad here")
 	}
@@ -296,11 +296,12 @@ type Point struct {
 	x, y float64
 }
 
-func checkGaps(t *testing.T, seg *mapping.Segmentation) []Point {
+//TODO: implement me ?
+func checkGaps(t *testing.T, cseg *mapping.CathodeSegmentation) []Point {
 	return []Point{}
 }
 
-func dumpToFile(filename string, seg *mapping.Segmentation, points []Point) {
+func dumpToFile(filename string, cseg *mapping.CathodeSegmentation, points []Point) {
 	f, err := os.Create(filename)
 	if err != nil {
 		panic(err)
@@ -315,13 +316,13 @@ func dumpToFile(filename string, seg *mapping.Segmentation, points []Point) {
 func TestNoGapWithinPads(t *testing.T) {
 	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
 		for _, isBendingPlane := range []bool{true, false} {
-			seg := mapping.NewSegmentation(detElemID, isBendingPlane)
-			g := checkGaps(t, &seg)
+			cseg := mapping.NewCathodeSegmentation(detElemID, isBendingPlane)
+			g := checkGaps(t, &cseg)
 			if len(g) != 0 {
 				dumpToFile(fmt.Sprintf("bug-gap-%v-%s.html",
 					detElemID,
 					mapping.PlaneAbbreviation(isBendingPlane)),
-					&seg, g)
+					&cseg, g)
 			}
 		}
 	})
@@ -330,13 +331,13 @@ func TestNoGapWithinPads(t *testing.T) {
 func TestForEachPad(t *testing.T) {
 	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
 		for _, b := range []bool{true, false} {
-			seg := mapping.NewSegmentation(detElemID, b)
+			cseg := mapping.NewCathodeSegmentation(detElemID, b)
 			npads := 0
-			seg.ForEachPad(func(paduid int) {
+			cseg.ForEachPad(func(paduid int) {
 				npads++
 			})
-			if npads != seg.NofPads() {
-				t.Errorf("DE %v isBending %v : expected %v pads but got %v from ForEachPad loop", detElemID, b, seg.NofPads(), npads)
+			if npads != cseg.NofPads() {
+				t.Errorf("DE %v isBending %v : expected %v pads but got %v from ForEachPad loop", detElemID, b, cseg.NofPads(), npads)
 			}
 		}
 	})

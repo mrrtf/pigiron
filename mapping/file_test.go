@@ -48,7 +48,7 @@ func assertInputForDetElemIsCorrect(m TestChannelList) {
 
 func checkSegmentationCreation(t *testing.T, deid int) {
 	for _, isBendingPlane := range []bool{true, false} {
-		seg := mapping.NewSegmentation(deid, isBendingPlane)
+		seg := mapping.NewCathodeSegmentation(deid, isBendingPlane)
 		if seg == nil {
 			t.Errorf("Could not create segmentation for de %d isbending %v", deid, isBendingPlane)
 		}
@@ -63,7 +63,7 @@ func checkAllFECIDs(t *testing.T, de DetectionElement) {
 	fecids := de.fecIDs()
 	var dualSampas []int
 	for _, isBendingPlane := range []bool{true, false} {
-		seg := mapping.NewSegmentation(de.ID, isBendingPlane)
+		seg := mapping.NewCathodeSegmentation(de.ID, isBendingPlane)
 		for dsi := 0; dsi < seg.NofDualSampas(); dsi++ {
 			dsid, _ := seg.DualSampaID(dsi)
 			dualSampas = append(dualSampas, dsid)
@@ -77,14 +77,14 @@ func checkAllFECIDs(t *testing.T, de DetectionElement) {
 	}
 }
 
-func channelFromOneDualSampa(seg mapping.Segmentation, dualSampaID int) ChannelInfoSlice {
+func channelFromOneDualSampa(cseg mapping.CathodeSegmentation, dualSampaID int) ChannelInfoSlice {
 	var channels ChannelInfoSlice
 
-	seg.ForEachPadInDualSampa(dualSampaID, func(paduid int) {
-		if seg.PadDualSampaID(paduid) != dualSampaID {
-			log.Fatalf("actual %d != expected %d for paduid %d", seg.PadDualSampaID(paduid), dualSampaID, paduid)
+	cseg.ForEachPadInDualSampa(dualSampaID, func(paduid int) {
+		if cseg.PadDualSampaID(paduid) != dualSampaID {
+			log.Fatalf("actual %d != expected %d for paduid %d", cseg.PadDualSampaID(paduid), dualSampaID, paduid)
 		}
-		channels = append(channels, ChannelInfo{dualSampaID, seg.PadDualSampaChannel(paduid)})
+		channels = append(channels, ChannelInfo{dualSampaID, cseg.PadDualSampaChannel(paduid)})
 	})
 
 	return channels
@@ -98,7 +98,7 @@ func checkAllChannels(t *testing.T, de DetectionElement) {
 	deChannels := de.channelIDs()
 	var channels ChannelInfoSlice
 	for _, isBendingPlane := range []bool{true, false} {
-		seg := mapping.NewSegmentation(de.ID, isBendingPlane)
+		seg := mapping.NewCathodeSegmentation(de.ID, isBendingPlane)
 		for dsi := 0; dsi < seg.NofDualSampas(); dsi++ {
 			dsid, _ := seg.DualSampaID(dsi)
 			tchannels := channelFromOneDualSampa(seg, dsid)
@@ -149,27 +149,27 @@ func TestDetectionElementChannels(t *testing.T) {
 	}
 }
 
-func testOnePosition(seg mapping.Segmentation, tp Testposition) error {
+func testOnePosition(cseg mapping.CathodeSegmentation, tp Testposition) error {
 
-	paduid, err := seg.FindPadByPosition(tp.X, tp.Y)
+	paduid, err := cseg.FindPadByPosition(tp.X, tp.Y)
 
 	if err != nil && err != mapping.ErrInvalidPadUID {
 		return fmt.Errorf("Unexpected error:%s", err)
 	}
 
-	if seg.IsValid(paduid) && tp.isOutside() {
+	if cseg.IsValid(paduid) && tp.isOutside() {
 		return fmt.Errorf("found a pad at position where there should not be one : %v", tp)
 	}
 
-	if !seg.IsValid(paduid) && !tp.isOutside() {
+	if !cseg.IsValid(paduid) && !tp.isOutside() {
 		return fmt.Errorf("did not find a pad at position where there should be one : %v", tp)
 	}
 
-	if seg.IsValid(paduid) && (!geo.EqualFloat(seg.PadPositionX(paduid), tp.PX) ||
-		!geo.EqualFloat(seg.PadPositionY(paduid), tp.PY)) {
+	if cseg.IsValid(paduid) && (!geo.EqualFloat(cseg.PadPositionX(paduid), tp.PX) ||
+		!geo.EqualFloat(cseg.PadPositionY(paduid), tp.PY)) {
 
 		buf := new(bytes.Buffer)
-		mapping.PrintPad(buf, seg, paduid)
+		mapping.PrintPad(buf, cseg, paduid)
 		s := buf.String()
 
 		return fmt.Errorf("\nExpected %v\nGot %v", tp.String(), s)
@@ -197,7 +197,7 @@ func TestPositions(t *testing.T) {
 
 	var notok int
 	for _, tp := range testfile.Testpositions {
-		seg := mapping.NewSegmentation(int(tp.De), tp.isBendingPlane())
+		seg := mapping.NewCathodeSegmentation(int(tp.De), tp.isBendingPlane())
 		err = testOnePosition(seg, tp)
 		if err != nil {
 			t.Log(err)
@@ -250,7 +250,7 @@ func jsonGetNeighbours(tnei TestNeighbourStruct, deid int, dsid int, dsch int) [
 	return neighbours
 }
 
-func compareNeighbours(nref []dsIDCh, n []int, seg mapping.Segmentation) error {
+func compareNeighbours(nref []dsIDCh, n []int, cseg mapping.CathodeSegmentation) error {
 	if len(nref) != len(n) {
 		return fmt.Errorf("Want %d neighbours - Got %d", len(nref), len(n))
 	}
@@ -258,7 +258,7 @@ func compareNeighbours(nref []dsIDCh, n []int, seg mapping.Segmentation) error {
 	var n2 []int
 	// convert dsIDCh to paduids
 	for _, dsch := range nref {
-		paduid, err := seg.FindPadByFEE(dsch.id, dsch.ch)
+		paduid, err := cseg.FindPadByFEE(dsch.id, dsch.ch)
 		if err != nil {
 			return fmt.Errorf("Got an invalid pad for DS %4d CH %2d", dsch.id, dsch.ch)
 		}
@@ -289,20 +289,20 @@ func testNeighboursOneDE(t *testing.T, deid int, ntest, nfail *int) {
 	}
 
 	for _, bending := range []bool{true, false} {
-		seg := mapping.NewSegmentation(deid, bending)
-		seg.ForEachPad(func(paduid int) {
+		cseg := mapping.NewCathodeSegmentation(deid, bending)
+		cseg.ForEachPad(func(paduid int) {
 			*ntest++
-			dsid := seg.PadDualSampaID(paduid)
-			dsch := seg.PadDualSampaChannel(paduid)
+			dsid := cseg.PadDualSampaID(paduid)
+			dsch := cseg.PadDualSampaChannel(paduid)
 			nref := jsonGetNeighbours(tnei, deid, dsid, dsch)
-			n := seg.GetNeighbours(paduid)
-			err := compareNeighbours(nref, n, seg)
+			n := cseg.GetNeighbours(paduid)
+			err := compareNeighbours(nref, n, cseg)
 			if err != nil {
 				t.Errorf("Problem for DE %4d DS %4d CH %2d : %s", deid, dsid, dsch, err.Error())
 				t.Errorf("%v", nref)
 				msg := ">"
 				for _, paduid := range n {
-					msg += fmt.Sprintf("(%v %v) ", seg.PadDualSampaID(paduid), seg.PadDualSampaChannel(paduid))
+					msg += fmt.Sprintf("(%v %v) ", cseg.PadDualSampaID(paduid), cseg.PadDualSampaChannel(paduid))
 				}
 				t.Errorf(msg)
 				*nfail++
