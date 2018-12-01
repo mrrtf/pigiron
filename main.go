@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	_ = mapping.NewSegmentation(103, true)
+	_ = mapping.NewCathodeSegmentation(103, true)
 }

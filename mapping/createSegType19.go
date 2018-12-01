@@ -2,9 +2,9 @@ package mapping
 
 type createSegType19 struct{}
 
-func (seg createSegType19) Build(isBendingPlane bool) Segmentation {
+func (seg createSegType19) Build(isBendingPlane bool) CathodeSegmentation {
 	if isBendingPlane {
-		return newSegmentation(19, true,
+		return newCathodeSegmentation(19, true,
 			[]padGroup{
 				{1, 3, 0, -100, -20},
 				{2, 12, 0, -95, -20},
@@ -63,7 +63,7 @@ func (seg createSegType19) Build(isBendingPlane bool) Segmentation {
 				{10, 0.5},
 			})
 	}
-	return newSegmentation(19, false,
+	return newCathodeSegmentation(19, false,
 		[]padGroup{
 			{1030, 8, 0, -70, -20},
 			{1031, 10, 0, -80, -20},
@@ -112,5 +112,5 @@ func (seg createSegType19) Build(isBendingPlane bool) Segmentation {
 }
 
 func init() {
-	registerSegmentationBuilder(19, createSegType19{})
+	registerCathodeSegmentationBuilder(19, createSegType19{})
 }

@@ -65,7 +65,7 @@ func TestSegmentationBBox(t *testing.T) {
 		if test.isBending == true {
 			continue
 		}
-		seg := mapping.NewSegmentation(test.detElemID, test.isBending)
+		seg := mapping.NewCathodeSegmentation(test.detElemID, test.isBending)
 		bbox := BBox(seg)
 		if !geo.EqualBBox(bbox, test.want) {
 			t.Errorf("segmentation %3d - %v : wrong bbox got\n%v but want\n%v", test.detElemID,
@@ -84,7 +84,7 @@ func TestPadSizes(t *testing.T) {
 
 	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
 		for _, isBending := range []bool{true, false} {
-			seg := mapping.NewSegmentation(detElemID, isBending)
+			seg := mapping.NewCathodeSegmentation(detElemID, isBending)
 			seg.ForEachPad(func(paduid int) {
 				ps := &padSize{seg.PadSizeX(paduid), seg.PadSizeY(paduid)}
 				padsizes[*ps]++

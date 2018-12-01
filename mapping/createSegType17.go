@@ -2,9 +2,9 @@ package mapping
 
 type createSegType17 struct{}
 
-func (seg createSegType17) Build(isBendingPlane bool) Segmentation {
+func (seg createSegType17) Build(isBendingPlane bool) CathodeSegmentation {
 	if isBendingPlane {
-		return newSegmentation(17, true,
+		return newCathodeSegmentation(17, true,
 			[]padGroup{
 				{1, 3, 0, -120, -20},
 				{2, 12, 0, -117.5, -20},
@@ -99,7 +99,7 @@ func (seg createSegType17) Build(isBendingPlane bool) Segmentation {
 				{10, 0.5},
 			})
 	}
-	return newSegmentation(17, false,
+	return newCathodeSegmentation(17, false,
 		[]padGroup{
 			{1035, 5, 0, -85.7142868, -20},
 			{1036, 5, 0, -91.42857361, -20},
@@ -182,5 +182,5 @@ func (seg createSegType17) Build(isBendingPlane bool) Segmentation {
 }
 
 func init() {
-	registerSegmentationBuilder(17, createSegType17{})
+	registerCathodeSegmentationBuilder(17, createSegType17{})
 }

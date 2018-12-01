@@ -9,7 +9,7 @@ import (
 )
 
 // Segmentation is the main entry point to the MCH mapping
-type Segmentation interface {
+type CathodeSegmentation interface {
 	DetElemID() int
 	NofPads() int
 	NofDualSampas() int
@@ -63,32 +63,32 @@ func PlaneAbbreviation(isBendingPlane bool) string {
 }
 
 // PrintPad prints all known information about a pad
-func PrintPad(out io.Writer, seg Segmentation, paduid int) {
-	if !seg.IsValid(paduid) {
+func PrintPad(out io.Writer, cseg CathodeSegmentation, paduid int) {
+	if !cseg.IsValid(paduid) {
 		fmt.Printf("invalid pad")
 		return
 	}
 	fmt.Fprintf(out, "DE %4d DSID %4d CH %2d X %7.2f Y %7.2f DX %7.2f DY %7.2f\n",
-		seg.DetElemID(),
-		seg.PadDualSampaID(paduid),
-		seg.PadDualSampaChannel(paduid),
-		seg.PadPositionX(paduid),
-		seg.PadPositionY(paduid),
-		seg.PadSizeX(paduid),
-		seg.PadSizeY(paduid))
+		cseg.DetElemID(),
+		cseg.PadDualSampaID(paduid),
+		cseg.PadDualSampaChannel(paduid),
+		cseg.PadPositionX(paduid),
+		cseg.PadPositionY(paduid),
+		cseg.PadSizeX(paduid),
+		cseg.PadSizeY(paduid))
 
 }
 
-func ComputeBbox(seg Segmentation) geo.BBox {
+func ComputeBbox(cseg CathodeSegmentation) geo.BBox {
 	xmin := math.MaxFloat64
 	ymin := xmin
 	xmax := -xmin
 	ymax := -ymin
-	seg.ForEachPad(func(paduid int) {
-		x := seg.PadPositionX(paduid)
-		y := seg.PadPositionY(paduid)
-		dx := seg.PadSizeX(paduid) / 2
-		dy := seg.PadSizeY(paduid) / 2
+	cseg.ForEachPad(func(paduid int) {
+		x := cseg.PadPositionX(paduid)
+		y := cseg.PadPositionY(paduid)
+		dx := cseg.PadSizeX(paduid) / 2
+		dy := cseg.PadSizeY(paduid) / 2
 		xmin = math.Min(xmin, x-dx)
 		xmax = math.Max(xmax, x+dx)
 		ymin = math.Min(ymin, y-dy)
