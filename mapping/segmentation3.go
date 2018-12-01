@@ -371,3 +371,7 @@ func (seg *segmentation3) GetNeighbours(paduid int) []int {
 	}
 	return neighbours
 }
+
+func (seg *segmentation3) IsBending() bool {
+	return seg.isBendingPlane
+}

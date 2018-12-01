@@ -26,6 +26,7 @@ type Segmentation interface {
 	PadSizeX(paduid int) float64
 	PadSizeY(paduid int) float64
 	GetNeighbours(paduid int) []int
+	IsBending() bool
 	setDetElemID(de int)
 }
 
