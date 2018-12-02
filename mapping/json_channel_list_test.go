@@ -3,6 +3,8 @@ package mapping_test
 import (
 	"encoding/json"
 	"sort"
+
+	"github.com/aphecetche/pigiron/mapping"
 )
 
 func UnmarshalTestChannelList(data []byte) (TestChannelList, error) {
@@ -39,12 +41,12 @@ func (de *DetectionElement) init() {
 	}
 }
 
-func (de DetectionElement) channels(dualSampaID int) ChannelInfoSlice {
+func (de DetectionElement) channels(dsid mapping.DualSampaID) ChannelInfoSlice {
 	var channels ChannelInfoSlice
 	for _, f := range de.FECs {
-		if f.ID == dualSampaID {
+		if f.ID == dsid {
 			for _, c := range f.Channels {
-				channels = append(channels, ChannelInfo{dualSampaID, int(c)})
+				channels = append(channels, ChannelInfo{dsid, int(c)})
 			}
 			break
 		}
@@ -53,8 +55,8 @@ func (de DetectionElement) channels(dualSampaID int) ChannelInfoSlice {
 }
 
 type FEC struct {
-	ID       int     `json:"id"`
-	Channels []int64 `json:"channels,omitempty"`
+	ID       mapping.DualSampaID `json:"id"`
+	Channels []int64             `json:"channels,omitempty"`
 }
 
 func (f *FEC) init() {
@@ -67,7 +69,7 @@ func (f *FEC) init() {
 }
 
 type ChannelInfo struct {
-	fecID     int
+	fecID     mapping.DualSampaID
 	channelID int
 }
 type ChannelInfoSlice []ChannelInfo
@@ -106,8 +108,8 @@ func containSameChannelElements(a ChannelInfoSlice, b ChannelInfoSlice) bool {
 }
 
 // fecID returns a slice of all the front-end card ids of this detection element
-func (de DetectionElement) fecIDs() []int {
-	var fecids = make([]int, len(de.FECs))
+func (de DetectionElement) fecIDs() []mapping.DualSampaID {
+	var fecids = make([]mapping.DualSampaID, len(de.FECs))
 	for i, f := range de.FECs {
 		fecids[i] = f.ID
 	}
@@ -124,7 +126,7 @@ func (de DetectionElement) channelIDs() ChannelInfoSlice {
 	return channels
 }
 
-func containSameIntElements(a []int, b []int) bool {
+func containSameDualSampaIDs(a []mapping.DualSampaID, b []mapping.DualSampaID) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -133,8 +135,12 @@ func containSameIntElements(a []int, b []int) bool {
 		return false
 	}
 
-	sort.Ints(a)
-	sort.Ints(b)
+	sort.Slice(a, func(i, j int) bool {
+		return int(a[i]) > int(a[j])
+	})
+	sort.Slice(b, func(i, j int) bool {
+		return int(b[i]) > int(b[j])
+	})
 
 	for i, v := range a {
 		if v != b[i] {

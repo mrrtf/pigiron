@@ -85,7 +85,7 @@ func TestPadSizes(t *testing.T) {
 	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
 		for _, isBending := range []bool{true, false} {
 			seg := mapping.NewCathodeSegmentation(detElemID, isBending)
-			seg.ForEachPad(func(paduid int) {
+			seg.ForEachPad(func(paduid mapping.PadUID) {
 				ps := &padSize{seg.PadSizeX(paduid), seg.PadSizeY(paduid)}
 				padsizes[*ps]++
 			})
@@ -112,4 +112,5 @@ fill: none;
 
 	f, _ := os.Create("padsizes.html")
 	svg.WriteHTML(f)
+
 }

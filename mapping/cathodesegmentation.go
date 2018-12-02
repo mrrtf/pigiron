@@ -8,24 +8,27 @@ import (
 	"github.com/aphecetche/pigiron/geo"
 )
 
+type PadUID int
+type DualSampaID int
+
 // Segmentation is the main entry point to the MCH mapping
 type CathodeSegmentation interface {
 	DetElemID() int
 	NofPads() int
 	NofDualSampas() int
-	DualSampaID(dualSampaIndex int) (int, error)
-	IsValid(padid int) bool
-	FindPadByFEE(dualSampaID, dualSampaChannel int) (int, error)
-	FindPadByPosition(x, y float64) (int, error)
-	ForEachPad(padHandler func(paduid int))
-	ForEachPadInDualSampa(dualSampaID int, padHandler func(paduid int))
-	PadDualSampaChannel(paduid int) int
-	PadDualSampaID(paduid int) int
-	PadPositionX(paduid int) float64
-	PadPositionY(paduid int) float64
-	PadSizeX(paduid int) float64
-	PadSizeY(paduid int) float64
-	GetNeighbours(paduid int) []int
+	DualSampaID(dualSampaIndex int) (DualSampaID, error)
+	IsValid(paduid PadUID) bool
+	FindPadByFEE(dualSampaID DualSampaID, dualSampaChannel int) (PadUID, error)
+	FindPadByPosition(x, y float64) (PadUID, error)
+	ForEachPad(padHandler func(paduid PadUID))
+	ForEachPadInDualSampa(dualSampaID DualSampaID, padHandler func(paduid PadUID))
+	PadDualSampaChannel(paduid PadUID) int
+	PadDualSampaID(paduid PadUID) DualSampaID
+	PadPositionX(paduid PadUID) float64
+	PadPositionY(paduid PadUID) float64
+	PadSizeX(paduid PadUID) float64
+	PadSizeY(paduid PadUID) float64
+	GetNeighbours(paduid PadUID) []PadUID
 	IsBending() bool
 	setDetElemID(de int)
 }
@@ -63,7 +66,7 @@ func PlaneAbbreviation(isBendingPlane bool) string {
 }
 
 // PrintPad prints all known information about a pad
-func PrintPad(out io.Writer, cseg CathodeSegmentation, paduid int) {
+func PrintPad(out io.Writer, cseg CathodeSegmentation, paduid PadUID) {
 	if !cseg.IsValid(paduid) {
 		fmt.Printf("invalid pad")
 		return
@@ -84,7 +87,7 @@ func ComputeBbox(cseg CathodeSegmentation) geo.BBox {
 	ymin := xmin
 	xmax := -xmin
 	ymax := -ymin
-	cseg.ForEachPad(func(paduid int) {
+	cseg.ForEachPad(func(paduid PadUID) {
 		x := cseg.PadPositionX(paduid)
 		y := cseg.PadPositionY(paduid)
 		dx := cseg.PadSizeX(paduid) / 2

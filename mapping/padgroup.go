@@ -3,7 +3,7 @@ package mapping
 import "fmt"
 
 type padGroup struct {
-	fecID          int
+	fecID          DualSampaID
 	padGroupTypeID int
 	padSizeID      int
 	x              float64

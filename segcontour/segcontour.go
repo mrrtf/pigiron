@@ -28,9 +28,9 @@ func Contour(cseg mapping.CathodeSegmentation) geo.Contour {
 	return contour
 }
 
-func getDualSampaPadPolygons(cseg mapping.CathodeSegmentation, dualSampaID int) []geo.Polygon {
+func getDualSampaPadPolygons(cseg mapping.CathodeSegmentation, dsid mapping.DualSampaID) []geo.Polygon {
 	var pads []geo.Polygon
-	cseg.ForEachPadInDualSampa(dualSampaID, func(paduid int) {
+	cseg.ForEachPadInDualSampa(dsid, func(paduid mapping.PadUID) {
 		x := cseg.PadPositionX(paduid)
 		y := cseg.PadPositionY(paduid)
 		dx := cseg.PadSizeX(paduid) / 2
@@ -46,8 +46,8 @@ func getDualSampaPadPolygons(cseg mapping.CathodeSegmentation, dualSampaID int) 
 }
 
 // GetDualSampaContour returns the contour of one FEC.
-func GetDualSampaContour(cseg mapping.CathodeSegmentation, dualSampaID int) geo.Contour {
-	pads := getDualSampaPadPolygons(cseg, dualSampaID)
+func GetDualSampaContour(cseg mapping.CathodeSegmentation, dsid mapping.DualSampaID) geo.Contour {
+	pads := getDualSampaPadPolygons(cseg, dsid)
 	c, err := geo.NewContour(pads)
 	if err != nil {
 		log.Fatalf("could not create contour : %v", err)
