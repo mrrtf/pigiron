@@ -198,7 +198,7 @@ func TestDualSampasWithLessThan64Pads(t *testing.T) {
 			for i := 0; i < cseg.NofDualSampas(); i++ {
 				n := 0
 				dualSampaID, _ := cseg.DualSampaID(i)
-				cseg.ForEachPadInDualSampa(dualSampaID, func(paduid int) {
+				cseg.ForEachPadInDualSampa(dualSampaID, func(paduid mapping.PadUID) {
 					n++
 				})
 				if n != 64 {
@@ -333,7 +333,7 @@ func TestForEachPad(t *testing.T) {
 		for _, b := range []bool{true, false} {
 			cseg := mapping.NewCathodeSegmentation(detElemID, b)
 			npads := 0
-			cseg.ForEachPad(func(paduid int) {
+			cseg.ForEachPad(func(paduid mapping.PadUID) {
 				npads++
 			})
 			if npads != cseg.NofPads() {

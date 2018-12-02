@@ -67,7 +67,7 @@ func BenchmarkPositions(b *testing.B) {
 }
 
 type DC struct {
-	D int
+	D mapping.DualSampaID
 	C int
 }
 
@@ -89,7 +89,7 @@ func BenchmarkByFEE(b *testing.B) {
 			}
 			seg := mapping.NewCathodeSegmentation(deid, isBendingPlane)
 			var dcs []DC
-			seg.ForEachPad(func(paduid int) {
+			seg.ForEachPad(func(paduid mapping.PadUID) {
 				dcs = append(dcs, DC{D: seg.PadDualSampaID(paduid), C: seg.PadDualSampaChannel(paduid)})
 			})
 			b.Run(strconv.Itoa(deid)+planeName, func(b *testing.B) {

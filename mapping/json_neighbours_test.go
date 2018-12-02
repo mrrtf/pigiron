@@ -1,17 +1,21 @@
 package mapping_test
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/aphecetche/pigiron/mapping"
+)
 
 type TestNeighbourStruct struct {
 	Neighbours []struct {
 		Deid int `json:"deid"`
 		Ds   []struct {
-			ID       int `json:"id"`
+			ID       mapping.DualSampaID `json:"id"`
 			Channels []struct {
 				Ch  int `json:"ch"`
 				Nei []struct {
-					Dsid int `json:"dsid"`
-					Dsch int `json:"dsch"`
+					Dsid mapping.DualSampaID `json:"dsid"`
+					Dsch int                 `json:"dsch"`
 				} `json:"nei"`
 			} `json:"channels"`
 		} `json:"ds"`
