@@ -1,35 +1,61 @@
 package geo
 
 import (
+	"bytes"
+	"fmt"
+	"log"
 	"testing"
 )
 
-var (
-	box BBox
-)
+func TestBasicWrite(t *testing.T) {
+	want := `<html>
+<style></style>
+<body>
+<svg width="1024" height="975" viewBox="-0.5 0 10.01 10.01">
+<g class="test">
+<rect x="1" y="2" width="3" height="4" /> 
+<text x="10" y="20">some text</text>
+<circle cx="10.000000" cy="10.000000" r="0.010000" />
+</g>
+<g class="points">
+<polygon points="0.1,0.1 1.1,0.1 1.1,1.1 2.1,1.1 2.1,3.1 1.1,3.1 1.1,2.1 0.1,2.1 " />
+<polygon points="0.1,0.1 1.1,0.1 1.1,1.1 2.1,1.1 2.1,3.1 1.1,3.1 1.1,2.1 0.1,2.1 " class"big" />
+</svg>
+</body>
+</html>
+`
 
-func init() {
-	var err error
-	box, err = NewBBox(1, 2, 3, 4)
-	if err != nil {
-		panic(err)
-	}
-}
+	svg := NewSVGWriter(1024)
 
-func TestSVGWriterWithOriginOptionSetHasBBoxShiftedToOrigin(t *testing.T) {
-	svg := NewSVGWriter(1000, box, true)
-	x := svg.BBox.Xmin()
-	y := svg.BBox.Ymin()
-	if !(x == 0.0 && y == 0.0) {
-		t.Errorf("Want (x,y)=(%e,%e) - Got %e,%e", box.Xmin(), box.Ymin(), x, y)
-	}
-}
+	testPolygon = Polygon{
+		{0.1, 0.1},
+		{1.1, 0.1},
+		{1.1, 1.1},
+		{2.1, 1.1},
+		{2.1, 3.1},
+		{1.1, 3.1},
+		{1.1, 2.1},
+		{0.1, 2.1},
+		{0.1, 0.1}}
 
-func TestCreateSVGWriterWithOriginNotSetAsOriginAtBBox(t *testing.T) {
-	svg := NewSVGWriter(1000, box, false)
-	x := svg.BBox.Xmin()
-	y := svg.BBox.Ymin()
-	if !(x == box.Xmin() && y == box.Ymin()) {
-		t.Errorf("Want (x,y)=(%e,%e) - Got %e,%e", box.Xmin(), box.Ymin(), x, y)
+	svg.GroupStart("test")
+	svg.Rect(1, 2, 3, 4)
+	svg.Text("some text", 10, 20)
+	svg.Circle(10, 10, 0.01)
+	svg.GroupEnd()
+
+	svg.GroupStart("points")
+	svg.Polygon(&testPolygon)
+	svg.PolygonWithClass(&testPolygon, "big")
+
+	var buf bytes.Buffer
+	svg.WriteHTML(&buf)
+
+	got := string(buf.Bytes()[:])
+
+	fmt.Println(bytes.Compare([]byte(want), []byte(got)))
+	if got != want {
+		log.Fatalf("Wanted:\n---%v+++and got:\n---%v+++", want, got)
 	}
+
 }
