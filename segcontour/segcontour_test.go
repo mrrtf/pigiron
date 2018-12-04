@@ -96,8 +96,7 @@ func TestPadSizes(t *testing.T) {
 		t.Errorf("wanted 18 padsizes - got %d", len(padsizes))
 	}
 
-	b, _ := geo.NewBBox(0, 0, 12, 12)
-	svg := geo.SVGWriter{Width: 1024, BBox: b}
+	svg := geo.NewSVGWriter(1024)
 
 	svg.Style(`
 rect {
