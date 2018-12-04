@@ -3,6 +3,7 @@ package mapping
 import (
 	"fmt"
 	"io"
+	"log"
 	"math"
 
 	"github.com/aphecetche/pigiron/geo"
@@ -82,24 +83,34 @@ func PrintPad(out io.Writer, cseg CathodeSegmentation, paduid PadUID) {
 
 }
 
-func ComputeBbox(cseg CathodeSegmentation) geo.BBox {
+func ComputeBBox(cseg CathodeSegmentation) geo.BBox {
 	xmin := math.MaxFloat64
 	ymin := xmin
 	xmax := -xmin
 	ymax := -ymin
 	cseg.ForEachPad(func(paduid PadUID) {
-		x := cseg.PadPositionX(paduid)
-		y := cseg.PadPositionY(paduid)
-		dx := cseg.PadSizeX(paduid) / 2
-		dy := cseg.PadSizeY(paduid) / 2
-		xmin = math.Min(xmin, x-dx)
-		xmax = math.Max(xmax, x+dx)
-		ymin = math.Min(ymin, y-dy)
-		ymax = math.Max(ymax, y+dy)
+		bbox := ComputePadBBox(cseg, paduid)
+		xmin = math.Min(xmin, bbox.Xmin())
+		xmax = math.Max(xmax, bbox.Xmax())
+		ymin = math.Min(ymin, bbox.Ymin())
+		ymax = math.Max(ymax, bbox.Ymax())
 	})
 	bbox, err := geo.NewBBox(xmin, ymin, xmax, ymax)
 	if err != nil {
 		panic(err)
+	}
+	return bbox
+}
+
+func ComputePadBBox(cseg CathodeSegmentation, paduid PadUID) geo.BBox {
+	x := cseg.PadPositionX(paduid)
+	y := cseg.PadPositionY(paduid)
+	dx := cseg.PadSizeX(paduid) / 2
+	dy := cseg.PadSizeY(paduid) / 2
+	bbox, err := geo.NewBBox(x-dx, y-dy, x+dx, y+dy)
+	if err != nil {
+		log.Fatalf(err.Error())
+		return nil
 	}
 	return bbox
 }

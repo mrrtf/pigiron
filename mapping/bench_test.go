@@ -54,7 +54,7 @@ func BenchmarkPositions(b *testing.B) {
 		for _, isBendingPlane := range []bool{true, false} {
 			b.Run(fmt.Sprintf("findPadByPositions(%d,%v)", detElemID, isBendingPlane), func(b *testing.B) {
 				seg := mapping.NewCathodeSegmentation(detElemID, isBendingPlane)
-				bbox := mapping.ComputeBbox(seg)
+				bbox := mapping.ComputeBBox(seg)
 				testpoints := generateUniformTestPoints(n, bbox)
 				for i := 0; i < b.N; i++ {
 					for _, tp := range testpoints {

@@ -23,7 +23,7 @@ func BenchmarkSegmentationComputeBBoxViaPadLoop(b *testing.B) {
 	for detElemID, seg := range segs {
 		b.Run(strconv.Itoa(detElemID), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				mapping.ComputeBbox(seg)
+				mapping.ComputeBBox(seg)
 			}
 		})
 	}

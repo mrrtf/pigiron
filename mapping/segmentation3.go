@@ -107,7 +107,7 @@ func (seg *segmentation3) init() {
 	// within the correct grid cellSlice
 
 	seg.fillIndexSlices()
-	bbox := ComputeBbox(seg)
+	bbox := ComputeBBox(seg)
 	seg.fillGrid(bbox)
 }
 
