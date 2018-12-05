@@ -78,11 +78,11 @@ func checkAllFECIDs(t *testing.T, de DetectionElement) {
 func channelFromOneDualSampa(cseg mapping.CathodeSegmentation, dsid mapping.DualSampaID) ChannelInfoSlice {
 	var channels ChannelInfoSlice
 
-	cseg.ForEachPadInDualSampa(dsid, func(paduid mapping.PadUID) {
-		if cseg.PadDualSampaID(paduid) != dsid {
-			log.Fatalf("actual %d != expected %d for paduid %d", cseg.PadDualSampaID(paduid), dsid, paduid)
+	cseg.ForEachPadInDualSampa(dsid, func(padcid mapping.PadCID) {
+		if cseg.PadDualSampaID(padcid) != dsid {
+			log.Fatalf("actual %d != expected %d for padcid %d", cseg.PadDualSampaID(padcid), dsid, padcid)
 		}
-		channels = append(channels, ChannelInfo{dsid, cseg.PadDualSampaChannel(paduid)})
+		channels = append(channels, ChannelInfo{dsid, cseg.PadDualSampaChannel(padcid)})
 	})
 
 	return channels
@@ -149,25 +149,25 @@ func TestDetectionElementChannels(t *testing.T) {
 
 func testOnePosition(cseg mapping.CathodeSegmentation, tp Testposition) error {
 
-	paduid, err := cseg.FindPadByPosition(tp.X, tp.Y)
+	padcid, err := cseg.FindPadByPosition(tp.X, tp.Y)
 
-	if err != nil && err != mapping.ErrInvalidPadUID {
+	if err != nil && err != mapping.ErrInvalidPadCID {
 		return fmt.Errorf("Unexpected error:%s", err)
 	}
 
-	if cseg.IsValid(paduid) && tp.isOutside() {
+	if cseg.IsValid(padcid) && tp.isOutside() {
 		return fmt.Errorf("found a pad at position where there should not be one : %v", tp)
 	}
 
-	if !cseg.IsValid(paduid) && !tp.isOutside() {
+	if !cseg.IsValid(padcid) && !tp.isOutside() {
 		return fmt.Errorf("did not find a pad at position where there should be one : %v", tp)
 	}
 
-	if cseg.IsValid(paduid) && (!geo.EqualFloat(cseg.PadPositionX(paduid), tp.PX) ||
-		!geo.EqualFloat(cseg.PadPositionY(paduid), tp.PY)) {
+	if cseg.IsValid(padcid) && (!geo.EqualFloat(cseg.PadPositionX(padcid), tp.PX) ||
+		!geo.EqualFloat(cseg.PadPositionY(padcid), tp.PY)) {
 
 		buf := new(bytes.Buffer)
-		mapping.PrintPad(buf, cseg, paduid)
+		PrintCathodePad(buf, cseg, padcid)
 		s := buf.String()
 
 		return fmt.Errorf("\nExpected %v\nGot %v", tp.String(), s)
@@ -250,19 +250,19 @@ func jsonGetNeighbours(tnei TestNeighbourStruct, deid int, dsid mapping.DualSamp
 	return neighbours
 }
 
-func compareNeighbours(nref []dsIDCh, n []mapping.PadUID, cseg mapping.CathodeSegmentation) error {
+func compareNeighbours(nref []dsIDCh, n []mapping.PadCID, cseg mapping.CathodeSegmentation) error {
 	if len(nref) != len(n) {
 		return fmt.Errorf("Want %d neighbours - Got %d", len(nref), len(n))
 	}
 
-	var n2 []mapping.PadUID
-	// convert dsIDCh to paduids
+	var n2 []mapping.PadCID
+	// convert dsIDCh to padcids
 	for _, dsch := range nref {
-		paduid, err := cseg.FindPadByFEE(dsch.id, dsch.ch)
+		padcid, err := cseg.FindPadByFEE(dsch.id, dsch.ch)
 		if err != nil {
 			return fmt.Errorf("Got an invalid pad for DS %4d CH %2d", dsch.id, dsch.ch)
 		}
-		n2 = append(n2, paduid)
+		n2 = append(n2, padcid)
 	}
 
 	sort.Slice(n2, func(i, j int) bool {
@@ -295,19 +295,19 @@ func testNeighboursOneDE(t *testing.T, deid int, ntest, nfail *int) {
 
 	for _, bending := range []bool{true, false} {
 		cseg := mapping.NewCathodeSegmentation(deid, bending)
-		cseg.ForEachPad(func(paduid mapping.PadUID) {
+		cseg.ForEachPad(func(padcid mapping.PadCID) {
 			*ntest++
-			dsid := cseg.PadDualSampaID(paduid)
-			dsch := cseg.PadDualSampaChannel(paduid)
+			dsid := cseg.PadDualSampaID(padcid)
+			dsch := cseg.PadDualSampaChannel(padcid)
 			nref := jsonGetNeighbours(tnei, deid, dsid, dsch)
-			n := cseg.GetNeighbours(paduid)
+			n := cseg.GetNeighbours(padcid)
 			err := compareNeighbours(nref, n, cseg)
 			if err != nil {
 				t.Errorf("Problem for DE %4d DS %4d CH %2d : %s", deid, dsid, dsch, err.Error())
 				t.Errorf("%v", nref)
 				msg := ">"
-				for _, paduid := range n {
-					msg += fmt.Sprintf("(%v %v) ", cseg.PadDualSampaID(paduid), cseg.PadDualSampaChannel(paduid))
+				for _, padcid := range n {
+					msg += fmt.Sprintf("(%v %v) ", cseg.PadDualSampaID(padcid), cseg.PadDualSampaChannel(padcid))
 				}
 				t.Errorf(msg)
 				*nfail++

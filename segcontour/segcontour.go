@@ -30,11 +30,11 @@ func Contour(cseg mapping.CathodeSegmentation) geo.Contour {
 
 func getDualSampaPadPolygons(cseg mapping.CathodeSegmentation, dsid mapping.DualSampaID) []geo.Polygon {
 	var pads []geo.Polygon
-	cseg.ForEachPadInDualSampa(dsid, func(paduid mapping.PadUID) {
-		x := cseg.PadPositionX(paduid)
-		y := cseg.PadPositionY(paduid)
-		dx := cseg.PadSizeX(paduid) / 2
-		dy := cseg.PadSizeY(paduid) / 2
+	cseg.ForEachPadInDualSampa(dsid, func(padcid mapping.PadCID) {
+		x := cseg.PadPositionX(padcid)
+		y := cseg.PadPositionY(padcid)
+		dx := cseg.PadSizeX(padcid) / 2
+		dy := cseg.PadSizeY(padcid) / 2
 		pads = append(pads, geo.Polygon{
 			{X: x - dx, Y: y - dy},
 			{X: x + dx, Y: y - dy},
