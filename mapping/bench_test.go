@@ -89,8 +89,8 @@ func BenchmarkByFEE(b *testing.B) {
 			}
 			seg := mapping.NewCathodeSegmentation(deid, isBendingPlane)
 			var dcs []DC
-			seg.ForEachPad(func(paduid mapping.PadUID) {
-				dcs = append(dcs, DC{D: seg.PadDualSampaID(paduid), C: seg.PadDualSampaChannel(paduid)})
+			seg.ForEachPad(func(padcid mapping.PadCID) {
+				dcs = append(dcs, DC{D: seg.PadDualSampaID(padcid), C: seg.PadDualSampaChannel(padcid)})
 			})
 			b.Run(strconv.Itoa(deid)+planeName, func(b *testing.B) {
 				for i := 0; i < b.N; i++ {

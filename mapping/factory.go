@@ -19,7 +19,6 @@ func RegisterCathodeSegmentationBuilder(segType int, builder cathodeSegmentation
 		fmt.Printf("already got a build for segType %d : will not override it", segType)
 		return
 	}
-	fmt.Printf("register builder for segType %d ", segType)
 	builderRegistry[segType] = builder
 }
 
