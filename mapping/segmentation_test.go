@@ -1,6 +1,7 @@
 package mapping_test
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -182,4 +183,35 @@ func TestForEachPad(t *testing.T) {
 			t.Errorf("DE %v expected %v pads but got %v from ForEachPad loop", deid, seg.NofPads(), npads)
 		}
 	})
+}
+
+func checkSameCathode(seg mapping.Segmentation, paduid mapping.PadUID, nei []mapping.PadUID) bool {
+
+	for _, n := range nei {
+		if seg.IsBendingPad(n) != seg.IsBendingPad(paduid) {
+			return false
+		}
+	}
+	return true
+}
+
+func TestBothSideNeighbours(t *testing.T) {
+
+	seg := mapping.NewSegmentation(100)
+
+	pb, pnb, err := seg.FindPadPairByPosition(24.0, 24.0)
+	if err != nil {
+		t.Errorf("could not get pad for x=24 y=24")
+	}
+	bn := seg.GetNeighbours(pb)
+	if !checkSameCathode(seg, pb, bn) {
+		t.Errorf("Got NB pads as neighbours of a bending pad")
+	}
+
+	nbn := seg.GetNeighbours(pnb)
+	if !checkSameCathode(seg, pnb, nbn) {
+		t.Errorf("Got B pads as neighbours of a non-bending pad")
+	}
+	fmt.Println("pb=", pb, "bn=", bn)
+	fmt.Println("pnb=", pnb, "nbn=", nbn)
 }

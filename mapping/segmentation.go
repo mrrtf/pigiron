@@ -170,8 +170,12 @@ func (seg *segmentation) GetNeighbours(paduid PadUID) []PadUID {
 	}
 	padcid := cseg.GetNeighbours(p)
 	var paduids []PadUID = make([]PadUID, len(padcid))
+	offset := 0
+	if !cseg.IsBending() {
+		offset = seg.padUIDOffset
+	}
 	for i, _ := range padcid {
-		paduids[i] = PadUID(padcid[i])
+		paduids[i] = PadUID(int(padcid[i]) + offset)
 	}
 	return paduids
 }
