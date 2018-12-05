@@ -1,7 +1,6 @@
 package mapping_test
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -212,6 +211,27 @@ func TestBothSideNeighbours(t *testing.T) {
 	if !checkSameCathode(seg, pnb, nbn) {
 		t.Errorf("Got B pads as neighbours of a non-bending pad")
 	}
-	fmt.Println("pb=", pb, "bn=", bn)
-	fmt.Println("pnb=", pnb, "nbn=", nbn)
+}
+
+func TestCircularTest(t *testing.T) {
+	seg := mapping.NewSegmentation(100)
+	var tp = []struct {
+		dsid mapping.DualSampaID
+		dsch int
+	}{
+		{95, 45}, // both pads @pos 24.0,24.0 cm
+		{1119, 45},
+	}
+
+	for i, _ := range tp {
+		dsid := tp[i].dsid
+		dsch := tp[i].dsch
+		paduid, _ := seg.FindPadByFEE(dsid, dsch)
+		if seg.PadDualSampaID(paduid) != dsid {
+			t.Errorf("Wanted DSID=%d. Got %d", dsid, seg.PadDualSampaID(paduid))
+		}
+		if seg.PadDualSampaChannel(paduid) != dsch {
+			t.Errorf("Wanted DSCH=%d. Got %d", dsid, seg.PadDualSampaChannel(paduid))
+		}
+	}
 }

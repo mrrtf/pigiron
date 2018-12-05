@@ -82,7 +82,7 @@ func (seg *segmentation) getCathSeg(paduid PadUID) (CathodeSegmentation, PadCID,
 	if int(paduid) < seg.padUIDOffset {
 		return seg.bending, PadCID(paduid), nil
 	}
-	return seg.nonBending, PadCID(int(paduid) - seg.padUIDOffset - 1), nil
+	return seg.nonBending, PadCID(int(paduid) - seg.padUIDOffset), nil
 }
 
 func (seg *segmentation) DetElemID() int {
