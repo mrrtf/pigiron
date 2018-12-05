@@ -12,11 +12,11 @@ import (
 
 func BenchmarkSegmentationCreationPerDE(b *testing.B) {
 
-	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
-		b.Run(strconv.Itoa(detElemID), func(b *testing.B) {
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid int) {
+		b.Run(strconv.Itoa(deid), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				_ = mapping.NewCathodeSegmentation(detElemID, true)
-				_ = mapping.NewCathodeSegmentation(detElemID, false)
+				_ = mapping.NewCathodeSegmentation(deid, true)
+				_ = mapping.NewCathodeSegmentation(deid, false)
 			}
 		})
 	})
@@ -25,9 +25,9 @@ func BenchmarkSegmentationCreationPerDE(b *testing.B) {
 func BenchmarkSegmentationCreation(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
-		mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
-			_ = mapping.NewCathodeSegmentation(detElemID, true)
-			_ = mapping.NewCathodeSegmentation(detElemID, false)
+		mapping.ForOneDetectionElementOfEachSegmentationType(func(deid int) {
+			_ = mapping.NewCathodeSegmentation(deid, true)
+			_ = mapping.NewCathodeSegmentation(deid, false)
 		})
 	}
 }
@@ -49,11 +49,11 @@ func generateUniformTestPoints(n int, box geo.BBox) []TestPoint {
 }
 
 func BenchmarkPositions(b *testing.B) {
-	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid int) {
 		const n = 100000
 		for _, isBendingPlane := range []bool{true, false} {
-			b.Run(fmt.Sprintf("findPadByPositions(%d,%v)", detElemID, isBendingPlane), func(b *testing.B) {
-				seg := mapping.NewCathodeSegmentation(detElemID, isBendingPlane)
+			b.Run(fmt.Sprintf("findPadByPositions(%d,%v)", deid, isBendingPlane), func(b *testing.B) {
+				seg := mapping.NewCathodeSegmentation(deid, isBendingPlane)
 				bbox := mapping.ComputeBBox(seg)
 				testpoints := generateUniformTestPoints(n, bbox)
 				for i := 0; i < b.N; i++ {

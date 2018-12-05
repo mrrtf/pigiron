@@ -1,9 +1,13 @@
-package mapping
+package impl4
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/aphecetche/pigiron/mapping"
+)
 
 type padGroup struct {
-	fecID          DualSampaID
+	fecID          mapping.DualSampaID
 	padGroupTypeID int
 	padSizeID      int
 	x              float64

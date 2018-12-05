@@ -6,11 +6,12 @@ import (
 
 	"github.com/aphecetche/pigiron/geo"
 	"github.com/aphecetche/pigiron/mapping"
+	_ "github.com/aphecetche/pigiron/mapping/impl4"
 )
 
 func TestSegmentationBBox(t *testing.T) {
 	for _, test := range []struct {
-		detElemID int
+		deid      int
 		isBending bool
 		want      geo.BBox
 	}{
@@ -58,17 +59,17 @@ func TestSegmentationBBox(t *testing.T) {
 		{904, false, geo.NewBBoxUnchecked(-100, -20, 100, 20)},
 		{905, false, geo.NewBBoxUnchecked(-80, -20, 80, 20)},
 	} {
-		if test.detElemID != 706 && test.detElemID != 500 {
+		if test.deid != 706 && test.deid != 500 {
 			continue
 		}
 
 		if test.isBending == true {
 			continue
 		}
-		seg := mapping.NewCathodeSegmentation(test.detElemID, test.isBending)
+		seg := mapping.NewCathodeSegmentation(test.deid, test.isBending)
 		bbox := BBox(seg)
 		if !geo.EqualBBox(bbox, test.want) {
-			t.Errorf("segmentation %3d - %v : wrong bbox got\n%v but want\n%v", test.detElemID,
+			t.Errorf("segmentation %3d - %v : wrong bbox got\n%v but want\n%v", test.deid,
 				mapping.PlaneAbbreviation(test.isBending), bbox.String(), test.want.String())
 		}
 	}
@@ -82,9 +83,9 @@ func TestPadSizes(t *testing.T) {
 
 	padsizes := make(map[padSize]int)
 
-	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid int) {
 		for _, isBending := range []bool{true, false} {
-			seg := mapping.NewCathodeSegmentation(detElemID, isBending)
+			seg := mapping.NewCathodeSegmentation(deid, isBending)
 			seg.ForEachPad(func(paduid mapping.PadUID) {
 				ps := &padSize{seg.PadSizeX(paduid), seg.PadSizeY(paduid)}
 				padsizes[*ps]++
