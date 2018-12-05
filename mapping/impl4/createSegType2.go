@@ -1,10 +1,12 @@
-package mapping
+package impl4
+
+import "github.com/aphecetche/pigiron/mapping"
 
 type createSegType2 struct{}
 
-func (seg createSegType2) Build(isBendingPlane bool) CathodeSegmentation {
+func (seg createSegType2) Build(isBendingPlane bool, deid int) mapping.CathodeSegmentation {
 	if isBendingPlane {
-		return newCathodeSegmentation(2, true,
+		return newCathodeSegmentation(deid, 2, true,
 			[]padGroup{
 				{1, 0, 0, 50, 2},
 				{2, 12, 0, 45, 4},
@@ -79,7 +81,7 @@ func (seg createSegType2) Build(isBendingPlane bool) CathodeSegmentation {
 				{5, 0.5},
 			})
 	}
-	return newCathodeSegmentation(2, false,
+	return newCathodeSegmentation(deid, 2, false,
 		[]padGroup{
 			{1028, 4, 0, 40, 2.5},
 			{1029, 3, 0, 47.1428566, 5},
@@ -138,5 +140,5 @@ func (seg createSegType2) Build(isBendingPlane bool) CathodeSegmentation {
 }
 
 func init() {
-	registerCathodeSegmentationBuilder(2, createSegType2{})
+	mapping.RegisterCathodeSegmentationBuilder(2, createSegType2{})
 }

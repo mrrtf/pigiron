@@ -1,21 +1,28 @@
-package mapping
+package impl4
 
-type createSegType16 struct{}
+import "github.com/aphecetche/pigiron/mapping"
 
-func (seg createSegType16) Build(isBendingPlane bool) CathodeSegmentation {
+type createSegType15 struct{}
+
+func (seg createSegType15) Build(isBendingPlane bool, deid int) mapping.CathodeSegmentation {
 	if isBendingPlane {
-		return newCathodeSegmentation(16, true,
+		return newCathodeSegmentation(deid, 15, true,
 			[]padGroup{
-				{3, 3, 0, 0, -20},
-				{4, 3, 0, 20, -20},
-				{7, 3, 0, -40, -20},
-				{8, 3, 0, -20, -20},
-				{101, 0, 0, 20, -4},
-				{102, 2, 0, 10, 4},
-				{103, 1, 0, 0, -4},
-				{106, 0, 0, -20, -4},
-				{107, 2, 0, -30, 4},
-				{108, 1, 0, -40, -4},
+				{3, 3, 0, 20, -20},
+				{4, 3, 0, 40, -20},
+				{7, 3, 0, -20, -20},
+				{8, 3, 0, 0, -20},
+				{11, 3, 0, -60, -20},
+				{12, 3, 0, -40, -20},
+				{101, 0, 0, 40, -4},
+				{102, 2, 0, 30, 4},
+				{103, 1, 0, 20, -4},
+				{106, 0, 0, 0, -4},
+				{107, 2, 0, -10, 4},
+				{108, 1, 0, -20, -4},
+				{111, 0, 0, -40, -4},
+				{112, 2, 0, -50, 4},
+				{113, 1, 0, -60, -4},
 			},
 			[]padGroupType{
 				/* L10 */ NewPadGroupType(2, 48, []int{15, 16, 14, 17, 13, 18, 12, 19, 11, 20, 10, 21, 9, 22, 8, 23, 7, 24, 6, 25, 5, 26, 4, 27, 3, 28, 2, 29, 1, 30, 0, 31, -1, 48, -1, 49, -1, 50, -1, 51, -1, 52, -1, 53, -1, 54, -1, 55, -1, 56, -1, 57, -1, 58, -1, 59, -1, 60, -1, 61, -1, 62, -1, 63, -1, 32, -1, 33, -1, 34, -1, 35, -1, 36, -1, 37, -1, 38, -1, 39, -1, 40, -1, 41, -1, 42, -1, 43, -1, 44, -1, 45, -1, 46, -1, 47}),
@@ -27,16 +34,20 @@ func (seg createSegType16) Build(isBendingPlane bool) CathodeSegmentation {
 				{10, 0.5},
 			})
 	}
-	return newCathodeSegmentation(16, false,
+	return newCathodeSegmentation(deid, 15, false,
 		[]padGroup{
-			{1025, 3, 0, 20, -20},
-			{1026, 2, 0, 0, -20},
-			{1029, 3, 0, -20, -20},
-			{1030, 2, 0, -40, -20},
-			{1128, 0, 0, 0, 0},
-			{1129, 1, 0, 20, 0},
-			{1133, 0, 0, -40, 0},
-			{1134, 1, 0, -20, 0},
+			{1025, 3, 0, 40, -20},
+			{1026, 2, 0, 20, -20},
+			{1029, 3, 0, -8.000000662e-09, -20},
+			{1030, 2, 0, -20, -20},
+			{1033, 3, 0, -40, -20},
+			{1034, 2, 0, -60, -20},
+			{1128, 0, 0, 20, 0},
+			{1129, 1, 0, 40, 0},
+			{1133, 0, 0, -20, 0},
+			{1134, 1, 0, -8.000000662e-09, 0},
+			{1138, 0, 0, -60, 0},
+			{1139, 1, 0, -40, 0},
 		},
 		[]padGroupType{
 			/* O5 */ NewPadGroupType(28, 2, []int{47, 45, 43, 41, 39, 37, 35, 33, 63, 61, 59, 57, 55, 53, 51, 49, 31, 29, 27, 25, 23, 21, 19, 17, 15, 13, 11, 9, 46, 44, 42, 40, 38, 36, 34, 32, 62, 60, 58, 56, 54, 52, 50, 48, 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 8}),
@@ -50,5 +61,5 @@ func (seg createSegType16) Build(isBendingPlane bool) CathodeSegmentation {
 }
 
 func init() {
-	registerCathodeSegmentationBuilder(16, createSegType16{})
+	mapping.RegisterCathodeSegmentationBuilder(15, createSegType15{})
 }

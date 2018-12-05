@@ -8,15 +8,13 @@ import (
 	"testing"
 
 	"github.com/aphecetche/pigiron/mapping"
-)
-
-var (
-// seg = mapping.NewSegmentation(100, true)
+	// must include the specific implementation package of the mapping
+	_ "github.com/aphecetche/pigiron/mapping/impl4"
 )
 
 func TestNumberOfDetectionElementIs156(t *testing.T) {
 	nde := 0
-	mapping.ForEachDetectionElement(func(detElemID int) {
+	mapping.ForEachDetectionElement(func(deid int) {
 		nde++
 	})
 
@@ -45,11 +43,11 @@ func TestNewSegmentationMustErrorIfDetElemIdIsNotValid(t *testing.T) {
 	}
 }
 
-var detElemIDs = []int{100, 300, 500, 501, 502, 503, 504, 600, 601, 602, 700,
+var deid = []int{100, 300, 500, 501, 502, 503, 504, 600, 601, 602, 700,
 	701, 702, 703, 704, 705, 706, 902, 903, 904, 905}
 
 func TestCreateSegmentation(t *testing.T) {
-	for _, de := range detElemIDs {
+	for _, de := range deid {
 		for _, plane := range []bool{true, false} {
 			cseg := mapping.NewCathodeSegmentation(de, plane)
 			if cseg == nil {
@@ -111,7 +109,7 @@ func TestTotalNofBendingFECInSegTypes(t *testing.T) {
 
 	for _, tt := range tv {
 		n := 0
-		for _, de := range detElemIDs {
+		for _, de := range deid {
 			cseg := mapping.NewCathodeSegmentation(de, tt.plane)
 			n += cseg.NofDualSampas()
 		}
@@ -164,11 +162,11 @@ func TestNofFEC(t *testing.T) {
 
 func TestNofPadsInSegmentations(t *testing.T) {
 	npads := 0
-	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid int) {
 		for _, plane := range []bool{true, false} {
-			cseg := mapping.NewCathodeSegmentation(detElemID, plane)
+			cseg := mapping.NewCathodeSegmentation(deid, plane)
 			if cseg == nil {
-				log.Fatalf("Got nil seg for detElemId %d plane %v", detElemID, plane)
+				log.Fatalf("Got nil seg for detElemId %d plane %v", deid, plane)
 			}
 			npads += cseg.NofPads()
 		}
@@ -181,7 +179,7 @@ func TestNofPadsInSegmentations(t *testing.T) {
 
 func TestNofSegmentations(t *testing.T) {
 	n := 0
-	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid int) {
 		n += 2
 	})
 	if n != 42 {
@@ -192,9 +190,9 @@ func TestNofSegmentations(t *testing.T) {
 func TestDualSampasWithLessThan64Pads(t *testing.T) {
 
 	non64 := make(map[int]int)
-	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid int) {
 		for _, plane := range []bool{true, false} {
-			cseg := mapping.NewCathodeSegmentation(detElemID, plane)
+			cseg := mapping.NewCathodeSegmentation(deid, plane)
 			for i := 0; i < cseg.NofDualSampas(); i++ {
 				n := 0
 				dualSampaID, _ := cseg.DualSampaID(i)
@@ -314,13 +312,13 @@ func dumpToFile(filename string, cseg *mapping.CathodeSegmentation, points []Poi
 }
 
 func TestNoGapWithinPads(t *testing.T) {
-	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid int) {
 		for _, isBendingPlane := range []bool{true, false} {
-			cseg := mapping.NewCathodeSegmentation(detElemID, isBendingPlane)
+			cseg := mapping.NewCathodeSegmentation(deid, isBendingPlane)
 			g := checkGaps(t, &cseg)
 			if len(g) != 0 {
 				dumpToFile(fmt.Sprintf("bug-gap-%v-%s.html",
-					detElemID,
+					deid,
 					mapping.PlaneAbbreviation(isBendingPlane)),
 					&cseg, g)
 			}
@@ -329,15 +327,15 @@ func TestNoGapWithinPads(t *testing.T) {
 }
 
 func TestForEachPad(t *testing.T) {
-	mapping.ForOneDetectionElementOfEachSegmentationType(func(detElemID int) {
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid int) {
 		for _, b := range []bool{true, false} {
-			cseg := mapping.NewCathodeSegmentation(detElemID, b)
+			cseg := mapping.NewCathodeSegmentation(deid, b)
 			npads := 0
 			cseg.ForEachPad(func(paduid mapping.PadUID) {
 				npads++
 			})
 			if npads != cseg.NofPads() {
-				t.Errorf("DE %v isBending %v : expected %v pads but got %v from ForEachPad loop", detElemID, b, cseg.NofPads(), npads)
+				t.Errorf("DE %v isBending %v : expected %v pads but got %v from ForEachPad loop", deid, b, cseg.NofPads(), npads)
 			}
 		}
 	})

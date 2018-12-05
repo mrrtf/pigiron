@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func detElemID2SegType(detElemID int) (int, error) {
+func detElemID2SegType(deid int) (int, error) {
 	m := map[int]int{
 		100:  0,
 		101:  0,
@@ -163,9 +163,9 @@ func detElemID2SegType(detElemID int) (int, error) {
 		1024: 17,
 		1025: 11,
 	}
-	segType, ok := m[detElemID]
+	segType, ok := m[deid]
 	if ok {
 		return segType, nil
 	}
-	return -1, fmt.Errorf("detElemId %d is unknown to me", detElemID)
+	return -1, fmt.Errorf("detElemId %d is unknown to me", deid)
 }
