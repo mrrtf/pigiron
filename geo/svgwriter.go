@@ -25,14 +25,13 @@ func NewSVGWriter(width int) *SVGWriter {
 
 func (w *SVGWriter) assertViewBox() {
 	if w.xleft < w.xright && w.ybottom < w.ytop {
-		fmt.Printf("view box already correct")
 		return
 	}
 	// loop over all elements to find the boundaries
 	xmin := math.MaxFloat64
-	xmax := -math.MaxFloat64
-	ymin := math.MaxFloat64
-	ymax := -math.MaxFloat64
+	xmax := -xmin
+	ymin := xmin
+	ymax := -ymin
 	for _, e := range w.elements {
 		b := e.bbox()
 		if b.Width() > tiny && b.Height() > tiny {
@@ -234,7 +233,7 @@ func (r *rectag) translate(x0, y0 float64) {
 }
 
 func (r *rectag) bbox() BBox {
-	b, err := NewBBox(r.x-r.width/2.0, r.y-r.height/2.0, r.x+r.width/2.0, r.y+r.height/2.0)
+	b, err := NewBBox(r.x, r.y, r.x+r.width, r.y+r.height)
 	if err != nil {
 		panic(err)
 	}
@@ -277,9 +276,9 @@ func (p *poltag) translate(x0, y0 float64) {
 
 func (p *poltag) bbox() BBox {
 	xmin := math.MaxFloat64
-	xmax := -math.MaxFloat64
-	ymin := math.MaxFloat64
-	ymax := -math.MaxFloat64
+	xmax := -xmin
+	ymin := xmin
+	ymax := -ymin
 	for i, _ := range p.x {
 		xmin = math.Min(xmin, p.x[i])
 		xmax = math.Max(xmax, p.x[i])
