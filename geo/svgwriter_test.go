@@ -11,7 +11,7 @@ func TestBasicWrite(t *testing.T) {
 	want := `<html>
 <style></style>
 <body>
-<svg width="1024" height="975" viewBox="-0.5 0 10.01 10.01">
+<svg width="1024" height="1024" viewBox="0.1 0.1 10.01 10.01">
 <g class="test">
 <rect x="1" y="2" width="3" height="4" /> 
 <text x="10" y="20">some text</text>
