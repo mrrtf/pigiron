@@ -218,7 +218,7 @@ func ComputeSegmentationBBox(seg Segmentation) geo.BBox {
 	xmax := -xmin
 	ymax := -ymin
 	seg.ForEachPad(func(paduid PadUID) {
-		bbox := ComputePadBBox(seg, paduid)
+		bbox := ComputePadBBox(seg, seg, paduid)
 		xmin = math.Min(xmin, bbox.Xmin())
 		xmax = math.Max(xmax, bbox.Xmax())
 		ymin = math.Min(ymin, bbox.Ymin())
@@ -233,11 +233,11 @@ func ComputeSegmentationBBox(seg Segmentation) geo.BBox {
 
 // ComputePadBBox returns the bounding box of one pad of the
 // given segmentation.
-func ComputePadBBox(seg Segmentation, paduid PadUID) geo.BBox {
-	x := seg.PadPositionX(paduid)
-	y := seg.PadPositionY(paduid)
-	dx := seg.PadSizeX(paduid) / 2
-	dy := seg.PadSizeY(paduid) / 2
+func ComputePadBBox(padpos PadPositioner, padsize PadSizer, paduid PadUID) geo.BBox {
+	x := padpos.PadPositionX(paduid)
+	y := padpos.PadPositionY(paduid)
+	dx := padsize.PadSizeX(paduid) / 2
+	dy := padsize.PadSizeY(paduid) / 2
 	bbox, err := geo.NewBBox(x-dx, y-dy, x+dx, y+dy)
 	if err != nil {
 		log.Fatalf(err.Error())
