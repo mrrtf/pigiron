@@ -10,6 +10,14 @@ type SegCache struct {
 // The segmentation for both planes of that detection element is created
 // and cached if not already cached
 func (sc *SegCache) CathodeSegmentation(deid int, bending bool) CathodeSegmentation {
+	seg := sc.Segmentation(deid)
+	if bending {
+		return seg.Bending()
+	}
+	return seg.NonBending()
+}
+
+func (sc *SegCache) Segmentation(deid int) Segmentation {
 	if sc.seg == nil {
 		sc.seg = make(map[int]Segmentation)
 	}
@@ -18,8 +26,5 @@ func (sc *SegCache) CathodeSegmentation(deid int, bending bool) CathodeSegmentat
 		sc.seg[deid] = NewSegmentation(deid)
 		seg = sc.seg[deid]
 	}
-	if bending {
-		return seg.Bending()
-	}
-	return seg.NonBending()
+	return seg
 }
