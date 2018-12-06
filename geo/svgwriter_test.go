@@ -13,13 +13,13 @@ func TestBasicWrite(t *testing.T) {
 <body>
 <svg width="1024" height="1024" viewBox="0.1 0.1 10.01 10.01">
 <g class="test">
-<rect x="1" y="2" width="3" height="4" /> 
+<rect x="1" y="2" width="3" height="4"/>
 <text x="10" y="20">some text</text>
 <circle cx="10.000000" cy="10.000000" r="0.010000" />
 </g>
 <g class="points">
-<polygon points="0.1,0.1 1.1,0.1 1.1,1.1 2.1,1.1 2.1,3.1 1.1,3.1 1.1,2.1 0.1,2.1 " />
-<polygon points="0.1,0.1 1.1,0.1 1.1,1.1 2.1,1.1 2.1,3.1 1.1,3.1 1.1,2.1 0.1,2.1 " class"big" />
+<polygon points="0.1,0.1 1.1,0.1 1.1,1.1 2.1,1.1 2.1,3.1 1.1,3.1 1.1,2.1 0.1,2.1 "/>
+<polygon points="0.1,0.1 1.1,0.1 1.1,1.1 2.1,1.1 2.1,3.1 1.1,3.1 1.1,2.1 0.1,2.1 " class="big"/>
 </svg>
 </body>
 </html>
