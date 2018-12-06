@@ -101,7 +101,12 @@ func (w *SVGWriter) GroupEnd() {
 
 // Rect adds a rectangle object
 func (w *SVGWriter) Rect(x, y, width, height float64) {
-	w.appendElement(&rectag{x, y, width, height})
+	w.RectWithClass(x, y, width, height, "")
+}
+
+// Rect adds a rectangle object
+func (w *SVGWriter) RectWithClass(x, y, width, height float64, class string) {
+	w.appendElement(&rectag{x, y, width, height, class})
 }
 
 // Text adds a text object
@@ -187,6 +192,7 @@ type grouptag string
 type groupendtag struct{}
 type rectag struct {
 	x, y, width, height float64
+	class               string
 }
 type textag struct {
 	x, y float64
@@ -224,7 +230,12 @@ func (g groupendtag) translate(x, y float64) {
 }
 
 func (r rectag) String() string {
-	return fmt.Sprintf("<rect x=\"%v\" y=\"%v\" width=\"%v\" height=\"%v\" /> ", r.x, r.y, r.width, r.height)
+	s := fmt.Sprintf("<rect x=\"%v\" y=\"%v\" width=\"%v\" height=\"%v\"", r.x, r.y, r.width, r.height)
+	if len(r.class) > 0 {
+		s += " class=\"" + r.class + "\""
+	}
+	s += "/>"
+	return s
 }
 
 func (r *rectag) translate(x0, y0 float64) {
@@ -261,9 +272,9 @@ func (p poltag) String() string {
 	}
 	s += "\""
 	if len(p.class) > 0 {
-		s += " class\"" + p.class + "\""
+		s += " class=\"" + p.class + "\""
 	}
-	s += " />"
+	s += "/>"
 	return s
 }
 
