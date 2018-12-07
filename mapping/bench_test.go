@@ -12,8 +12,8 @@ import (
 
 func BenchmarkSegmentationCreationPerDE(b *testing.B) {
 
-	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid int) {
-		b.Run(strconv.Itoa(deid), func(b *testing.B) {
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid mapping.DEID) {
+		b.Run(strconv.Itoa(int(deid)), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				_ = mapping.NewCathodeSegmentation(deid, true)
 				_ = mapping.NewCathodeSegmentation(deid, false)
@@ -25,7 +25,7 @@ func BenchmarkSegmentationCreationPerDE(b *testing.B) {
 func BenchmarkSegmentationCreation(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
-		mapping.ForOneDetectionElementOfEachSegmentationType(func(deid int) {
+		mapping.ForOneDetectionElementOfEachSegmentationType(func(deid mapping.DEID) {
 			_ = mapping.NewCathodeSegmentation(deid, true)
 			_ = mapping.NewCathodeSegmentation(deid, false)
 		})
@@ -49,7 +49,7 @@ func generateUniformTestPoints(n int, box geo.BBox) []TestPoint {
 }
 
 func BenchmarkPositions(b *testing.B) {
-	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid int) {
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid mapping.DEID) {
 		const n = 100000
 		for _, isBendingPlane := range []bool{true, false} {
 			b.Run(fmt.Sprintf("findPadByPositions(%d,%v)", deid, isBendingPlane), func(b *testing.B) {
@@ -68,16 +68,16 @@ func BenchmarkPositions(b *testing.B) {
 
 type DC struct {
 	D mapping.DualSampaID
-	C int
+	C mapping.DualSampaChannelID
 }
 
 var (
-	detElemIds []int
+	detElemIds []mapping.DEID
 )
 
 func init() {
 
-	detElemIds = []int{100, 300, 501, 1025}
+	detElemIds = []mapping.DEID{100, 300, 501, 1025}
 }
 
 func BenchmarkByFEE(b *testing.B) {
@@ -92,7 +92,7 @@ func BenchmarkByFEE(b *testing.B) {
 			seg.ForEachPad(func(padcid mapping.PadCID) {
 				dcs = append(dcs, DC{D: seg.PadDualSampaID(padcid), C: seg.PadDualSampaChannel(padcid)})
 			})
-			b.Run(strconv.Itoa(deid)+planeName, func(b *testing.B) {
+			b.Run(strconv.Itoa(int(deid))+planeName, func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					for _, pad := range dcs {
 						seg.FindPadByFEE(pad.D, pad.C)

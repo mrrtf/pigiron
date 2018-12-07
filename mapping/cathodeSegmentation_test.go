@@ -14,7 +14,7 @@ import (
 
 func TestCathodeNumberOfDetectionElementIs156(t *testing.T) {
 	nde := 0
-	mapping.ForEachDetectionElement(func(deid int) {
+	mapping.ForEachDetectionElement(func(deid mapping.DEID) {
 		nde++
 	})
 
@@ -43,7 +43,7 @@ func TestCathodeNewSegmentationMustErrorIfDetElemIdIsNotValid(t *testing.T) {
 	}
 }
 
-var testcathodedeid = []int{100, 300, 500, 501, 502, 503, 504, 600, 601, 602, 700,
+var testcathodedeid = []mapping.DEID{100, 300, 500, 501, 502, 503, 504, 600, 601, 602, 700,
 	701, 702, 703, 704, 705, 706, 902, 903, 904, 905}
 
 func TestCathodeCreateSegmentation(t *testing.T) {
@@ -59,7 +59,7 @@ func TestCathodeCreateSegmentation(t *testing.T) {
 
 func TestCathodeNofPads(t *testing.T) {
 	var tv = []struct {
-		de                int
+		de                mapping.DEID
 		nofBendingPads    int
 		nofNonBendingPads int
 	}{
@@ -121,7 +121,7 @@ func TestCathodeTotalNofBendingFECInSegTypes(t *testing.T) {
 
 func TestCathodeNofFEC(t *testing.T) {
 	var tv = []struct {
-		de                      int
+		de                      mapping.DEID
 		nofBendingDualSampas    int
 		nofNonBendingDualSampas int
 	}{
@@ -162,7 +162,7 @@ func TestCathodeNofFEC(t *testing.T) {
 
 func TestCathodeNofPadsInSegmentations(t *testing.T) {
 	npads := 0
-	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid int) {
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid mapping.DEID) {
 		for _, plane := range []bool{true, false} {
 			cseg := mapping.NewCathodeSegmentation(deid, plane)
 			if cseg == nil {
@@ -179,7 +179,7 @@ func TestCathodeNofPadsInSegmentations(t *testing.T) {
 
 func TestCathodeNofSegmentations(t *testing.T) {
 	n := 0
-	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid int) {
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid mapping.DEID) {
 		n += 2
 	})
 	if n != 42 {
@@ -190,7 +190,7 @@ func TestCathodeNofSegmentations(t *testing.T) {
 func TestCathodeDualSampasWithLessThan64Pads(t *testing.T) {
 
 	non64 := make(map[int]int)
-	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid int) {
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid mapping.DEID) {
 		for _, plane := range []bool{true, false} {
 			cseg := mapping.NewCathodeSegmentation(deid, plane)
 			for i := 0; i < cseg.NofDualSampas(); i++ {
@@ -312,7 +312,7 @@ func dumpToFile(filename string, cseg *mapping.CathodeSegmentation, points []Poi
 }
 
 func TestCathodeNoGapWithinPads(t *testing.T) {
-	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid int) {
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid mapping.DEID) {
 		for _, isBendingPlane := range []bool{true, false} {
 			cseg := mapping.NewCathodeSegmentation(deid, isBendingPlane)
 			g := checkGaps(t, &cseg)
@@ -327,7 +327,7 @@ func TestCathodeNoGapWithinPads(t *testing.T) {
 }
 
 func TestCathodeForEachPad(t *testing.T) {
-	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid int) {
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid mapping.DEID) {
 		for _, b := range []bool{true, false} {
 			cseg := mapping.NewCathodeSegmentation(deid, b)
 			npads := 0

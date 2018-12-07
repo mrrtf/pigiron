@@ -46,7 +46,7 @@ func assertInputForDetElemIsCorrect(m TestChannelList) {
 
 }
 
-func checkSegmentationCreation(t *testing.T, deid int) {
+func checkSegmentationCreation(t *testing.T, deid mapping.DEID) {
 	for _, isBendingPlane := range []bool{true, false} {
 		seg := mapping.NewCathodeSegmentation(deid, isBendingPlane)
 		if seg == nil {
@@ -195,7 +195,7 @@ func TestPositions(t *testing.T) {
 
 	var notok int
 	for _, tp := range testfile.Testpositions {
-		seg := mapping.NewCathodeSegmentation(int(tp.De), tp.isBendingPlane())
+		seg := mapping.NewCathodeSegmentation(tp.De, tp.isBendingPlane())
 		err = testOnePosition(seg, tp)
 		if err != nil {
 			t.Log(err)
@@ -214,7 +214,7 @@ func TestNeighbours(t *testing.T) {
 	}
 	ntest := 0
 	nfail := 0
-	for _, deid := range []int{100, 300, 500, 501, 502, 503, 504, 600, 601, 602, 700, 701, 702, 703, 704, 705, 706, 902, 903, 904, 905} {
+	for _, deid := range []mapping.DEID{100, 300, 500, 501, 502, 503, 504, 600, 601, 602, 700, 701, 702, 703, 704, 705, 706, 902, 903, 904, 905} {
 		testNeighboursOneDE(t, deid, &ntest, &nfail)
 	}
 	if nfail != 0 {
@@ -224,10 +224,10 @@ func TestNeighbours(t *testing.T) {
 
 type dsIDCh struct {
 	id mapping.DualSampaID
-	ch int
+	ch mapping.DualSampaChannelID
 }
 
-func jsonGetNeighbours(tnei TestNeighbourStruct, deid int, dsid mapping.DualSampaID, dsch int) []dsIDCh {
+func jsonGetNeighbours(tnei TestNeighbourStruct, deid mapping.DEID, dsid mapping.DualSampaID, dsch mapping.DualSampaChannelID) []dsIDCh {
 	var neighbours []dsIDCh
 	for _, nei := range tnei.Neighbours {
 		if nei.Deid != deid {
@@ -281,8 +281,8 @@ func compareNeighbours(nref []dsIDCh, n []mapping.PadCID, cseg mapping.CathodeSe
 	return nil
 }
 
-func testNeighboursOneDE(t *testing.T, deid int, ntest, nfail *int) {
-	path := filepath.Join("testdata", "test_neighbours_list_"+strconv.Itoa(deid)+".json")
+func testNeighboursOneDE(t *testing.T, deid mapping.DEID, ntest, nfail *int) {
+	path := filepath.Join("testdata", "test_neighbours_list_"+strconv.Itoa(int(deid))+".json")
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		panic(err)

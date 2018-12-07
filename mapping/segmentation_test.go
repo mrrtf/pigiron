@@ -10,7 +10,7 @@ import (
 	_ "github.com/aphecetche/pigiron/mapping/impl4"
 )
 
-var testdeid = []int{100, 300, 500, 501, 502, 503, 504, 600, 601, 602, 700,
+var testdeid = []mapping.DEID{100, 300, 500, 501, 502, 503, 504, 600, 601, 602, 700,
 	701, 702, 703, 704, 705, 706, 902, 903, 904, 905}
 
 func TestNewSegmentationMustNotErrorIfDetElemIdIsValid(t *testing.T) {
@@ -42,7 +42,7 @@ func TestCreateSegmentation(t *testing.T) {
 
 func TestNofPads(t *testing.T) {
 	var tv = []struct {
-		de      int
+		de      mapping.DEID
 		nofPads int
 	}{
 		{100, 14392 + 14280},
@@ -78,7 +78,7 @@ func TestNofPads(t *testing.T) {
 
 func TestNofFEC(t *testing.T) {
 	var tv = []struct {
-		de            int
+		de            mapping.DEID
 		nofDualSampas int
 	}{
 		{100, 226 + 225},
@@ -114,7 +114,7 @@ func TestNofFEC(t *testing.T) {
 
 func TestNofPadsInSegmentations(t *testing.T) {
 	npads := 0
-	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid int) {
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid mapping.DEID) {
 		cseg := mapping.NewSegmentation(deid)
 		if cseg == nil {
 			log.Fatalf("Got nil seg for detElemId %d", deid)
@@ -172,7 +172,7 @@ func TestInvalidFindPadByFEE(t *testing.T) {
 }
 
 func TestForEachPad(t *testing.T) {
-	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid int) {
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid mapping.DEID) {
 		seg := mapping.NewSegmentation(deid)
 		npads := 0
 		seg.ForEachPad(func(paduid mapping.PadUID) {
@@ -217,7 +217,7 @@ func TestCircularTest(t *testing.T) {
 	seg := mapping.NewSegmentation(100)
 	var tp = []struct {
 		dsid mapping.DualSampaID
-		dsch int
+		dsch mapping.DualSampaChannelID
 	}{
 		{95, 45}, // both pads @pos 24.0,24.0 cm
 		{1119, 45},

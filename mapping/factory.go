@@ -5,7 +5,7 @@ import (
 )
 
 type cathodeSegmentationBuilder interface {
-	Build(isBendingPlane bool, deid int) CathodeSegmentation
+	Build(isBendingPlane bool, deid DEID) CathodeSegmentation
 }
 
 var builderRegistry map[int]cathodeSegmentationBuilder

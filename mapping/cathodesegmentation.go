@@ -14,22 +14,28 @@ var ErrInvalidPadCID = errors.New("invalid pad uid")
 // PadCID is a pad identifier, valid for one cathode only.
 type PadCID int
 
-// DualSampaID is a DualSampe identifier.
+// DualSampaID is a DualSampa identifier.
 type DualSampaID int
+
+// DualSampaChannel is a DualSampa channel identifier.
+type DualSampaChannelID int
+
+// DEID is a detection element identifier.
+type DEID int
 
 // CathodeSegmentation represents the mapping of one cathode
 // (either bending or non-bending cathode).
 type CathodeSegmentation interface {
-	DetElemID() int
+	DetElemID() DEID
 	NofPads() int
 	NofDualSampas() int
 	DualSampaID(dualSampaIndex int) (DualSampaID, error)
 	IsValid(padcid PadCID) bool
-	FindPadByFEE(dualSampaID DualSampaID, dualSampaChannel int) (PadCID, error)
+	FindPadByFEE(dualSampaID DualSampaID, dualSampaChannel DualSampaChannelID) (PadCID, error)
 	FindPadByPosition(x, y float64) (PadCID, error)
 	ForEachPad(padHandler func(padcid PadCID))
 	ForEachPadInDualSampa(dualSampaID DualSampaID, padHandler func(padcid PadCID))
-	PadDualSampaChannel(padcid PadCID) int
+	PadDualSampaChannel(padcid PadCID) DualSampaChannelID
 	PadDualSampaID(padcid PadCID) DualSampaID
 	PadPositionX(padcid PadCID) float64
 	PadPositionY(padcid PadCID) float64
@@ -41,8 +47,8 @@ type CathodeSegmentation interface {
 
 // ForEachDetectionElement loops over all detection elements and
 // call the detElemIdHandler function for each of them
-func ForEachDetectionElement(detElemIDHandler func(deid int)) {
-	for _, deid := range []int{100, 101, 102, 103,
+func ForEachDetectionElement(detElemIDHandler func(deid DEID)) {
+	for _, deid := range []DEID{100, 101, 102, 103,
 		200, 201, 202, 203, 300,
 		301, 302, 303, 400, 401, 402, 403,
 		500, 501, 502, 503, 504, 505, 506, 507, 508,
@@ -63,8 +69,8 @@ func ForEachDetectionElement(detElemIDHandler func(deid int)) {
 
 // ForOneDetectionElementOfEachSegmentationType loops over one detection element per segmentation type
 // and call the detElemIdHandler function for each of them
-func ForOneDetectionElementOfEachSegmentationType(detElemIDHandler func(deid int)) {
-	for _, deid := range []int{100, 300, 500, 501, 502, 503, 504, 600, 601, 602,
+func ForOneDetectionElementOfEachSegmentationType(detElemIDHandler func(deid DEID)) {
+	for _, deid := range []DEID{100, 300, 500, 501, 502, 503, 504, 600, 601, 602,
 		700, 701, 702, 703, 704, 705, 706, 902, 903, 904, 905} {
 		detElemIDHandler(deid)
 	}
@@ -115,7 +121,7 @@ func ComputeCathodePadBBox(cseg CathodeSegmentation, padcid PadCID) geo.BBox {
 
 // NewSegmentation creates a segmentation object for the given
 // detection element plane (aka cathode).
-func NewCathodeSegmentation(deid int, isBendingPlane bool) CathodeSegmentation {
+func NewCathodeSegmentation(deid DEID, isBendingPlane bool) CathodeSegmentation {
 	segType, err := detElemID2SegType(deid)
 	if err != nil {
 		return nil

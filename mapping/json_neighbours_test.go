@@ -8,14 +8,14 @@ import (
 
 type TestNeighbourStruct struct {
 	Neighbours []struct {
-		Deid int `json:"deid"`
+		Deid mapping.DEID `json:"deid"`
 		Ds   []struct {
 			ID       mapping.DualSampaID `json:"id"`
 			Channels []struct {
-				Ch  int `json:"ch"`
+				Ch  mapping.DualSampaChannelID `json:"ch"`
 				Nei []struct {
-					Dsid mapping.DualSampaID `json:"dsid"`
-					Dsch int                 `json:"dsch"`
+					Dsid mapping.DualSampaID        `json:"dsid"`
+					Dsch mapping.DualSampaChannelID `json:"dsch"`
 				} `json:"nei"`
 			} `json:"channels"`
 		} `json:"ds"`

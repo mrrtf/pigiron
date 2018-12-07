@@ -14,16 +14,16 @@ type PadUID int
 // It encompasses both cathodes of a detection element.
 //
 type Segmentation interface {
-	DetElemID() int
+	DetElemID() DEID
 	NofPads() int
 	NofDualSampas() int
 	IsValid(paduid PadUID) bool
 	IsBendingPad(paduid PadUID) bool
-	FindPadByFEE(dualSampaID DualSampaID, dualSampaChannel int) (PadUID, error)
+	FindPadByFEE(dualSampaID DualSampaID, dualSampaChannel DualSampaChannelID) (PadUID, error)
 	FindPadPairByPosition(x, y float64) (PadUID, PadUID, error)
 	ForEachPad(padHandler func(paduid PadUID))
 	ForEachPadInDualSampa(dualSampaID DualSampaID, padHandler func(paduid PadUID))
-	PadDualSampaChannel(paduid PadUID) int
+	PadDualSampaChannel(paduid PadUID) DualSampaChannelID
 	PadDualSampaID(paduid PadUID) DualSampaID
 	PadPositionX(paduid PadUID) float64
 	PadPositionY(paduid PadUID) float64
@@ -49,7 +49,7 @@ var InvalidPadUID PadUID = -1
 // NewSegmentation creates a Segmentation object for the given
 // detection element.
 // The returned segmentation spans both cathodes (bending and non-bending).
-func NewSegmentation(deid int) Segmentation {
+func NewSegmentation(deid DEID) Segmentation {
 	bseg := NewCathodeSegmentation(deid, true)
 	if bseg == nil {
 		return nil
@@ -85,7 +85,7 @@ func (seg *segmentation) getCathSeg(paduid PadUID) (CathodeSegmentation, PadCID,
 	return seg.nonBending, PadCID(int(paduid) - seg.padUIDOffset), nil
 }
 
-func (seg *segmentation) DetElemID() int {
+func (seg *segmentation) DetElemID() DEID {
 	return seg.bending.DetElemID()
 }
 
@@ -112,7 +112,7 @@ func (seg *segmentation) padC2UID(padcid PadCID, isBending bool) PadUID {
 	return PadUID(int(padcid) + seg.padUIDOffset)
 }
 
-func (seg *segmentation) FindPadByFEE(dualSampaID DualSampaID, dualSampaChannel int) (PadUID, error) {
+func (seg *segmentation) FindPadByFEE(dualSampaID DualSampaID, dualSampaChannel DualSampaChannelID) (PadUID, error) {
 	var padcid PadCID
 	var err error
 	var isBending bool = dualSampaID < 1024
@@ -180,7 +180,7 @@ func (seg *segmentation) GetNeighbours(paduid PadUID) []PadUID {
 	return paduids
 }
 
-func (seg *segmentation) PadDualSampaChannel(paduid PadUID) int {
+func (seg *segmentation) PadDualSampaChannel(paduid PadUID) DualSampaChannelID {
 	cseg, p, _ := seg.getCathSeg(paduid)
 	return cseg.PadDualSampaChannel(p)
 }
@@ -218,7 +218,7 @@ func ComputeSegmentationBBox(seg Segmentation) geo.BBox {
 	xmax := -xmin
 	ymax := -ymin
 	seg.ForEachPad(func(paduid PadUID) {
-		bbox := ComputePadBBox(seg, seg, paduid)
+		bbox := ComputePadBBox(seg, paduid)
 		xmin = math.Min(xmin, bbox.Xmin())
 		xmax = math.Max(xmax, bbox.Xmax())
 		ymin = math.Min(ymin, bbox.Ymin())
@@ -233,11 +233,11 @@ func ComputeSegmentationBBox(seg Segmentation) geo.BBox {
 
 // ComputePadBBox returns the bounding box of one pad of the
 // given segmentation.
-func ComputePadBBox(padpos PadPositioner, padsize PadSizer, paduid PadUID) geo.BBox {
-	x := padpos.PadPositionX(paduid)
-	y := padpos.PadPositionY(paduid)
-	dx := padsize.PadSizeX(paduid) / 2
-	dy := padsize.PadSizeY(paduid) / 2
+func ComputePadBBox(padps PadSizerPositioner, paduid PadUID) geo.BBox {
+	x := padps.PadPositionX(paduid)
+	y := padps.PadPositionY(paduid)
+	dx := padps.PadSizeX(paduid) / 2
+	dy := padps.PadSizeY(paduid) / 2
 	bbox, err := geo.NewBBox(x-dx, y-dy, x+dx, y+dy)
 	if err != nil {
 		log.Fatalf(err.Error())

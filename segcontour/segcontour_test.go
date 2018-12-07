@@ -10,7 +10,7 @@ import (
 
 func TestSegmentationBBox(t *testing.T) {
 	for _, test := range []struct {
-		deid      int
+		deid      mapping.DEID
 		isBending bool
 		want      geo.BBox
 	}{
@@ -80,7 +80,7 @@ func TestPadSizes(t *testing.T) {
 	}
 	padsizes := make(map[padSize]int)
 
-	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid int) {
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid mapping.DEID) {
 		for _, isBending := range []bool{true, false} {
 			seg := mapping.NewCathodeSegmentation(deid, isBending)
 			seg.ForEachPad(func(padcid mapping.PadCID) {

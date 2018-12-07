@@ -1,6 +1,10 @@
 package impl4
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/aphecetche/pigiron/mapping"
+)
 
 // A padGroupType is a collection of pads of unspecified size(s)
 // organized in a certain way in a x-y rectilinear plane
@@ -47,16 +51,16 @@ func (pgt *padGroupType) fastIndex(ix int, iy int) int {
 	return ix + iy*pgt.NofPadsX
 }
 
-func (pgt *padGroupType) idByFastIndex(fastIndex int) int {
+func (pgt *padGroupType) idByFastIndex(fastIndex int) mapping.DualSampaChannelID {
 	if fastIndex >= 0 && fastIndex < len(pgt.FastID) {
-		return pgt.FastID[fastIndex]
+		return mapping.DualSampaChannelID(pgt.FastID[fastIndex])
 	}
 	return -1
 }
 
 // Return the index of the pad with indices = (ix,iy)
 // or -1 if not found
-func (pgt *padGroupType) idByIndices(ix int, iy int) int {
+func (pgt *padGroupType) idByIndices(ix int, iy int) mapping.DualSampaChannelID {
 	return pgt.idByFastIndex(pgt.fastIndex(ix, iy))
 }
 
