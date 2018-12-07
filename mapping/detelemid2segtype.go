@@ -4,8 +4,8 @@ import (
 	"fmt"
 )
 
-func detElemID2SegType(deid int) (int, error) {
-	m := map[int]int{
+func detElemID2SegType(deid DEID) (int, error) {
+	m := map[DEID]int{
 		100:  0,
 		101:  0,
 		102:  0,

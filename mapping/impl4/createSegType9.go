@@ -4,7 +4,7 @@ import "github.com/aphecetche/pigiron/mapping"
 
 type createSegType9 struct{}
 
-func (seg createSegType9) Build(isBendingPlane bool, deid int) mapping.CathodeSegmentation {
+func (seg createSegType9) Build(isBendingPlane bool, deid mapping.DEID) mapping.CathodeSegmentation {
 	if isBendingPlane {
 		return newCathodeSegmentation(deid, 9, true,
 			[]padGroup{

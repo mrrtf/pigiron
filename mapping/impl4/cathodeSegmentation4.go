@@ -27,10 +27,10 @@ type cathodeSegmentation3 struct {
 	padUID2PadGroupTypeFastIndex []int
 	padUID2PadGroupIndex         []int
 	grid                         padGroupGrid
-	deid                         int
+	deid                         mapping.DEID
 }
 
-func (seg *cathodeSegmentation3) DetElemID() int {
+func (seg *cathodeSegmentation3) DetElemID() mapping.DEID {
 	return seg.deid
 }
 
@@ -48,7 +48,7 @@ func (seg *cathodeSegmentation3) Print(out io.Writer) {
 	seg.grid.Print(out)
 }
 
-func newCathodeSegmentation(deid int, segType int, isBendingPlane bool, padGroups []padGroup,
+func newCathodeSegmentation(deid mapping.DEID, segType int, isBendingPlane bool, padGroups []padGroup,
 	padGroupTypes []padGroupType, padSizes []padSize) *cathodeSegmentation3 {
 	seg := &cathodeSegmentation3{
 		segType:        segType,
@@ -195,7 +195,7 @@ func (seg *cathodeSegmentation3) ForEachPadInDualSampa(dsid mapping.DualSampaID,
 	}
 }
 
-func (seg *cathodeSegmentation3) PadDualSampaChannel(paduid mapping.PadCID) int {
+func (seg *cathodeSegmentation3) PadDualSampaChannel(paduid mapping.PadCID) mapping.DualSampaChannelID {
 	return seg.padGroupType(paduid).idByFastIndex(seg.padUID2PadGroupTypeFastIndex[paduid])
 }
 
@@ -214,7 +214,7 @@ func (seg *cathodeSegmentation3) IsValid(paduid mapping.PadCID) bool {
 	return paduid != invalidPadCID
 }
 
-func (seg *cathodeSegmentation3) FindPadByFEE(dsid mapping.DualSampaID, dualSampaChannel int) (mapping.PadCID, error) {
+func (seg *cathodeSegmentation3) FindPadByFEE(dsid mapping.DualSampaID, dualSampaChannel mapping.DualSampaChannelID) (mapping.PadCID, error) {
 	for _, paduid := range seg.getPadCIDs(dsid) {
 		if seg.padGroupType(paduid).idByFastIndex(seg.padUID2PadGroupTypeFastIndex[paduid]) == dualSampaChannel {
 			return paduid, nil

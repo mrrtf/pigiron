@@ -31,8 +31,8 @@ func (m *TestChannelList) init() {
 }
 
 type DetectionElement struct {
-	ID   int   `json:"id"`
-	FECs []FEC `json:"manus"`
+	ID   mapping.DEID `json:"id"`
+	FECs []FEC        `json:"manus"`
 }
 
 func (de *DetectionElement) init() {
@@ -46,7 +46,7 @@ func (de DetectionElement) channels(dsid mapping.DualSampaID) ChannelInfoSlice {
 	for _, f := range de.FECs {
 		if f.ID == dsid {
 			for _, c := range f.Channels {
-				channels = append(channels, ChannelInfo{dsid, int(c)})
+				channels = append(channels, ChannelInfo{dsid, c})
 			}
 			break
 		}
@@ -55,22 +55,22 @@ func (de DetectionElement) channels(dsid mapping.DualSampaID) ChannelInfoSlice {
 }
 
 type FEC struct {
-	ID       mapping.DualSampaID `json:"id"`
-	Channels []int64             `json:"channels,omitempty"`
+	ID       mapping.DualSampaID          `json:"id"`
+	Channels []mapping.DualSampaChannelID `json:"channels,omitempty"`
 }
 
 func (f *FEC) init() {
 	if f.Channels == nil || len(f.Channels) == 0 {
-		f.Channels = make([]int64, 64)
+		f.Channels = make([]mapping.DualSampaChannelID, 64)
 		for i := 0; i < 64; i++ {
-			f.Channels[i] = int64(i)
+			f.Channels[i] = mapping.DualSampaChannelID(i)
 		}
 	}
 }
 
 type ChannelInfo struct {
 	fecID     mapping.DualSampaID
-	channelID int
+	channelID mapping.DualSampaChannelID
 }
 type ChannelInfoSlice []ChannelInfo
 
