@@ -8,6 +8,10 @@ type PadFEELocator interface {
 	PadDualSampaID(paduid PadUID) DualSampaID
 }
 
+// PadFEELocatorFunc is any function that can create
+// a PadFEELocator from a detection element id.
+type PadFEELocatorFunc func(deid DEID) PadFEELocator
+
 // PadSizerPositioner is able to return the x and y positions (in cm)
 // of a pad, relative to detection element origin,
 // as well as its x and y sizes (in cm).
@@ -24,3 +28,7 @@ type PadSizerPositioner interface {
 type PadByFEEFinder interface {
 	FindPadByFEE(DualSampaID, DualSampaChannelID) (PadUID, error)
 }
+
+// PadByFEEFinderFunc is any function that can create
+// a PadByFEEFinder from a detection element id.
+type PadByFEEFinderFunc func(deid DEID) PadByFEEFinder
