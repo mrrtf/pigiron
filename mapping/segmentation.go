@@ -153,22 +153,22 @@ func (seg *segmentation) FindPadPairByPosition(x, y float64) (PadUID, PadUID, er
 	return seg.padC2UID(bp, true), seg.padC2UID(nbp, false), err
 }
 
-func f2cuid(padHandler func(paduid PadUID)) func(padcid PadCID) {
+func f2cuid(padHandler func(paduid PadUID), offset int) func(padcid PadCID) {
 	return func(padcid PadCID) {
-		padHandler(PadUID(padcid))
+		padHandler(PadUID(padcid) + PadUID(offset))
 	}
 }
 
 func (seg *segmentation) ForEachPad(padHandler func(paduid PadUID)) {
-	seg.bending.ForEachPad(f2cuid(padHandler))
-	seg.nonBending.ForEachPad(f2cuid(padHandler))
+	seg.bending.ForEachPad(f2cuid(padHandler, 0))
+	seg.nonBending.ForEachPad(f2cuid(padHandler, seg.padUIDOffset))
 }
 
 func (seg *segmentation) ForEachPadInDualSampa(dualSampaID DualSampaID, padHandler func(paduid PadUID)) {
 	if dualSampaID < 1024 {
-		seg.bending.ForEachPad(f2cuid(padHandler))
+		seg.bending.ForEachPad(f2cuid(padHandler, 0))
 	} else {
-		seg.bending.ForEachPad(f2cuid(padHandler))
+		seg.bending.ForEachPad(f2cuid(padHandler, seg.padUIDOffset))
 	}
 }
 

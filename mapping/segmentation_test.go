@@ -1,7 +1,9 @@
 package mapping_test
 
 import (
+	"fmt"
 	"log"
+	"math"
 	"os"
 	"testing"
 
@@ -206,7 +208,6 @@ func TestBothSideNeighbours(t *testing.T) {
 	if !checkSameCathode(seg, pb, bn) {
 		t.Errorf("Got NB pads as neighbours of a bending pad")
 	}
-
 	nbn := seg.GetNeighbours(pnb)
 	if !checkSameCathode(seg, pnb, nbn) {
 		t.Errorf("Got B pads as neighbours of a non-bending pad")
@@ -234,4 +235,34 @@ func TestCircularTest(t *testing.T) {
 			t.Errorf("Wanted DSCH=%d. Got %d", dsid, seg.PadDualSampaChannel(paduid))
 		}
 	}
+}
+
+func TestForEachPadAndPadIndexRange(t *testing.T) {
+	npads := 0
+	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid mapping.DEID) {
+		n := 0
+		var pmin mapping.PadUID = math.MaxInt32
+		var pmax mapping.PadUID
+		seg := mapping.NewSegmentation(deid)
+		seg.ForEachPad(func(paduid mapping.PadUID) {
+			n++
+			npads++
+			if paduid < pmin {
+				pmin = paduid
+			}
+			if paduid > pmax {
+				pmax = paduid
+			}
+		})
+		if n != seg.NofPads() {
+			t.Errorf("DE %4d Want %d pads - Got %d", deid, seg.NofPads(), n)
+		}
+		if pmin != 0 {
+			t.Errorf("DE %4d Want pmin=0- Got %d", deid, pmin)
+		}
+		if pmax != mapping.PadUID(seg.NofPads()-1) {
+			t.Errorf("DE %4d Want pmax=%d- Got %d", deid, seg.NofPads()-1, pmax)
+		}
+	})
+	fmt.Println("Looped over", npads, "pads")
 }
