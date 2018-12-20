@@ -32,6 +32,7 @@ type Segmentation interface {
 	GetNeighbours(paduid PadUID) []PadUID
 	Bending() CathodeSegmentation
 	NonBending() CathodeSegmentation
+	String(paduid PadUID) string
 }
 
 type segmentation struct {
@@ -83,6 +84,14 @@ func (seg *segmentation) getCathSeg(paduid PadUID) (CathodeSegmentation, PadCID,
 		return seg.bending, PadCID(paduid), nil
 	}
 	return seg.nonBending, PadCID(int(paduid) - seg.padUIDOffset), nil
+}
+
+func (seg *segmentation) String(paduid PadUID) string {
+	catseg, padcid, err := seg.getCathSeg(paduid)
+	if err != nil {
+		return err.Error()
+	}
+	return fmt.Sprintf("PAD %10d ", paduid) + catseg.String(padcid)
 }
 
 func (seg *segmentation) DetElemID() DEID {

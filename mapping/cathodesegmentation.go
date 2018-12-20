@@ -43,6 +43,7 @@ type CathodeSegmentation interface {
 	PadSizeY(padcid PadCID) float64
 	GetNeighbours(padcid PadCID) []PadCID
 	IsBending() bool
+	String(padcid PadCID) string
 }
 
 // ForEachDetectionElement loops over all detection elements and
