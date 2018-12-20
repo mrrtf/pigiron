@@ -14,7 +14,7 @@ import (
 // InvalidPadCID is a special integer that denotes a non existing pad
 const invalidPadCID mapping.PadCID = -1
 
-type cathodeSegmentation3 struct {
+type cathodeSegmentation4 struct {
 	segType                      int
 	isBendingPlane               bool
 	padGroups                    []padGroup
@@ -30,15 +30,22 @@ type cathodeSegmentation3 struct {
 	deid                         mapping.DEID
 }
 
-func (seg *cathodeSegmentation3) DetElemID() mapping.DEID {
+func (seg *cathodeSegmentation4) DetElemID() mapping.DEID {
 	return seg.deid
 }
 
-func (seg *cathodeSegmentation3) NofDualSampas() int {
+func (seg *cathodeSegmentation4) NofDualSampas() int {
 	return len(seg.dsids)
 }
 
-func (seg *cathodeSegmentation3) Print(out io.Writer) {
+func (cseg *cathodeSegmentation4) String(padcid mapping.PadCID) string {
+	return fmt.Sprintf("FEC %4d CH %2d X %7.3f Y %7.3f SX %7.3f SY %7.3f",
+		cseg.PadDualSampaID(padcid), cseg.PadDualSampaChannel(padcid),
+		cseg.PadPositionX(padcid), cseg.PadPositionY(padcid),
+		cseg.PadSizeX(padcid), cseg.PadSizeY(padcid))
+}
+
+func (seg *cathodeSegmentation4) Print(out io.Writer) {
 	fmt.Fprintf(out, "segmentation3 has %v dual sampa ids = %v\n", len(seg.dsids), seg.dsids)
 	fmt.Fprintf(out, "cells=%v\n", seg.grid.cells)
 	for c := range seg.grid.cells {
@@ -49,8 +56,8 @@ func (seg *cathodeSegmentation3) Print(out io.Writer) {
 }
 
 func newCathodeSegmentation(deid mapping.DEID, segType int, isBendingPlane bool, padGroups []padGroup,
-	padGroupTypes []padGroupType, padSizes []padSize) *cathodeSegmentation3 {
-	seg := &cathodeSegmentation3{
+	padGroupTypes []padGroupType, padSizes []padSize) *cathodeSegmentation4 {
+	seg := &cathodeSegmentation4{
 		segType:        segType,
 		isBendingPlane: isBendingPlane,
 		padGroups:      padGroups,
@@ -76,7 +83,7 @@ func newCathodeSegmentation(deid mapping.DEID, segType int, isBendingPlane bool,
 	return seg
 }
 
-func (seg *cathodeSegmentation3) init() {
+func (seg *cathodeSegmentation4) init() {
 	// here must make two loops
 	// first one to fill in the 3 index slices
 	// - padGroupIndex2PadCIDIndex
@@ -91,7 +98,7 @@ func (seg *cathodeSegmentation3) init() {
 	seg.fillGrid(bbox)
 }
 
-func (seg *cathodeSegmentation3) fillIndexSlices() {
+func (seg *cathodeSegmentation4) fillIndexSlices() {
 	paduid := 0
 	for padGroupIndex := range seg.padGroups {
 		seg.padGroupIndex2PadCIDIndex = append(seg.padGroupIndex2PadCIDIndex, paduid)
@@ -109,7 +116,7 @@ func (seg *cathodeSegmentation3) fillIndexSlices() {
 	}
 }
 
-func (seg *cathodeSegmentation3) padGroupBox(i int) geo.BBox {
+func (seg *cathodeSegmentation4) padGroupBox(i int) geo.BBox {
 	pg := seg.padGroups[i]
 	pgt := seg.padGroupTypes[pg.padGroupTypeID]
 	dx := seg.padSizes[pg.padSizeID].x * float64(pgt.NofPadsX)
@@ -123,7 +130,7 @@ func (seg *cathodeSegmentation3) padGroupBox(i int) geo.BBox {
 	return box
 }
 
-func (seg *cathodeSegmentation3) fillGrid(bbox geo.BBox) {
+func (seg *cathodeSegmentation4) fillGrid(bbox geo.BBox) {
 	// for each cell in the grid we find out which
 	// padgroups have their bounding box intersecting with
 	// the cell bounding box and insert them in that cell
@@ -142,7 +149,7 @@ func (seg *cathodeSegmentation3) fillGrid(bbox geo.BBox) {
 	}
 }
 
-func (seg *cathodeSegmentation3) createPadCIDs(dsid mapping.DualSampaID) []mapping.PadCID {
+func (seg *cathodeSegmentation4) createPadCIDs(dsid mapping.DualSampaID) []mapping.PadCID {
 	pi := make([]mapping.PadCID, 0, 64)
 	for pgi, pg := range seg.padGroups {
 		if pg.fecID == dsid {
@@ -156,7 +163,7 @@ func (seg *cathodeSegmentation3) createPadCIDs(dsid mapping.DualSampaID) []mappi
 	return pi
 }
 
-func (seg *cathodeSegmentation3) getDualSampaIndex(dsid mapping.DualSampaID) int {
+func (seg *cathodeSegmentation4) getDualSampaIndex(dsid mapping.DualSampaID) int {
 	i, ok := seg.dsidmap[dsid]
 	if ok == false {
 		panic("should always find our ids within this internal code! dsid " + strconv.Itoa(int(dsid)) + " not found")
@@ -164,12 +171,12 @@ func (seg *cathodeSegmentation3) getDualSampaIndex(dsid mapping.DualSampaID) int
 	return i
 }
 
-func (seg *cathodeSegmentation3) getPadCIDs(dsid mapping.DualSampaID) []mapping.PadCID {
+func (seg *cathodeSegmentation4) getPadCIDs(dsid mapping.DualSampaID) []mapping.PadCID {
 	dsIndex := seg.getDualSampaIndex(dsid)
 	return seg.dualSampaPadCIDs[dsIndex]
 }
 
-func (seg *cathodeSegmentation3) DualSampaID(dualSampaIndex int) (mapping.DualSampaID, error) {
+func (seg *cathodeSegmentation4) DualSampaID(dualSampaIndex int) (mapping.DualSampaID, error) {
 	if dualSampaIndex >= len(seg.dsids) {
 		return -1, fmt.Errorf("Incorrect dualSampaIndex %d (should be within 0-%d range", dualSampaIndex,
 			len(seg.dsids))
@@ -177,7 +184,7 @@ func (seg *cathodeSegmentation3) DualSampaID(dualSampaIndex int) (mapping.DualSa
 	return seg.dsids[dualSampaIndex], nil
 }
 
-func (seg *cathodeSegmentation3) NofPads() int {
+func (seg *cathodeSegmentation4) NofPads() int {
 	n := 0
 	for i := 0; i < seg.NofDualSampas(); i++ {
 		dsid, err := seg.DualSampaID(i)
@@ -189,32 +196,32 @@ func (seg *cathodeSegmentation3) NofPads() int {
 	return n
 }
 
-func (seg *cathodeSegmentation3) ForEachPadInDualSampa(dsid mapping.DualSampaID, padHandler func(paduid mapping.PadCID)) {
+func (seg *cathodeSegmentation4) ForEachPadInDualSampa(dsid mapping.DualSampaID, padHandler func(paduid mapping.PadCID)) {
 	for _, paduid := range seg.getPadCIDs(dsid) {
 		padHandler(paduid)
 	}
 }
 
-func (seg *cathodeSegmentation3) PadDualSampaChannel(paduid mapping.PadCID) mapping.DualSampaChannelID {
+func (seg *cathodeSegmentation4) PadDualSampaChannel(paduid mapping.PadCID) mapping.DualSampaChannelID {
 	return seg.padGroupType(paduid).idByFastIndex(seg.padUID2PadGroupTypeFastIndex[paduid])
 }
 
-func (seg *cathodeSegmentation3) PadDualSampaID(paduid mapping.PadCID) mapping.DualSampaID {
+func (seg *cathodeSegmentation4) PadDualSampaID(paduid mapping.PadCID) mapping.DualSampaID {
 	return seg.padGroup(paduid).fecID
 }
 
-func (seg *cathodeSegmentation3) PadSizeX(paduid mapping.PadCID) float64 {
+func (seg *cathodeSegmentation4) PadSizeX(paduid mapping.PadCID) float64 {
 	return seg.padSizes[seg.padGroup(paduid).padSizeID].x
 }
-func (seg *cathodeSegmentation3) PadSizeY(paduid mapping.PadCID) float64 {
+func (seg *cathodeSegmentation4) PadSizeY(paduid mapping.PadCID) float64 {
 	return seg.padSizes[seg.padGroup(paduid).padSizeID].y
 }
 
-func (seg *cathodeSegmentation3) IsValid(paduid mapping.PadCID) bool {
+func (seg *cathodeSegmentation4) IsValid(paduid mapping.PadCID) bool {
 	return paduid != invalidPadCID
 }
 
-func (seg *cathodeSegmentation3) FindPadByFEE(dsid mapping.DualSampaID, dualSampaChannel mapping.DualSampaChannelID) (mapping.PadCID, error) {
+func (seg *cathodeSegmentation4) FindPadByFEE(dsid mapping.DualSampaID, dualSampaChannel mapping.DualSampaChannelID) (mapping.PadCID, error) {
 	for _, paduid := range seg.getPadCIDs(dsid) {
 		if seg.padGroupType(paduid).idByFastIndex(seg.padUID2PadGroupTypeFastIndex[paduid]) == dualSampaChannel {
 			return paduid, nil
@@ -223,15 +230,15 @@ func (seg *cathodeSegmentation3) FindPadByFEE(dsid mapping.DualSampaID, dualSamp
 	return invalidPadCID, mapping.ErrInvalidPadCID
 }
 
-func (seg *cathodeSegmentation3) padGroup(paduid mapping.PadCID) *padGroup {
+func (seg *cathodeSegmentation4) padGroup(paduid mapping.PadCID) *padGroup {
 	return &seg.padGroups[seg.padUID2PadGroupIndex[paduid]]
 }
 
-func (seg *cathodeSegmentation3) padGroupType(paduid mapping.PadCID) *padGroupType {
+func (seg *cathodeSegmentation4) padGroupType(paduid mapping.PadCID) *padGroupType {
 	return &seg.padGroupTypes[seg.padGroup(paduid).padGroupTypeID]
 }
 
-func (seg *cathodeSegmentation3) FindPadByPosition(x, y float64) (mapping.PadCID, error) {
+func (seg *cathodeSegmentation4) FindPadByPosition(x, y float64) (mapping.PadCID, error) {
 	pgis := seg.grid.padGroupIndex(x, y)
 	var pgti []int
 	for pgi := range pgis {
@@ -283,21 +290,21 @@ func (seg *cathodeSegmentation3) FindPadByPosition(x, y float64) (mapping.PadCID
 	return invalidPadCID, mapping.ErrInvalidPadCID
 }
 
-func (seg *cathodeSegmentation3) PadPositionX(paduid mapping.PadCID) float64 {
+func (seg *cathodeSegmentation4) PadPositionX(paduid mapping.PadCID) float64 {
 	pg := seg.padGroup(paduid)
 	pgt := seg.padGroupType(paduid)
 	return pg.x + (float64(pgt.ix(seg.padUID2PadGroupTypeFastIndex[paduid]))+0.5)*
 		seg.padSizes[pg.padSizeID].x
 }
 
-func (seg *cathodeSegmentation3) PadPositionY(paduid mapping.PadCID) float64 {
+func (seg *cathodeSegmentation4) PadPositionY(paduid mapping.PadCID) float64 {
 	pg := seg.padGroup(paduid)
 	pgt := seg.padGroupType(paduid)
 	return pg.y + (float64(pgt.iy(seg.padUID2PadGroupTypeFastIndex[paduid]))+0.5)*
 		seg.padSizes[pg.padSizeID].y
 }
 
-func (seg *cathodeSegmentation3) ForEachPad(padHandler func(paduid mapping.PadCID)) {
+func (seg *cathodeSegmentation4) ForEachPad(padHandler func(paduid mapping.PadCID)) {
 	for p := 0; p < len(seg.padUID2PadGroupIndex); p++ {
 		padHandler(mapping.PadCID(p))
 	}
@@ -320,7 +327,7 @@ func (seg *cathodeSegmentation3) ForEachPad(padHandler func(paduid mapping.PadCI
 // 2       9
 // |       |
 // 1-12-11-10
-func (seg *cathodeSegmentation3) GetNeighbours(paduid mapping.PadCID) []mapping.PadCID {
+func (seg *cathodeSegmentation4) GetNeighbours(paduid mapping.PadCID) []mapping.PadCID {
 	var neighbours []mapping.PadCID
 	const eps float64 = 2 * 1E-5
 	px := seg.PadPositionX(paduid)
@@ -352,6 +359,6 @@ func (seg *cathodeSegmentation3) GetNeighbours(paduid mapping.PadCID) []mapping.
 	return neighbours
 }
 
-func (seg *cathodeSegmentation3) IsBending() bool {
+func (seg *cathodeSegmentation4) IsBending() bool {
 	return seg.isBendingPlane
 }
