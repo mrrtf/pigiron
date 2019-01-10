@@ -358,7 +358,7 @@ func init() {
 		{-1 / 3.0, -1}}
 }
 
-func (seg *cathodeSegmentation4) GetNeighboursArray(padcid mapping.PadCID, neighbours []int) int {
+func (seg *cathodeSegmentation4) GetNeighbourIDs(padcid mapping.PadCID, neighbours []int) int {
 	px := seg.PadPositionX(padcid)
 	py := seg.PadPositionY(padcid)
 	dx := seg.PadSizeX(padcid) / 2.0

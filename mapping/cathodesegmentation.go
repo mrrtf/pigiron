@@ -40,7 +40,7 @@ type CathodeSegmentation interface {
 	PadPositionY(padcid PadCID) float64
 	PadSizeX(padcid PadCID) float64
 	PadSizeY(padcid PadCID) float64
-	GetNeighboursArray(padcid PadCID, neighbours []int) int
+	GetNeighbourIDs(padcid PadCID, neighbours []int) int
 	IsBending() bool
 	String(padcid PadCID) string
 }

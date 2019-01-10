@@ -29,7 +29,7 @@ type Segmentation interface {
 	PadPositionY(paduid PadUID) float64
 	PadSizeX(paduid PadUID) float64
 	PadSizeY(paduid PadUID) float64
-	GetNeighboursArray(paduid PadUID, neighbours []int) int
+	GetNeighbourIDs(paduid PadUID, neighbours []int) int
 	Bending() CathodeSegmentation
 	NonBending() CathodeSegmentation
 	String(paduid PadUID) string
@@ -172,12 +172,12 @@ func (seg *segmentation) ForEachPadInDualSampa(dualSampaID DualSampaID, padHandl
 	}
 }
 
-func (seg *segmentation) GetNeighboursArray(paduid PadUID, neighbours []int) int {
+func (seg *segmentation) GetNeighbourIDs(paduid PadUID, neighbours []int) int {
 	cseg, p, err := seg.getCathSeg(paduid)
 	if err != nil {
 		log.Fatalf("Should not happen")
 	}
-	n := cseg.GetNeighboursArray(p, neighbours)
+	n := cseg.GetNeighbourIDs(p, neighbours)
 	if !cseg.IsBending() {
 		for i := 0; i < n; i++ {
 			neighbours[i] += seg.padUIDOffset

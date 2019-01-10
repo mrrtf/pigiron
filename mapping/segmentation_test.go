@@ -205,11 +205,11 @@ func TestBothSideNeighbours(t *testing.T) {
 		t.Errorf("could not get pad for x=24 y=24")
 	}
 	nei := make([]int, 13)
-	n := seg.GetNeighboursArray(pb, nei)
+	n := seg.GetNeighbourIDs(pb, nei)
 	if !checkSameCathode(seg, pb, nei[:n]) {
 		t.Errorf("Got NB pads as neighbours of a bending pad")
 	}
-	n = seg.GetNeighboursArray(pnb, nei)
+	n = seg.GetNeighbourIDs(pnb, nei)
 	if !checkSameCathode(seg, pnb, nei[:n]) {
 		t.Errorf("Got B pads as neighbours of a non-bending pad")
 	}
@@ -277,7 +277,7 @@ func TestAllNeighbours(t *testing.T) {
 		seg := mapping.NewSegmentation(deid)
 		seg.ForEachPad(func(paduid mapping.PadUID) {
 			npads++
-			n := seg.GetNeighboursArray(paduid, nei)
+			n := seg.GetNeighbourIDs(paduid, nei)
 			nnei[n]++
 		})
 	})

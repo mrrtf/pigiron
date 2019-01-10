@@ -306,7 +306,7 @@ func testNeighboursOneDE(t *testing.T, deid mapping.DEID, ntest, nfail *int) {
 			dsid := cseg.PadDualSampaID(padcid)
 			dsch := cseg.PadDualSampaChannel(padcid)
 			nref := jsonGetNeighbours(tnei, deid, dsid, dsch)
-			nnei := cseg.GetNeighboursArray(padcid, n)
+			nnei := cseg.GetNeighbourIDs(padcid, n)
 			if len(n) != 13 {
 				log.Fatal("ZOB")
 			}

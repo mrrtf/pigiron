@@ -106,10 +106,10 @@ func BenchmarkByFEE(b *testing.B) {
 	}
 }
 
-// BenchmarkNeighboursArray checks the cost of getting the neighbours
+// BenchmarkNeighbourIDs checks the cost of getting the neighbours
 // of some pads, and also checks that the overhead of using the segmentation
 // (instead of cathode segmentations) is minimal.
-func BenchmarkNeighboursArray(b *testing.B) {
+func BenchmarkNeighbourIDs(b *testing.B) {
 	var deid mapping.DEID = 100
 	catsegB := mapping.NewCathodeSegmentation(deid, true)
 	catsegNB := mapping.NewCathodeSegmentation(deid, false)
@@ -119,10 +119,10 @@ func BenchmarkNeighboursArray(b *testing.B) {
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
 			catsegB.ForEachPad(func(padcid mapping.PadCID) {
-				_ = catsegB.GetNeighboursArray(padcid, nei)
+				_ = catsegB.GetNeighbourIDs(padcid, nei)
 			})
 			catsegNB.ForEachPad(func(padcid mapping.PadCID) {
-				_ = catsegNB.GetNeighboursArray(padcid, nei)
+				_ = catsegNB.GetNeighbourIDs(padcid, nei)
 			})
 		}
 	})
@@ -130,7 +130,7 @@ func BenchmarkNeighboursArray(b *testing.B) {
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
 			seg.ForEachPad(func(paduid mapping.PadUID) {
-				_ = seg.GetNeighboursArray(paduid, nei)
+				_ = seg.GetNeighbourIDs(paduid, nei)
 			})
 		}
 	})
