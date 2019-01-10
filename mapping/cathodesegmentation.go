@@ -2,7 +2,6 @@ package mapping
 
 import (
 	"errors"
-	"log"
 	"math"
 
 	"github.com/aphecetche/pigiron/geo"
@@ -41,7 +40,7 @@ type CathodeSegmentation interface {
 	PadPositionY(padcid PadCID) float64
 	PadSizeX(padcid PadCID) float64
 	PadSizeY(padcid PadCID) float64
-	GetNeighbours(padcid PadCID) []PadCID
+	GetNeighboursArray(padcid PadCID, neighbours []int) int
 	IsBending() bool
 	String(padcid PadCID) string
 }
@@ -92,11 +91,12 @@ func ComputeBBox(cseg CathodeSegmentation) geo.BBox {
 	xmax := -xmin
 	ymax := -ymin
 	cseg.ForEachPad(func(padcid PadCID) {
-		bbox := ComputeCathodePadBBox(cseg, padcid)
-		xmin = math.Min(xmin, bbox.Xmin())
-		xmax = math.Max(xmax, bbox.Xmax())
-		ymin = math.Min(ymin, bbox.Ymin())
-		ymax = math.Max(ymax, bbox.Ymax())
+		var xpadmin, ypadmin, xpadmax, ypadmax float64
+		ComputeCathodePadBBox(cseg, padcid, &xpadmin, &ypadmin, &xpadmax, &ypadmax)
+		xmin = math.Min(xmin, xpadmin)
+		xmax = math.Max(xmax, xpadmax)
+		ymin = math.Min(ymin, ypadmin)
+		ymax = math.Max(ymax, ypadmax)
 	})
 	bbox, err := geo.NewBBox(xmin, ymin, xmax, ymax)
 	if err != nil {
@@ -105,19 +105,17 @@ func ComputeBBox(cseg CathodeSegmentation) geo.BBox {
 	return bbox
 }
 
-// ComputeCathodePadBBox returns the bounding box of one pad of the
-// given cathode.
-func ComputeCathodePadBBox(cseg CathodeSegmentation, padcid PadCID) geo.BBox {
+// ComputeCathodePadBBox fills the coordinates of the bounding box
+// of one pad of the given cathode.
+func ComputeCathodePadBBox(cseg CathodeSegmentation, padcid PadCID, xmin, ymin, xmax, ymax *float64) {
 	x := cseg.PadPositionX(padcid)
 	y := cseg.PadPositionY(padcid)
 	dx := cseg.PadSizeX(padcid) / 2
 	dy := cseg.PadSizeY(padcid) / 2
-	bbox, err := geo.NewBBox(x-dx, y-dy, x+dx, y+dy)
-	if err != nil {
-		log.Fatalf(err.Error())
-		return nil
-	}
-	return bbox
+	*xmin = x - dx
+	*xmax = x + dx
+	*ymin = y - dy
+	*ymax = y + dy
 }
 
 // NewSegmentation creates a segmentation object for the given

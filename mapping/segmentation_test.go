@@ -186,10 +186,10 @@ func TestForEachPad(t *testing.T) {
 	})
 }
 
-func checkSameCathode(seg mapping.Segmentation, paduid mapping.PadUID, nei []mapping.PadUID) bool {
+func checkSameCathode(seg mapping.Segmentation, paduid mapping.PadUID, nei []int) bool {
 
 	for _, n := range nei {
-		if seg.IsBendingPad(n) != seg.IsBendingPad(paduid) {
+		if seg.IsBendingPad(mapping.PadUID(n)) != seg.IsBendingPad(paduid) {
 			return false
 		}
 	}
@@ -204,12 +204,13 @@ func TestBothSideNeighbours(t *testing.T) {
 	if err != nil {
 		t.Errorf("could not get pad for x=24 y=24")
 	}
-	bn := seg.GetNeighbours(pb)
-	if !checkSameCathode(seg, pb, bn) {
+	nei := make([]int, 13)
+	n := seg.GetNeighboursArray(pb, nei)
+	if !checkSameCathode(seg, pb, nei[:n]) {
 		t.Errorf("Got NB pads as neighbours of a bending pad")
 	}
-	nbn := seg.GetNeighbours(pnb)
-	if !checkSameCathode(seg, pnb, nbn) {
+	n = seg.GetNeighboursArray(pnb, nei)
+	if !checkSameCathode(seg, pnb, nei[:n]) {
 		t.Errorf("Got B pads as neighbours of a non-bending pad")
 	}
 }
@@ -265,4 +266,20 @@ func TestForEachPadAndPadIndexRange(t *testing.T) {
 		}
 	})
 	fmt.Println("Looped over", npads, "pads")
+}
+
+func TestAllNeighbours(t *testing.T) {
+	nei := make([]int, 13)
+	nnei := make(map[int]int) // number of pads with a given number of neighbours
+	npads := 0
+	// mapping.ForOneDetectionElementOfEachSegmentationType(func(deid mapping.DEID) {
+	mapping.ForEachDetectionElement(func(deid mapping.DEID) {
+		seg := mapping.NewSegmentation(deid)
+		seg.ForEachPad(func(paduid mapping.PadUID) {
+			npads++
+			n := seg.GetNeighboursArray(paduid, nei)
+			nnei[n]++
+		})
+	})
+	fmt.Println("npads=", npads, nnei)
 }

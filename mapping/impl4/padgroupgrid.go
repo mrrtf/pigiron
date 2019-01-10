@@ -105,14 +105,3 @@ func (g *padGroupGrid) padGroupIndex(x, y float64) []int {
 	}
 	return g.cells[i]
 }
-
-// func (g *padGroupGrid) insertPadGroup(x, y float64, padGroupIndex int) {
-// 	i := g.getIndex(x, y)
-// 	if i == invalidIndex {
-// 		panic(fmt.Sprintf("i=%v g=%v", i, g))
-// 	}
-// 	if i >= len(g.grid) {
-// 		panic(fmt.Sprintf("i=%v >= len(g.grid)=%v x=%v y=%v\ng=%v", i, len(g.grid), x, y, g))
-// 	}
-// 	g.grid[i] = append(g.grid[i], padGroupIndex)
-// }

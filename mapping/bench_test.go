@@ -14,6 +14,7 @@ func BenchmarkSegmentationCreationPerDE(b *testing.B) {
 
 	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid mapping.DEID) {
 		b.Run(strconv.Itoa(int(deid)), func(b *testing.B) {
+			b.ReportAllocs()
 			for i := 0; i < b.N; i++ {
 				_ = mapping.NewCathodeSegmentation(deid, true)
 				_ = mapping.NewCathodeSegmentation(deid, false)
@@ -24,6 +25,7 @@ func BenchmarkSegmentationCreationPerDE(b *testing.B) {
 
 func BenchmarkSegmentationCreation(b *testing.B) {
 
+	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		mapping.ForOneDetectionElementOfEachSegmentationType(func(deid mapping.DEID) {
 			_ = mapping.NewCathodeSegmentation(deid, true)
@@ -93,6 +95,7 @@ func BenchmarkByFEE(b *testing.B) {
 				dcs = append(dcs, DC{D: seg.PadDualSampaID(padcid), C: seg.PadDualSampaChannel(padcid)})
 			})
 			b.Run(strconv.Itoa(int(deid))+planeName, func(b *testing.B) {
+				b.ReportAllocs()
 				for i := 0; i < b.N; i++ {
 					for _, pad := range dcs {
 						seg.FindPadByFEE(pad.D, pad.C)
@@ -101,4 +104,34 @@ func BenchmarkByFEE(b *testing.B) {
 			})
 		}
 	}
+}
+
+// BenchmarkNeighboursArray checks the cost of getting the neighbours
+// of some pads, and also checks that the overhead of using the segmentation
+// (instead of cathode segmentations) is minimal.
+func BenchmarkNeighboursArray(b *testing.B) {
+	var deid mapping.DEID = 100
+	catsegB := mapping.NewCathodeSegmentation(deid, true)
+	catsegNB := mapping.NewCathodeSegmentation(deid, false)
+	seg := mapping.NewSegmentation(deid)
+	nei := make([]int, 13)
+	b.Run("Cathode", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			catsegB.ForEachPad(func(padcid mapping.PadCID) {
+				_ = catsegB.GetNeighboursArray(padcid, nei)
+			})
+			catsegNB.ForEachPad(func(padcid mapping.PadCID) {
+				_ = catsegNB.GetNeighboursArray(padcid, nei)
+			})
+		}
+	})
+	b.Run("Segmentation", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			seg.ForEachPad(func(paduid mapping.PadUID) {
+				_ = seg.GetNeighboursArray(paduid, nei)
+			})
+		}
+	})
 }

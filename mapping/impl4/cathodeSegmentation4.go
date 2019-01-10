@@ -24,8 +24,8 @@ type cathodeSegmentation4 struct {
 	dsidmap                      map[mapping.DualSampaID]int
 	dualSampaPadCIDs             [][]mapping.PadCID
 	padGroupIndex2PadCIDIndex    []int
-	padUID2PadGroupTypeFastIndex []int
-	padUID2PadGroupIndex         []int
+	padcid2PadGroupTypeFastIndex []int
+	padcid2PadGroupIndex         []int
 	grid                         padGroupGrid
 	deid                         mapping.DEID
 }
@@ -99,17 +99,17 @@ func (seg *cathodeSegmentation4) init() {
 }
 
 func (seg *cathodeSegmentation4) fillIndexSlices() {
-	paduid := 0
+	padcid := 0
 	for padGroupIndex := range seg.padGroups {
-		seg.padGroupIndex2PadCIDIndex = append(seg.padGroupIndex2PadCIDIndex, paduid)
+		seg.padGroupIndex2PadCIDIndex = append(seg.padGroupIndex2PadCIDIndex, padcid)
 		pg := seg.padGroups[padGroupIndex]
 		pgt := seg.padGroupTypes[pg.padGroupTypeID]
 		for ix := 0; ix < pgt.NofPadsX; ix++ {
 			for iy := 0; iy < pgt.NofPadsY; iy++ {
 				if pgt.idByIndices(ix, iy) >= 0 {
-					seg.padUID2PadGroupIndex = append(seg.padUID2PadGroupIndex, padGroupIndex)
-					seg.padUID2PadGroupTypeFastIndex = append(seg.padUID2PadGroupTypeFastIndex, pgt.fastIndex(ix, iy))
-					paduid++
+					seg.padcid2PadGroupIndex = append(seg.padcid2PadGroupIndex, padGroupIndex)
+					seg.padcid2PadGroupTypeFastIndex = append(seg.padcid2PadGroupTypeFastIndex, pgt.fastIndex(ix, iy))
+					padcid++
 				}
 			}
 		}
@@ -196,51 +196,51 @@ func (seg *cathodeSegmentation4) NofPads() int {
 	return n
 }
 
-func (seg *cathodeSegmentation4) ForEachPadInDualSampa(dsid mapping.DualSampaID, padHandler func(paduid mapping.PadCID)) {
-	for _, paduid := range seg.getPadCIDs(dsid) {
-		padHandler(paduid)
+func (seg *cathodeSegmentation4) ForEachPadInDualSampa(dsid mapping.DualSampaID, padHandler func(padcid mapping.PadCID)) {
+	for _, padcid := range seg.getPadCIDs(dsid) {
+		padHandler(padcid)
 	}
 }
 
-func (seg *cathodeSegmentation4) PadDualSampaChannel(paduid mapping.PadCID) mapping.DualSampaChannelID {
-	return seg.padGroupType(paduid).idByFastIndex(seg.padUID2PadGroupTypeFastIndex[paduid])
+func (seg *cathodeSegmentation4) PadDualSampaChannel(padcid mapping.PadCID) mapping.DualSampaChannelID {
+	return seg.padGroupType(padcid).idByFastIndex(seg.padcid2PadGroupTypeFastIndex[padcid])
 }
 
-func (seg *cathodeSegmentation4) PadDualSampaID(paduid mapping.PadCID) mapping.DualSampaID {
-	return seg.padGroup(paduid).fecID
+func (seg *cathodeSegmentation4) PadDualSampaID(padcid mapping.PadCID) mapping.DualSampaID {
+	return seg.padGroup(padcid).fecID
 }
 
-func (seg *cathodeSegmentation4) PadSizeX(paduid mapping.PadCID) float64 {
-	return seg.padSizes[seg.padGroup(paduid).padSizeID].x
+func (seg *cathodeSegmentation4) PadSizeX(padcid mapping.PadCID) float64 {
+	return seg.padSizes[seg.padGroup(padcid).padSizeID].x
 }
-func (seg *cathodeSegmentation4) PadSizeY(paduid mapping.PadCID) float64 {
-	return seg.padSizes[seg.padGroup(paduid).padSizeID].y
+func (seg *cathodeSegmentation4) PadSizeY(padcid mapping.PadCID) float64 {
+	return seg.padSizes[seg.padGroup(padcid).padSizeID].y
 }
 
-func (seg *cathodeSegmentation4) IsValid(paduid mapping.PadCID) bool {
-	return paduid != invalidPadCID
+func (seg *cathodeSegmentation4) IsValid(padcid mapping.PadCID) bool {
+	return padcid != invalidPadCID
 }
 
 func (seg *cathodeSegmentation4) FindPadByFEE(dsid mapping.DualSampaID, dualSampaChannel mapping.DualSampaChannelID) (mapping.PadCID, error) {
-	for _, paduid := range seg.getPadCIDs(dsid) {
-		if seg.padGroupType(paduid).idByFastIndex(seg.padUID2PadGroupTypeFastIndex[paduid]) == dualSampaChannel {
-			return paduid, nil
+	for _, padcid := range seg.getPadCIDs(dsid) {
+		if seg.padGroupType(padcid).idByFastIndex(seg.padcid2PadGroupTypeFastIndex[padcid]) == dualSampaChannel {
+			return padcid, nil
 		}
 	}
 	return invalidPadCID, mapping.ErrInvalidPadCID
 }
 
-func (seg *cathodeSegmentation4) padGroup(paduid mapping.PadCID) *padGroup {
-	return &seg.padGroups[seg.padUID2PadGroupIndex[paduid]]
+func (seg *cathodeSegmentation4) padGroup(padcid mapping.PadCID) *padGroup {
+	return &seg.padGroups[seg.padcid2PadGroupIndex[padcid]]
 }
 
-func (seg *cathodeSegmentation4) padGroupType(paduid mapping.PadCID) *padGroupType {
-	return &seg.padGroupTypes[seg.padGroup(paduid).padGroupTypeID]
+func (seg *cathodeSegmentation4) padGroupType(padcid mapping.PadCID) *padGroupType {
+	return &seg.padGroupTypes[seg.padGroup(padcid).padGroupTypeID]
 }
 
 func (seg *cathodeSegmentation4) FindPadByPosition(x, y float64) (mapping.PadCID, error) {
+	pgti := make([]int, 0, 2)
 	pgis := seg.grid.padGroupIndex(x, y)
-	var pgti []int
 	for pgi := range pgis {
 		pgIndex := pgis[pgi]
 		pg := seg.padGroups[pgIndex]
@@ -251,19 +251,19 @@ func (seg *cathodeSegmentation4) FindPadByPosition(x, y float64) (mapping.PadCID
 		iy := int(math.Trunc(ly / seg.padSizes[pg.padSizeID].y))
 		valid := pgt.areIndicesPossible(ix, iy) && lx >= 0.0 && ly >= 0.0
 		if valid {
-			// find in padUID2PadGroupTypeFastIndex array, starting at seg.padGroupIndex2PadCIDIndex[pgis[pgi]]
-			// the paduid corresponding to pgt.fastIndex(ix,iy)
+			// find in padcid2PadGroupTypeFastIndex array, starting at seg.padGroupIndex2PadCIDIndex[pgis[pgi]]
+			// the padcid corresponding to pgt.fastIndex(ix,iy)
 			// FIXME : that is wrong.
 			a := seg.padGroupIndex2PadCIDIndex[pgIndex]
 			asize := len(seg.padGroupIndex2PadCIDIndex) - 1
 			var b int
 			if pgIndex >= asize-1 {
-				b = len(seg.padUID2PadGroupIndex) - 1
+				b = len(seg.padcid2PadGroupIndex) - 1
 			} else {
 				b = seg.padGroupIndex2PadCIDIndex[pgIndex+1]
 			}
 			for j := a; j <= b; j++ {
-				if pgt.fastIndex(ix, iy) == seg.padUID2PadGroupTypeFastIndex[j] {
+				if pgt.fastIndex(ix, iy) == seg.padcid2PadGroupTypeFastIndex[j] {
 					pgti = append(pgti, j)
 					break
 				}
@@ -290,28 +290,33 @@ func (seg *cathodeSegmentation4) FindPadByPosition(x, y float64) (mapping.PadCID
 	return invalidPadCID, mapping.ErrInvalidPadCID
 }
 
-func (seg *cathodeSegmentation4) PadPositionX(paduid mapping.PadCID) float64 {
-	pg := seg.padGroup(paduid)
-	pgt := seg.padGroupType(paduid)
-	return pg.x + (float64(pgt.ix(seg.padUID2PadGroupTypeFastIndex[paduid]))+0.5)*
+func (seg *cathodeSegmentation4) PadPositionX(padcid mapping.PadCID) float64 {
+	pg := seg.padGroup(padcid)
+	pgt := seg.padGroupType(padcid)
+	return pg.x + (float64(pgt.ix(seg.padcid2PadGroupTypeFastIndex[padcid]))+0.5)*
 		seg.padSizes[pg.padSizeID].x
 }
 
-func (seg *cathodeSegmentation4) PadPositionY(paduid mapping.PadCID) float64 {
-	pg := seg.padGroup(paduid)
-	pgt := seg.padGroupType(paduid)
-	return pg.y + (float64(pgt.iy(seg.padUID2PadGroupTypeFastIndex[paduid]))+0.5)*
+func (seg *cathodeSegmentation4) PadPositionY(padcid mapping.PadCID) float64 {
+	pg := seg.padGroup(padcid)
+	pgt := seg.padGroupType(padcid)
+	return pg.y + (float64(pgt.iy(seg.padcid2PadGroupTypeFastIndex[padcid]))+0.5)*
 		seg.padSizes[pg.padSizeID].y
 }
 
-func (seg *cathodeSegmentation4) ForEachPad(padHandler func(paduid mapping.PadCID)) {
-	for p := 0; p < len(seg.padUID2PadGroupIndex); p++ {
+func (seg *cathodeSegmentation4) ForEachPad(padHandler func(padcid mapping.PadCID)) {
+	for p := 0; p < len(seg.padcid2PadGroupIndex); p++ {
 		padHandler(mapping.PadCID(p))
 	}
 }
 
 // GetNeighbours returns the list of neighbours of given pad.
-// paduid is not checked here so it is assumed to be correct.
+// padcid is not checked here so it is assumed to be correct.
+//
+// neighbours slice must be of len >= 12
+// The returned value indicates which range in the neighbours slice
+// is useable (i.e. if 3 is returned, it means there are 3 neighbours,
+// so only neighbours[0..2] is valid)
 //
 // Algorithm asserts pads at test positions (Left,Top,Right,Bottom)
 // relative to pad's center (O) where we'll try to get a neighbouring pad,
@@ -327,15 +332,18 @@ func (seg *cathodeSegmentation4) ForEachPad(padHandler func(paduid mapping.PadCI
 // 2       9
 // |       |
 // 1-12-11-10
-func (seg *cathodeSegmentation4) GetNeighbours(paduid mapping.PadCID) []mapping.PadCID {
-	var neighbours []mapping.PadCID
-	const eps float64 = 2 * 1E-5
-	px := seg.PadPositionX(paduid)
-	py := seg.PadPositionY(paduid)
-	dx := seg.PadSizeX(paduid) / 2.0
-	dy := seg.PadSizeY(paduid) / 2.0
-	var previous mapping.PadCID = -1
-	for _, shift := range []struct{ x, y float64 }{
+//
+// TODO: investigate some (obvious ?) optimizations, e.g. not using
+// all 12 test positions for some regions where we know it's not needed
+//
+var (
+	tp []struct{ x, y float64 }
+)
+
+const eps float64 = 2 * 1E-5
+
+func init() {
+	tp = []struct{ x, y float64 }{
 		{-1, -1},
 		{-1, -1 / 3.0},
 		{-1, 1 / 3.0},
@@ -347,16 +355,27 @@ func (seg *cathodeSegmentation4) GetNeighbours(paduid mapping.PadCID) []mapping.
 		{1, -1 / 3.0},
 		{1, -1},
 		{1 / 3.0, -1},
-		{-1 / 3.0, -1}} {
+		{-1 / 3.0, -1}}
+}
+
+func (seg *cathodeSegmentation4) GetNeighboursArray(padcid mapping.PadCID, neighbours []int) int {
+	px := seg.PadPositionX(padcid)
+	py := seg.PadPositionY(padcid)
+	dx := seg.PadSizeX(padcid) / 2.0
+	dy := seg.PadSizeY(padcid) / 2.0
+	var previous mapping.PadCID = -1
+	i := 0
+	for _, shift := range tp {
 		xtest := px + (dx+eps)*shift.x
 		ytest := py + (dy+eps)*shift.y
 		uid, err := seg.FindPadByPosition(xtest, ytest)
 		if err == nil && uid != previous {
 			previous = uid
-			neighbours = append(neighbours, previous)
+			neighbours[i] = int(previous)
+			i++
 		}
 	}
-	return neighbours
+	return i
 }
 
 func (seg *cathodeSegmentation4) IsBending() bool {

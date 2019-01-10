@@ -29,7 +29,7 @@ type Segmentation interface {
 	PadPositionY(paduid PadUID) float64
 	PadSizeX(paduid PadUID) float64
 	PadSizeY(paduid PadUID) float64
-	GetNeighbours(paduid PadUID) []PadUID
+	GetNeighboursArray(paduid PadUID, neighbours []int) int
 	Bending() CathodeSegmentation
 	NonBending() CathodeSegmentation
 	String(paduid PadUID) string
@@ -172,21 +172,18 @@ func (seg *segmentation) ForEachPadInDualSampa(dualSampaID DualSampaID, padHandl
 	}
 }
 
-func (seg *segmentation) GetNeighbours(paduid PadUID) []PadUID {
+func (seg *segmentation) GetNeighboursArray(paduid PadUID, neighbours []int) int {
 	cseg, p, err := seg.getCathSeg(paduid)
 	if err != nil {
-		return nil
+		log.Fatalf("Should not happen")
 	}
-	padcid := cseg.GetNeighbours(p)
-	var paduids []PadUID = make([]PadUID, len(padcid))
-	offset := 0
+	n := cseg.GetNeighboursArray(p, neighbours)
 	if !cseg.IsBending() {
-		offset = seg.padUIDOffset
+		for i := 0; i < n; i++ {
+			neighbours[i] += seg.padUIDOffset
+		}
 	}
-	for i, _ := range padcid {
-		paduids[i] = PadUID(int(padcid[i]) + offset)
-	}
-	return paduids
+	return n
 }
 
 func (seg *segmentation) PadDualSampaChannel(paduid PadUID) DualSampaChannelID {
@@ -219,19 +216,20 @@ func (seg *segmentation) PadSizeY(paduid PadUID) float64 {
 	return cseg.PadSizeY(p)
 }
 
-// ComputeSegmentationBBox returns the bounding box of
-// the detection element represented by it segmentation.
+// ComputeSegmentationBBox return the bounding box of the
+// detection element represented by it segmentation.
 func ComputeSegmentationBBox(seg Segmentation) geo.BBox {
 	xmin := math.MaxFloat64
 	ymin := xmin
 	xmax := -xmin
 	ymax := -ymin
+	var xpadmin, ypadmin, xpadmax, ypadmax float64
 	seg.ForEachPad(func(paduid PadUID) {
-		bbox := ComputePadBBox(seg, paduid)
-		xmin = math.Min(xmin, bbox.Xmin())
-		xmax = math.Max(xmax, bbox.Xmax())
-		ymin = math.Min(ymin, bbox.Ymin())
-		ymax = math.Max(ymax, bbox.Ymax())
+		ComputePadBBox(seg, paduid, &xpadmin, &ypadmin, &xpadmax, &ypadmax)
+		xmin = math.Min(xmin, xpadmin)
+		xmax = math.Max(xmax, xpadmax)
+		ymin = math.Min(ymin, ypadmin)
+		ymax = math.Max(ymax, ypadmax)
 	})
 	bbox, err := geo.NewBBox(xmin, ymin, xmax, ymax)
 	if err != nil {
@@ -240,17 +238,15 @@ func ComputeSegmentationBBox(seg Segmentation) geo.BBox {
 	return bbox
 }
 
-// ComputePadBBox returns the bounding box of one pad of the
-// given segmentation.
-func ComputePadBBox(padps PadSizerPositioner, paduid PadUID) geo.BBox {
+// ComputePadBBox fills the coordinates (xmin,ymin,xmax,ymax) of the bounding
+// box of one pad of the given segmentation.
+func ComputePadBBox(padps PadSizerPositioner, paduid PadUID, xmin, ymin, xmax, ymax *float64) {
 	x := padps.PadPositionX(paduid)
 	y := padps.PadPositionY(paduid)
 	dx := padps.PadSizeX(paduid) / 2
 	dy := padps.PadSizeY(paduid) / 2
-	bbox, err := geo.NewBBox(x-dx, y-dy, x+dx, y+dy)
-	if err != nil {
-		log.Fatalf(err.Error())
-		return nil
-	}
-	return bbox
+	*xmin = x - dx
+	*xmax = x + dx
+	*ymin = y - dy
+	*ymax = y + dy
 }

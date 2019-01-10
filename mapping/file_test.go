@@ -250,9 +250,9 @@ func jsonGetNeighbours(tnei TestNeighbourStruct, deid mapping.DEID, dsid mapping
 	return neighbours
 }
 
-func compareNeighbours(nref []dsIDCh, n []mapping.PadCID, cseg mapping.CathodeSegmentation) error {
-	if len(nref) != len(n) {
-		return fmt.Errorf("Want %d neighbours - Got %d", len(nref), len(n))
+func compareNeighbours(nref []dsIDCh, ni []int, nnei int, cseg mapping.CathodeSegmentation) error {
+	if len(nref) != nnei {
+		return fmt.Errorf("Want %d neighbours - Got %d", len(nref), nnei)
 	}
 
 	var n2 []mapping.PadCID
@@ -265,17 +265,22 @@ func compareNeighbours(nref []dsIDCh, n []mapping.PadCID, cseg mapping.CathodeSe
 		n2 = append(n2, padcid)
 	}
 
+	var n []mapping.PadCID
+	for _, i := range ni {
+		n = append(n, mapping.PadCID(i))
+	}
+
 	sort.Slice(n2, func(i, j int) bool {
 		return int(n2[i]) > int(n2[j])
 	})
 
-	sort.Slice(n, func(i, j int) bool {
+	sort.Slice(n[:nnei], func(i, j int) bool {
 		return int(n[i]) > int(n[j])
 	})
 
-	for i := 0; i < len(n); i++ {
+	for i := 0; i < nnei; i++ {
 		if n[i] != n2[i] {
-			return fmt.Errorf("Wanted %d - Got %d", n2[i], n[i])
+			return fmt.Errorf("Wanted PadCID %d - Got %d", n2[i], n[i])
 		}
 	}
 	return nil
@@ -295,19 +300,23 @@ func testNeighboursOneDE(t *testing.T, deid mapping.DEID, ntest, nfail *int) {
 
 	for _, bending := range []bool{true, false} {
 		cseg := mapping.NewCathodeSegmentation(deid, bending)
+		n := make([]int, 13)
 		cseg.ForEachPad(func(padcid mapping.PadCID) {
 			*ntest++
 			dsid := cseg.PadDualSampaID(padcid)
 			dsch := cseg.PadDualSampaChannel(padcid)
 			nref := jsonGetNeighbours(tnei, deid, dsid, dsch)
-			n := cseg.GetNeighbours(padcid)
-			err := compareNeighbours(nref, n, cseg)
+			nnei := cseg.GetNeighboursArray(padcid, n)
+			if len(n) != 13 {
+				log.Fatal("ZOB")
+			}
+			err := compareNeighbours(nref, n, nnei, cseg)
 			if err != nil {
 				t.Errorf("Problem for DE %4d DS %4d CH %2d : %s", deid, dsid, dsch, err.Error())
 				t.Errorf("%v", nref)
 				msg := ">"
-				for _, padcid := range n {
-					msg += fmt.Sprintf("(%v %v) ", cseg.PadDualSampaID(padcid), cseg.PadDualSampaChannel(padcid))
+				for _, p := range n {
+					msg += fmt.Sprintf("(%v %v) ", cseg.PadDualSampaID(mapping.PadCID(p)), cseg.PadDualSampaChannel(mapping.PadCID(p)))
 				}
 				t.Errorf(msg)
 				*nfail++
