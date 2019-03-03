@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"math"
+	"sort"
 	"strconv"
 
 	"github.com/aphecetche/pigiron/geo"
@@ -74,7 +75,18 @@ func newCathodeSegmentation(deid mapping.DEID, segType int, isBendingPlane bool,
 	seg.dsidmap = make(map[mapping.DualSampaID]int, len(uniq))
 	seg.dsids = make([]mapping.DualSampaID, len(uniq))
 	i := 0
-	for dsid := range uniq {
+	// sort the dual sampa ids to get them always ordered the
+	// same way (not strictly necessary but helps comparisons
+	// sometimes)
+	keys := make([]int, len(uniq))
+	for k := range uniq {
+		keys[i] = int(k)
+		i++
+	}
+	i = 0
+	sort.Ints(keys)
+	for _, k := range keys {
+		dsid := mapping.DualSampaID(k)
 		seg.dsids[i] = dsid
 		seg.dsidmap[dsid] = i
 		seg.dualSampaPadCIDs[i] = append(seg.dualSampaPadCIDs[i], seg.createPadCIDs(dsid)...)
