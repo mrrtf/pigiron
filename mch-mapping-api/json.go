@@ -1,4 +1,4 @@
-package output
+package main
 
 import (
 	"encoding/json"
@@ -48,7 +48,7 @@ type DEGeo struct {
 	SY      float64 `json:"SY"`
 }
 
-func JSONDEGeo(w io.Writer, cseg mapping.CathodeSegmentation, bending bool) {
+func jsonDEGeo(w io.Writer, cseg mapping.CathodeSegmentation, bending bool) {
 
 	bbox := mapping.ComputeBBox(cseg)
 
@@ -70,11 +70,11 @@ func JSONDEGeo(w io.Writer, cseg mapping.CathodeSegmentation, bending bool) {
 	fmt.Fprintf(w, string(b))
 }
 
-func JSONDualSampaPads(w io.Writer, seg mapping.Segmentation, dsid int) {
+func jsonDualSampaPads(w io.Writer, seg mapping.Segmentation, dsid int) {
 	w.Write([]byte("coucou from JSONDualSampaPads"))
 }
 
-func JSONDualSampas(w io.Writer, cseg mapping.CathodeSegmentation, bending bool) {
+func jsonDualSampas(w io.Writer, cseg mapping.CathodeSegmentation, bending bool) {
 
 	de := DE{}
 	var dualSampas []DualSampa
