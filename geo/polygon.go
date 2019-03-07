@@ -64,7 +64,7 @@ func EqualPolygon(a, b Polygon) bool {
 	return true
 }
 
-func closePolygon(p Polygon) (Polygon, error) {
+func closeManhattanPolygon(p Polygon) (Polygon, error) {
 	if p.isClosed() {
 		return p, nil
 	}
@@ -75,6 +75,16 @@ func closePolygon(p Polygon) (Polygon, error) {
 		return nil, errors.New("closing resulted in non Manhattan polygon")
 	}
 	return np, nil
+}
+
+func ClosePolygon(p Polygon) Polygon {
+	if p.isClosed() {
+		return p
+	}
+	np := Polygon{}
+	np = append(np, p...)
+	np = append(np, p[0])
+	return np
 }
 
 func (p Polygon) String() string {
@@ -184,4 +194,33 @@ func areCounterClockwisePolygons(polygons []Polygon) bool {
 		}
 	}
 	return true
+}
+
+// GetPolygonXRange returns the x boundaries of the polygon.
+func GetPolygonXRange(pol Polygon) (float64, float64) {
+	xmin := math.MaxFloat64
+	xmax := -xmin
+	for _, v := range pol {
+		xmin = math.Min(xmin, v.X)
+		xmax = math.Max(xmax, v.X)
+	}
+	return xmin, xmax
+}
+
+// GetPolygonXRangeAtY returns xmin and xmax of the polygon for coordinate y.
+// Only valid for a convex input polygon (that condition is NOT
+// checked by this function but must be insured by the caller).
+func GetPolygonXRangeAtY(pol Polygon, y float64) (float64, float64) {
+	xpmin, xpmax := GetPolygonXRange(pol)
+	line := NewHorizontalSegment(y, xpmin, xpmax)
+	xmin := math.MaxFloat64
+	xmax := -xmin
+	for i := 0; i < len(pol)-1; i++ {
+		cross, ok := IntersectSegmentLine(Segment{pol[i], pol[i+1]}, *line)
+		if ok {
+			xmin = math.Min(xmin, cross.X)
+			xmax = math.Max(xmax, cross.X)
+		}
+	}
+	return xmin, xmax
 }

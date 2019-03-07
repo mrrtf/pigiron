@@ -71,7 +71,7 @@ func TestAClosePolygonIsAPolygonWhereLastVertexIsTheSameAsTheFirstOne(t *testing
 }
 
 func TestClosingAClosedPolygonIsANop(t *testing.T) {
-	closed, err := closePolygon(testPolygon)
+	closed, err := closeManhattanPolygon(testPolygon)
 	if err != nil {
 		t.Error("closing failed")
 	}
@@ -83,7 +83,7 @@ func TestClosingAClosedPolygonIsANop(t *testing.T) {
 func TestClosePolygon(t *testing.T) {
 	opened := Polygon{{0, 0}, {1, 0}, {1, 1}, {0, 1}}
 	expected := Polygon{{0, 0}, {1, 0}, {1, 1}, {0, 1}, {0, 0}}
-	closed, err := closePolygon(opened)
+	closed, err := closeManhattanPolygon(opened)
 	if err != nil {
 		t.Error("closing failed")
 	}
@@ -94,7 +94,7 @@ func TestClosePolygon(t *testing.T) {
 
 func TestMustErrorIfClosingAPolygonResultInNonManhanttanPolygon(t *testing.T) {
 	triangle := Polygon{{0, 0}, {1, 0}, {1, 1}}
-	_, err := closePolygon(triangle)
+	_, err := closeManhattanPolygon(triangle)
 	if err == nil {
 		t.Error("closing should have yielded an error here")
 	}
@@ -106,7 +106,7 @@ func TestAnOpenedPolygonCannotBeEqualToAClosedOneEventWithSameVertices(t *testin
 		{0, 2}, {0, 0}, {2, 0}, {2, 4}, {1, 4}, {1, 2},
 	}
 
-	closed, _ := closePolygon(opened)
+	closed, _ := closeManhattanPolygon(opened)
 
 	if EqualPolygon(opened, closed) {
 		t.Error("closed and opened polygon should not be equal")
@@ -220,5 +220,61 @@ func TestPolygonTranslate(t *testing.T) {
 	if !EqualPolygon(expected, tr) {
 		t.Errorf("Translated polygon not as expected")
 		t.Errorf("Want %s - Got %s", expected.String(), tr.String())
+	}
+}
+
+func TestGetPolygonXRange(t *testing.T) {
+	p := Polygon{
+		{0, 5},
+		{0, 0},
+		{13, 0},
+		{13, 1},
+		{9, 1},
+		{9, 3},
+		{6, 3},
+		{6, 4},
+		{2, 4},
+		{2, 5},
+		{0, 5},
+	}
+	emin := 0.0
+	emax := 13.0
+	xmin, xmax := GetPolygonXRange(p)
+	if !EqualFloat(xmin, emin) || !EqualFloat(xmax, emax) {
+		t.Errorf("Want xmin=%v xmax=%v. Got xmin=%v xmax=%v\n", emin, emax, xmin, xmax)
+	}
+}
+
+func TestGetPolygonXRangeAtY(t *testing.T) {
+	p := Polygon{
+		{0, 5},
+		{0, 0},
+		{13, 0},
+		{13, 1},
+		{9, 1},
+		{9, 3},
+		{6, 3},
+		{6, 4},
+		{2, 4},
+		{2, 5},
+		{0, 5},
+	}
+
+	if !p.isCounterClockwiseOriented() {
+		t.Errorf("Should get a counter clockwise oriented polygon here!")
+	}
+
+	emin := 0.0
+	emax := 6.0
+	xmin, xmax := GetPolygonXRangeAtY(p, 3.5)
+	if !EqualFloat(xmin, emin) || !EqualFloat(xmax, emax) {
+		t.Errorf("Want xmin=%v xmax=%v. Got xmin=%v xmax=%v\n", emin, emax, xmin, xmax)
+	}
+
+	emax = 9
+
+	xmin, xmax = GetPolygonXRangeAtY(p, 2.5)
+	if !EqualFloat(xmin, emin) || !EqualFloat(xmax, emax) {
+		t.Errorf("Want xmin=%v xmax=%v. Got xmin=%v xmax=%v\n", emin, emax, xmin, xmax)
 	}
 }

@@ -22,6 +22,7 @@ type Segmentation interface {
 	FindPadByFEE(dualSampaID DualSampaID, dualSampaChannel DualSampaChannelID) (PadUID, error)
 	FindPadPairByPosition(x, y float64) (PadUID, PadUID, error)
 	ForEachPad(padHandler func(paduid PadUID))
+	ForEachPadInArea(xmin, ymin, xmax, ymax float64, padHandler func(paduid PadUID))
 	ForEachPadInDualSampa(dualSampaID DualSampaID, padHandler func(paduid PadUID))
 	PadDualSampaChannel(paduid PadUID) DualSampaChannelID
 	PadDualSampaID(paduid PadUID) DualSampaID
@@ -162,6 +163,11 @@ func f2cuid(padHandler func(paduid PadUID), offset int) func(padcid PadCID) {
 func (seg *segmentation) ForEachPad(padHandler func(paduid PadUID)) {
 	seg.bending.ForEachPad(f2cuid(padHandler, 0))
 	seg.nonBending.ForEachPad(f2cuid(padHandler, seg.padUIDOffset))
+}
+
+func (seg *segmentation) ForEachPadInArea(xmin, ymin, xmax, ymax float64, padHandler func(paduid PadUID)) {
+	seg.bending.ForEachPadInArea(xmin, ymin, xmax, ymax, f2cuid(padHandler, 0))
+	seg.nonBending.ForEachPadInArea(xmin, ymin, xmax, ymax, f2cuid(padHandler, seg.padUIDOffset))
 }
 
 func (seg *segmentation) ForEachPadInDualSampa(dualSampaID DualSampaID, padHandler func(paduid PadUID)) {

@@ -23,8 +23,16 @@ func (v Vertex) String() string {
 	return fmt.Sprintf("( %v %v )", v.X, v.Y)
 }
 
-func sub(a, b Vertex) Vertex {
+func VertexSub(a, b Vertex) Vertex {
 	return Vertex{a.X - b.X, a.Y - b.Y}
+}
+
+func VertexAdd(a, b Vertex) Vertex {
+	return Vertex{a.X + b.X, a.Y + b.Y}
+}
+
+func (v *Vertex) Scale(s float64) Vertex {
+	return Vertex{s * v.X, s * v.Y}
 }
 
 // EqualVertex checks if two vertices are equal
@@ -38,16 +46,20 @@ func dot(a, b Vertex) float64 {
 	return a.X*b.X + a.Y*b.Y
 }
 
+func perp(a, b Vertex) float64 {
+	return a.X*b.Y - a.Y*b.X
+}
+
 func squaredDistance(a, b Vertex) float64 {
-	aminusb := sub(a, b)
+	aminusb := VertexSub(a, b)
 	return dot(aminusb, aminusb)
 }
 
 //SquaredDistanceOfPointToSegment computes the square of the distance
 // between point p and segment (p0,p1)
 func SquaredDistanceOfPointToSegment(p, p0, p1 Vertex) float64 {
-	v := sub(p1, p0)
-	w := sub(p, p0)
+	v := VertexSub(p1, p0)
+	w := VertexSub(p, p0)
 	c1 := dot(w, v)
 
 	if c1 <= 0 {

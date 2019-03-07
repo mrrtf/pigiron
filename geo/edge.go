@@ -18,6 +18,18 @@ type horizontalEdge struct {
 	y, x1, x2 float64
 }
 
+func NewEdge(x1, y1, x2, y2 float64) (manhattanEdge, error) {
+	v1 := Vertex{x1, y1}
+	v2 := Vertex{x2, y1}
+	if isVerticalSegment(v1, v2) {
+		return verticalEdge{x1, y1, y2}, nil
+	}
+	if isHorizontalSegment(v1, v2) {
+		return horizontalEdge{y1, x1, x2}, nil
+	}
+	return nil, fmt.Errorf("coordinates incompatible with a manhattan edge")
+}
+
 func (v verticalEdge) begin() Vertex {
 	return Vertex{v.x, v.y1}
 }

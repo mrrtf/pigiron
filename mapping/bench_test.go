@@ -2,6 +2,7 @@ package mapping_test
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -134,4 +135,45 @@ func BenchmarkNeighbourIDs(b *testing.B) {
 			})
 		}
 	})
+}
+
+var iresult int
+
+// BenchmarkForEachPad compares the time it takes to look over
+// all pads using the two functions ForEachPad and ForEachPadInArea,
+// where the latter is given an infinite box as a parameter.
+// Note that in this case the ForEachPadInArea is expected to be
+// (much) slower than ForEachPad, as it's a limiting case (i.e.
+// if you want to loop over all pads, use ForEachPad, but if you want
+// to loop over a -hopefully rather small- area, use ForEachPadInArea.
+// But at least we should get the same number of pads...
+func BenchmarkForEachPad(b *testing.B) {
+	for _, deid := range []mapping.DEID{100, 500} {
+		seg := mapping.NewSegmentation(deid)
+		b.Run(fmt.Sprintf("ForEachPadDE%d", deid), func(b *testing.B) {
+			var n int
+			for i := 0; i < b.N; i++ {
+				n = 0
+				seg.ForEachPad(func(paduid mapping.PadUID) {
+					n++
+				})
+			}
+			iresult = n
+		})
+		b.Run(fmt.Sprintf("ForEachPadInAreaDE%d", deid), func(b *testing.B) {
+			var n int
+			xmin := -math.MaxFloat64
+			ymin := -math.MaxFloat64
+			xmax := math.MaxFloat64
+			ymax := math.MaxFloat64
+			for i := 0; i < b.N; i++ {
+				n = 0
+				seg.ForEachPadInArea(xmin, ymin, xmax, ymax, func(paduid mapping.PadUID) {
+					n++
+				})
+			}
+			iresult = n
+		})
+	}
+
 }

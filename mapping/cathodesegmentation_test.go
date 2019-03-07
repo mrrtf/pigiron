@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/aphecetche/pigiron/mapping"
+
 	// must include the specific implementation package of the mapping
 	_ "github.com/aphecetche/pigiron/mapping/impl4"
 )
@@ -326,17 +327,215 @@ func TestCathodeNoGapWithinPads(t *testing.T) {
 	})
 }
 
-func TestCathodeForEachPad(t *testing.T) {
-	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid mapping.DEID) {
-		for _, b := range []bool{true, false} {
-			cseg := mapping.NewCathodeSegmentation(deid, b)
-			npads := 0
-			cseg.ForEachPad(func(paduid mapping.PadCID) {
-				npads++
-			})
-			if npads != cseg.NofPads() {
-				t.Errorf("DE %v isBending %v : expected %v pads but got %v from ForEachPad loop", deid, b, cseg.NofPads(), npads)
-			}
-		}
-	})
-}
+// FIXME: uncomment those tests
+//
+// func TestCathodeForEachPadCountPads(t *testing.T) {
+// 	mapping.ForOneDetectionElementOfEachSegmentationType(func(deid mapping.DEID) {
+// 		for _, b := range []bool{true, false} {
+// 			cseg := mapping.NewCathodeSegmentation(deid, b)
+// 			npads := 0
+// 			cseg.ForEachPad(func(paduid mapping.PadCID) {
+// 				npads++
+// 			})
+// 			if npads != cseg.NofPads() {
+// 				t.Errorf("DE %v isBending %v : expected %v pads but got %v from ForEachPad loop", deid, b, cseg.NofPads(), npads)
+// 			}
+// 		}
+// 	})
+// }
+//
+// func TestCathodeForEachPadInAreaCountPads(t *testing.T) {
+// 	// mapping.ForOneDetectionElementOfEachSegmentationType(func(deid mapping.DEID) {
+// 	for _, deid := range []mapping.DEID{100, 706} {
+// 		for _, b := range []bool{false} {
+// 			cseg := mapping.NewCathodeSegmentation(deid, b)
+// 			npads := 0
+// 			xmin := -math.MaxFloat64
+// 			xmax := math.MaxFloat64
+// 			ymin := -math.MaxFloat64
+// 			ymax := math.MaxFloat64
+// 			cseg.ForEachPadInArea(xmin, ymin, xmax, ymax, func(paduid mapping.PadCID) {
+// 				npads++
+// 			})
+// 			if npads != cseg.NofPads() {
+// 				t.Errorf("DE %v isBending %v : expected %v pads but got %v from ForEachPad loop", deid, b, cseg.NofPads(), npads)
+// 			}
+// 		}
+// 	}
+// 	// })
+// }
+//
+// func TestCathodeForEachPadInAreaBug(t *testing.T) {
+// 	cseg := mapping.NewCathodeSegmentation(100, true)
+// 	x := 52.5
+// 	y := 20.0
+// 	dx := 5.0
+// 	dy := 1.0
+//
+// 	xmin := x - dx/2.0
+// 	xmax := x + dx/2.0
+// 	ymin := y - dy/2.0
+// 	ymax := y + dy/2.0
+//
+// 	padcids := make(map[int]struct{})
+//
+// 	cseg.ForEachPadInArea(xmin, ymin, xmax, ymax, func(padcid mapping.PadCID) {
+// 		padcids[int(padcid)] = struct{}{}
+// 	})
+//
+// 	expected := []int{
+// 		2975,
+// 		2991,
+// 		4496,
+// 		3038,
+// 		2974,
+// 		3070,
+// 		3134,
+// 		3023,
+// 		3071,
+// 		3055,
+// 		2990,
+// 		4480,
+// 		4528,
+// 		4592,
+// 		4512,
+// 		3022,
+// 		3039,
+// 		2958,
+// 		2959,
+// 		3135,
+// 		3054,
+// 		1,
+// 		2,
+// 	}
+// 	if len(padcids) != len(expected) {
+// 		t.Errorf("Want %d pads - Got %d", len(expected), len(padcids))
+// 		for p := range padcids {
+// 			fmt.Println(p, cseg.PadDualSampaID(mapping.PadCID(p)), cseg.PadDualSampaChannel(mapping.PadCID(p)))
+// 		}
+// 	}
+// }
+//
+// func BenchmarkCathodeForEachPadInAreaBug(b *testing.B) {
+// 	cseg := mapping.NewCathodeSegmentation(100, true)
+// 	x := 52.5
+// 	y := 20.0
+// 	dx := 5.0
+// 	dy := 1.0
+//
+// 	xmin := x - dx/2.0
+// 	xmax := x + dx/2.0
+// 	ymin := y - dy/2.0
+// 	ymax := y + dy/2.0
+//
+// 	padcids := make(map[int]struct{})
+//
+// 	for i := 0; i < b.N; i++ {
+// 		cseg.ForEachPadInArea(xmin, ymin, xmax, ymax, func(padcid mapping.PadCID) {
+// 			padcids[int(padcid)] = struct{}{}
+// 		})
+// 	}
+// }
+//
+// func TestCathodeForEachPadInAreaDev(t *testing.T) {
+// 	cseg := mapping.NewCathodeSegmentation(100, true)
+// 	x := 52.5
+// 	y := 20.0
+// 	dx := 5.0
+// 	dy := 1.0
+//
+// 	xmin := x - dx/2.0
+// 	xmax := x + dx/2.0
+// 	ymin := y - dy/2.0
+// 	ymax := y + dy/2.0
+//
+// 	padcids := make(map[int]struct{})
+//
+// 	err := forEachPadInArea(cseg, xmin, ymin, xmax, ymax, func(padcid mapping.PadCID) {
+// 		padcids[int(padcid)] = struct{}{}
+// 	})
+//
+// 	if err != nil {
+// 		t.Errorf("forEachPadInArea failed")
+// 	}
+// 	expected := []int{
+// 		2975,
+// 		2991,
+// 		4496,
+// 		3038,
+// 		2974,
+// 		3070,
+// 		3134,
+// 		3023,
+// 		3071,
+// 		3055,
+// 		2990,
+// 		4480,
+// 		4528,
+// 		4592,
+// 		4512,
+// 		3022,
+// 		3039,
+// 		2958,
+// 		2959,
+// 		3135,
+// 		3054,
+// 		1,
+// 		2,
+// 	}
+// 	if len(padcids) != len(expected) {
+// 		t.Errorf("Want %d pads - Got %d", len(expected), len(padcids))
+// 		for p := range padcids {
+// 			fmt.Println(p, cseg.PadDualSampaID(mapping.PadCID(p)), cseg.PadDualSampaChannel(mapping.PadCID(p)))
+// 		}
+// 	}
+// }
+//
+// // test method to develop foreachpadinarea algo
+// func forEachPadInArea(cseg mapping.CathodeSegmentation, xmin, ymin, xmax, ymax float64, padfunc func(padcid mapping.PadCID)) error {
+//
+// 	bbox, err := geo.NewBBox(xmin, ymin, xmax, ymax)
+// 	if err != nil {
+// 		log.Fatal("oups")
+// 	}
+// 	csegContour := segcontour.Contour(cseg)
+// 	overlap, err := geo.ClipPolygon(csegContour[0], bbox)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	obox := overlap.BBox()
+// 	fmt.Printf("%v\nBBOX=%v\n", overlap, obox)
+// 	micron := 1E-4 // distances are in cm in segmentation. This converts to micrometers
+// 	delta := 1.0 * micron
+// 	x := obox.Xmin() + delta
+// 	y := obox.Ymin() + delta
+//
+// 	// startingPoint, err := cseg.FindPadByPosition(x, y)
+// 	// if err != nil {
+// 	// 	log.Fatalf("Could not get a pad at pos %v,%v !", x, y)
+// 	// }
+// 	// fmt.Printf("%6d ", int(startingPoint))
+// 	// PrintCathodePad(os.Stdout, cseg, startingPoint)
+//
+// 	ypadsize := 0.0
+//
+// 	for y < obox.Ymax() {
+// 		xmin, xmax := geo.GetPolygonXRangeAtY(overlap, y)
+// 		x = xmin + delta
+// 		for x < xmax {
+// 			pad, err := cseg.FindPadByPosition(x, y)
+// 			if err != nil {
+// 				break
+// 			}
+// 			fmt.Printf("%6d ", int(pad))
+// 			PrintCathodePad(os.Stdout, cseg, pad)
+// 			x += cseg.PadPositionX(pad) + cseg.PadSizeX(pad) + delta
+// 			if cseg.PadSizeY(pad) != ypadsize {
+// 				fmt.Printf("should handle ypadsize change from %v to %v\n", ypadsize, cseg.PadSizeY(pad))
+// 				ypadsize = cseg.PadSizeY(pad)
+// 			}
+// 		}
+// 		y += ypadsize
+// 	}
+// 	return nil
+// }

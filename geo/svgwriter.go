@@ -132,7 +132,11 @@ func (w *SVGWriter) PolygonWithClass(p *Polygon, class string) {
 }
 
 func (w *SVGWriter) Circle(x, y, radius float64) {
-	w.appendElement(&cirtag{x, y, radius})
+	w.CircleWithClass(x, y, radius, "")
+}
+
+func (w *SVGWriter) CircleWithClass(x, y, radius float64, class string) {
+	w.appendElement(&cirtag{x, y, radius, class})
 }
 
 // Contour adds one polygon object per sub-contour
@@ -205,6 +209,7 @@ type poltag struct {
 }
 type cirtag struct {
 	x, y, radius float64
+	class        string
 }
 
 func (g grouptag) String() string {
