@@ -29,6 +29,7 @@ type cathodeSegmentation4 struct {
 	padcid2PadGroupIndex         []int
 	grid                         padGroupGrid
 	deid                         mapping.DEID
+	bbox                         geo.BBox
 }
 
 func (seg *cathodeSegmentation4) DetElemID() mapping.DEID {
@@ -47,12 +48,13 @@ func (cseg *cathodeSegmentation4) String(padcid mapping.PadCID) string {
 }
 
 func (seg *cathodeSegmentation4) Print(out io.Writer) {
-	fmt.Fprintf(out, "segmentation3 has %v dual sampa ids = %v\n", len(seg.dsids), seg.dsids)
-	fmt.Fprintf(out, "cells=%v\n", seg.grid.cells)
-	for c := range seg.grid.cells {
-		fmt.Fprintf(out, "%v ", seg.padGroups[c].fecID)
+	fmt.Fprintf(out, "cathodeSegmentation4 has %v dual sampa ids = %v\n", len(seg.dsids), seg.dsids)
+	fmt.Fprintf(out, "%d cells\n", len(seg.grid.cells))
+	for c, v := range seg.grid.cells {
+		fmt.Fprintf(out, "seg.grid.cells[%d]=%v\n", c, v)
 	}
 	fmt.Fprintf(out, "\n")
+	fmt.Fprintf(out, "grid=\n")
 	seg.grid.Print(out)
 }
 
@@ -106,8 +108,8 @@ func (seg *cathodeSegmentation4) init() {
 	// within the correct grid cellSlice
 
 	seg.fillIndexSlices()
-	bbox := mapping.ComputeBBox(seg)
-	seg.fillGrid(bbox)
+	seg.bbox = mapping.ComputeBBox(seg)
+	seg.fillGrid(seg.bbox)
 }
 
 func (seg *cathodeSegmentation4) fillIndexSlices() {
@@ -320,6 +322,59 @@ func (seg *cathodeSegmentation4) ForEachPad(padHandler func(padcid mapping.PadCI
 	for p := 0; p < len(seg.padcid2PadGroupIndex); p++ {
 		padHandler(mapping.PadCID(p))
 	}
+}
+
+// ForEachPadInArea loops over the pads in the given area and calls
+// the padHandler for each pad.
+//
+// Very basic implementation using a scan of positions.
+//
+func (seg *cathodeSegmentation4) ForEachPadInArea(xmin, ymin, xmax, ymax float64, padHandler func(padcid mapping.PadCID)) {
+
+	padcids := make(map[mapping.PadCID]struct{})
+
+	// padsizes are ordered by size, so we get the smallest sizes here
+	xstep := seg.padSizes[0].x / 2.0
+	ystep := seg.padSizes[0].y / 2.0
+
+	// get overlap between seg bbox and requested area
+	// so we only loop within the segmentation region
+
+	xmin = math.Max(xmin, seg.bbox.Xmin())
+	ymin = math.Max(ymin, seg.bbox.Ymin())
+	xmax = math.Min(xmax, seg.bbox.Xmax())
+	ymax = math.Min(ymax, seg.bbox.Ymax())
+
+	var p mapping.PadCID = mapping.PadCID(invalidPadCID)
+
+	// find the first pad in the region, starting from bottom-left
+	for x := xmin; x <= xmax; x += xstep {
+		for y := ymin; y <= ymax; y += ystep {
+			pxy, err := seg.FindPadByPosition(x, y)
+			fmt.Println(x, y, pxy, err)
+			if err == nil {
+				p = pxy
+				goto steps
+			}
+		}
+	}
+
+steps:
+	if !seg.IsValid(p) {
+		fmt.Printf("Could not find any pad in region (%7.2f,%7.2f,%7.2f,%7.2f)\n",
+			xmin, ymin, xmax, ymax)
+		return
+	}
+
+	fmt.Println("FIXME: Implement the remaining of me (cathodeSegmentation4 ForEachPadInArea !!!")
+
+	padcids[p] = struct{}{}
+
+	// call function on each unique pad
+	for p, _ := range padcids {
+		padHandler(p)
+	}
+
 }
 
 // GetNeighbours returns the list of neighbours of given pad.

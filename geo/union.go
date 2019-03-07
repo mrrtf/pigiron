@@ -27,6 +27,9 @@ var (
 )
 
 // NewContour returns the boolean union of the polygons
+// using th implementation of one of the sweep algorithms found in the following article :
+//
+// Souvaine, Diane & Bjorling-Sachs, Iliana. (1992). The Contour Problem for Restricted-Orientation Polygons. Proceedings of the IEEE. 80. 1449 - 1470. 10.1109/5.163411.
 func NewContour(polygons []Polygon) (Contour, error) {
 
 	if len(polygons) == 0 {
@@ -197,7 +200,7 @@ func finalizeContour(v []verticalEdge, h []horizontalEdge) (Contour, error) {
 			for i := range inorder {
 				vertices[i] = all[inorder[i]].begin()
 			}
-			p, err := closePolygon(vertices)
+			p, err := closeManhattanPolygon(vertices)
 			if err != nil {
 				return nil, errClosingPolygon
 			}

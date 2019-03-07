@@ -33,6 +33,7 @@ type CathodeSegmentation interface {
 	FindPadByFEE(dualSampaID DualSampaID, dualSampaChannel DualSampaChannelID) (PadCID, error)
 	FindPadByPosition(x, y float64) (PadCID, error)
 	ForEachPad(padHandler func(padcid PadCID))
+	ForEachPadInArea(xmin, ymin, xmax, ymax float64, padHandler func(padcid PadCID))
 	ForEachPadInDualSampa(dualSampaID DualSampaID, padHandler func(padcid PadCID))
 	PadDualSampaChannel(padcid PadCID) DualSampaChannelID
 	PadDualSampaID(padcid PadCID) DualSampaID
