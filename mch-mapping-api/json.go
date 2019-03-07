@@ -52,7 +52,7 @@ func jsonDEGeo(w io.Writer, cseg mapping.CathodeSegmentation, bending bool) {
 
 	bbox := mapping.ComputeBBox(cseg)
 
-	b, err := json.MarshalIndent(
+	b, err := json.Marshal(
 		DEGeo{
 			ID:      int(cseg.DetElemID()),
 			Bending: cseg.IsBending(),
@@ -60,7 +60,6 @@ func jsonDEGeo(w io.Writer, cseg mapping.CathodeSegmentation, bending bool) {
 			Y:       bbox.Ycenter(),
 			SX:      bbox.Width(),
 			SY:      bbox.Height()},
-		"", "  ",
 	)
 
 	if err != nil {
@@ -100,7 +99,7 @@ func jsonDualSampas(w io.Writer, cseg mapping.CathodeSegmentation, bending bool)
 
 	de.DualSampas = dualSampas
 
-	b, err := json.MarshalIndent(de, "", "  ")
+	b, err := json.Marshal(de)
 
 	if err != nil {
 		log.Fatalf(err.Error())

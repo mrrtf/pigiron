@@ -1,8 +1,12 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"sort"
 	"strconv"
 
 	"github.com/aphecetche/pigiron/mapping"
@@ -12,82 +16,90 @@ import (
 	_ "github.com/aphecetche/pigiron/mapping/impl4"
 )
 
-func usage() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, `<h1>MCH Mapping API</h1>
+var (
+	ErrMissingDeId         = errors.New("Specifying a detection element id (deid=[number]) is required")
+	ErrMissingBending      = errors.New("Specifying a bending plane (bending=true or bending=false) is required")
+	ErrDeIdShouldBeInteger = errors.New("deid should be an integer")
+	ErrInvalidBending      = errors.New("bending should be true or false")
+	ErrInvalidDeId         error
+	validdeids             []int
+)
 
-<p>This API gives 2D geometric information about detection elements, dual sampas and pads.</p>
-
-<h2>Detection element plane envelop</h2>
-
-<pre>/degeo?deid=[number]&bending=[true|false]</pre>
-
-<p>both deid and bending options are required</p>
-
-<h2>Dual sampa envelops</h2>
-
-<pre>/dualsampas?deid=[number]&bending=[true|false]</pre>
-
-<p>Returns the vertices of the polygons describing the outline of all the dual sampas 
-of a given detection element plane</p>
-`)
-	}
+func init() {
+	mapping.ForEachDetectionElement(func(i mapping.DEID) {
+		validdeids = append(validdeids, int(i))
+	})
+	sort.Ints(validdeids)
+	s, _ := json.Marshal(validdeids)
+	ErrInvalidDeId = errors.New("Invalid deid. Possible values are :" + string(s))
 }
 
-func dualSampas() http.HandlerFunc {
+type Bending struct {
+	present bool
+	value   bool
+}
+
+// getDeIdBending decode the query part of the url, expecting it to be
+// of the form : deid=[number]&bending=[true|false].
+// the bending part is optional.
+func getDeIdBending(u *url.URL) (int, Bending, error) {
+	q := u.Query()
+	de, ok := q["deid"]
+	if !ok {
+		return -1, Bending{}, ErrMissingDeId
+	}
+	deid, err := strconv.Atoi(de[0])
+	if err != nil {
+		return -1, Bending{}, ErrDeIdShouldBeInteger
+	}
+	l := sort.SearchInts(validdeids, deid)
+	if l >= len(validdeids) || validdeids[l] != deid {
+		return -1, Bending{}, ErrInvalidDeId
+	}
+	_, ok = q["bending"]
+	if ok {
+		b, err := strconv.ParseBool(q["bending"][0])
+		if err != nil {
+			return -1, Bending{}, ErrInvalidBending
+		}
+		return deid, Bending{present: true, value: b}, nil
+	}
+	return deid, Bending{present: false}, nil
+}
+
+func makeHandler(fn func(w http.ResponseWriter, r *http.Request, deid int, bending bool), isBendingRequired bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		q := r.URL.Query()
-		deid, err := strconv.Atoi(q.Get("deid"))
+		deid, bending, err := getDeIdBending(r.URL)
 		if err != nil {
-			w.Write([]byte("Malformed deid"))
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		bending, err := strconv.ParseBool(q.Get("bending"))
-		if err != nil {
-			w.Write([]byte("Malformed bending"))
+		if isBendingRequired && !bending.present {
+			http.Error(w, ErrMissingBending.Error(), http.StatusBadRequest)
 			return
 		}
-		cseg := mapping.NewCathodeSegmentation(mapping.DEID(deid), bending)
-		jsonDualSampas(w, cseg, bending)
+		fn(w, r, deid, bending.value)
 	}
 }
 
-func dualSampaPads() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		q := r.URL.Query()
-		deid, err := strconv.Atoi(q.Get("deid"))
-		if err != nil {
-			w.Write([]byte("Malformed deid"))
-			return
-		}
-		dsid, err := strconv.Atoi(q.Get("dsid"))
-		if err != nil {
-			w.Write([]byte("Malformed dsid"))
-			return
-		}
-		seg := mapping.NewSegmentation(mapping.DEID(deid))
-		jsonDualSampaPads(w, seg, dsid)
-	}
+func dualSampas(w http.ResponseWriter, r *http.Request, deid int, bending bool) {
+	cseg := mapping.NewCathodeSegmentation(mapping.DEID(deid), bending)
+	jsonDualSampas(w, cseg, bending)
 }
 
-func deGeo() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		q := r.URL.Query()
-		deid, err := strconv.Atoi(q.Get("deid"))
-		if err != nil {
-			w.Write([]byte("Malformed deid"))
-			return
-		}
-		bending, err := strconv.ParseBool(q.Get("bending"))
-		if err != nil {
-			w.Write([]byte("Malformed bending"))
-			return
-		}
-		cseg := mapping.NewCathodeSegmentation(mapping.DEID(deid), bending)
-		jsonDEGeo(w, cseg, bending)
-	}
+func deGeo(w http.ResponseWriter, r *http.Request, deid int, bending bool) {
+	cseg := mapping.NewCathodeSegmentation(mapping.DEID(deid), bending)
+	jsonDEGeo(w, cseg, bending)
+}
+
+func handler() http.Handler {
+	r := http.NewServeMux()
+	r.HandleFunc("/", usage())
+	bendingIsRequired := true
+	r.HandleFunc("/dualsampas", makeHandler(dualSampas, bendingIsRequired))
+	r.HandleFunc("/degeo", makeHandler(deGeo, bendingIsRequired))
+	return r
 }
 
 func main() {
@@ -96,12 +108,7 @@ func main() {
 	viper.SetDefault("MAPPING_API_PORT", 8080)
 	port := viper.GetInt("MAPPING_API_PORT")
 	fmt.Println("Started server to listen on port", port)
-
-	http.HandleFunc("/", usage())
-	http.HandleFunc("/dualsampas", dualSampas())
-	http.HandleFunc("/dualsampapads", dualSampaPads())
-	http.HandleFunc("/degeo", deGeo())
-	if err := http.ListenAndServe(":"+strconv.Itoa(port), nil); err != nil {
+	if err := http.ListenAndServe(":"+strconv.Itoa(port), handler()); err != nil {
 		panic(err)
 	}
 }
