@@ -3,8 +3,8 @@ package segcontour
 import (
 	"fmt"
 
-	"github.com/aphecetche/pigiron/geo"
-	"github.com/aphecetche/pigiron/mapping"
+	"github.com/mrrtf/pigiron/geo"
+	"github.com/mrrtf/pigiron/mapping"
 )
 
 // ShowFlags is a option struct to select what to show / hide in SVG outputs

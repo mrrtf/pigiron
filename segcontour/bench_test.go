@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/aphecetche/pigiron/mapping"
-	"github.com/aphecetche/pigiron/segcontour"
+	"github.com/mrrtf/pigiron/mapping"
+	"github.com/mrrtf/pigiron/segcontour"
 )
 
 func getSegs() map[mapping.DEID]mapping.CathodeSegmentation {

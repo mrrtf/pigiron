@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/aphecetche/pigiron/mapping"
+	"github.com/mrrtf/pigiron/mapping"
 )
 
 // PrintPad prints all known information about a pad.

@@ -1,6 +1,6 @@
 package impl4
 
-import "github.com/aphecetche/pigiron/mapping"
+import "github.com/mrrtf/pigiron/mapping"
 
 type createSegType11 struct{}
 

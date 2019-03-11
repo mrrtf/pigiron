@@ -3,9 +3,9 @@ package segcontour
 import (
 	"testing"
 
-	"github.com/aphecetche/pigiron/geo"
-	"github.com/aphecetche/pigiron/mapping"
-	_ "github.com/aphecetche/pigiron/mapping/impl4"
+	"github.com/mrrtf/pigiron/geo"
+	"github.com/mrrtf/pigiron/mapping"
+	_ "github.com/mrrtf/pigiron/mapping/impl4"
 )
 
 func TestSegmentationBBox(t *testing.T) {

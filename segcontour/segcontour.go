@@ -3,8 +3,8 @@ package segcontour
 import (
 	"log"
 
-	"github.com/aphecetche/pigiron/geo"
-	"github.com/aphecetche/pigiron/mapping"
+	"github.com/mrrtf/pigiron/geo"
+	"github.com/mrrtf/pigiron/mapping"
 )
 
 // BBox returns the bounding box of the segmentation

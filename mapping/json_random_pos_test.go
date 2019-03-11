@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/aphecetche/pigiron/mapping"
+	"github.com/mrrtf/pigiron/mapping"
 )
 
 func UnmarshalTestRandomPos(data []byte) (TestRandomPos, error) {

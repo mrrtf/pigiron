@@ -6,8 +6,8 @@ import (
 	"io"
 	"log"
 
-	"github.com/aphecetche/pigiron/mapping"
-	"github.com/aphecetche/pigiron/segcontour"
+	"github.com/mrrtf/pigiron/mapping"
+	"github.com/mrrtf/pigiron/segcontour"
 )
 
 type Vertex struct {

@@ -7,9 +7,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/aphecetche/pigiron/mapping"
+	"github.com/mrrtf/pigiron/mapping"
 	// must include the specific implementation package of the mapping
-	_ "github.com/aphecetche/pigiron/mapping/impl4"
+	_ "github.com/mrrtf/pigiron/mapping/impl4"
 )
 
 var testdeid = []mapping.DEID{100, 300, 500, 501, 502, 503, 504, 600, 601, 602, 700,

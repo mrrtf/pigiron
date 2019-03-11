@@ -3,7 +3,7 @@ package mapping_test
 import (
 	"encoding/json"
 
-	"github.com/aphecetche/pigiron/mapping"
+	"github.com/mrrtf/pigiron/mapping"
 )
 
 type TestNeighbourStruct struct {

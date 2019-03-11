@@ -3,9 +3,9 @@ package main
 import (
 	"testing"
 
-	"github.com/aphecetche/pigiron/mapping"
+	"github.com/mrrtf/pigiron/mapping"
 	// must include the specific implementation package of the mapping
-	_ "github.com/aphecetche/pigiron/mapping/impl4"
+	_ "github.com/mrrtf/pigiron/mapping/impl4"
 )
 
 func TestJSONDualSampas(t *testing.T) {

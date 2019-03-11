@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/aphecetche/pigiron/geo"
-	"github.com/aphecetche/pigiron/mapping"
+	"github.com/mrrtf/pigiron/geo"
+	"github.com/mrrtf/pigiron/mapping"
 )
 
 func BenchmarkSegmentationCreationPerDE(b *testing.B) {

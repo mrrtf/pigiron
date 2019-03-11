@@ -2,13 +2,13 @@ FROM golang:alpine as builder
 
 RUN apk add git
 
-WORKDIR /go/src/github.com/aphecetche/
+WORKDIR /go/src/github.com/mrrtf/
 
 COPY . pigiron
 
-RUN cd /go/src/github.com/aphecetche && go get ./...
+RUN cd /go/src/github.com/mrrtf && go get ./...
 
-RUN cd /go/src/github.com/aphecetche && go install ./...
+RUN cd /go/src/github.com/mrrtf && go install ./...
 
 FROM alpine:3.9
 

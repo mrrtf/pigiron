@@ -1,7 +1,7 @@
 # pigiron
 
-[![GoDoc](https://godoc.org/github.com/aphecetche/pigiron?status.svg)](https://godoc.org/github.com/aphecetche/pigiron)
-[![Build Status](https://travis-ci.org/aphecetche/pigiron.svg?branch=master)](https://travis-ci.org/aphecetche/pigiron)
+[![GoDoc](https://godoc.org/github.com/mrrtf/pigiron?status.svg)](https://godoc.org/github.com/mrrtf/pigiron)
+[![Build Status](https://travis-ci.org/mrrtf/pigiron.svg?branch=master)](https://travis-ci.org/mrrtf/pigiron)
 
 ## License
 
@@ -12,11 +12,11 @@
 `pigiron` is installable _via_ `go` `get`:
 
 ```sh
-$> go get github.com/aphecetche/pigiron/...
+$> go get github.com/mrrtf/pigiron/...
 ```
 
 ## Documentation
 
-Documentation is available on [godoc](https://godoc.org/github.com/aphecetche/pigiron).
+Documentation is available on [godoc](https://godoc.org/github.com/mrrtf/pigiron).
 
 

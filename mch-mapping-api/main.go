@@ -9,11 +9,11 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/aphecetche/pigiron/mapping"
+	"github.com/mrrtf/pigiron/mapping"
 	"github.com/spf13/viper"
 
 	// must include the specific implementation package of the mapping
-	_ "github.com/aphecetche/pigiron/mapping/impl4"
+	_ "github.com/mrrtf/pigiron/mapping/impl4"
 )
 
 var (
