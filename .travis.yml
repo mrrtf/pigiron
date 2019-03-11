@@ -10,13 +10,28 @@ matrix:
  allow_failures:
    - go: master
 
-#sudo: false
+services:
+  - docker
 
 before_install:
     - git clone git://github.com/jedisct1/libsodium.git
     - ( cd libsodium && ./autogen.sh && ./configure && make && sudo make install && sudo ldconfig )
     - git clone git://github.com/zeromq/libzmq.git
     - ( cd libzmq && ./autogen.sh && ./configure && make && sudo make install && sudo ldconfig )
+
+after_success:
+  - docker build -t mrrtf/mch-mapping-api .
+  - docker images
+
+before_deploy:
+  - docker login -u "$REGISTRY_USER" -p $"REGISTRY_PASS"
+
+deploy:
+  provider: script
+  script: docker push mrrtf/mch-mapping-api
+  on:
+    branch:
+      - master
 
 notifications:
   email:
@@ -25,3 +40,4 @@ notifications:
       - binet@cern.ch
     on_success: change
     on_failure: always
+
