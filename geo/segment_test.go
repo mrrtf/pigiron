@@ -3,7 +3,7 @@ package geo_test
 import (
 	"testing"
 
-	"github.com/aphecetche/pigiron/geo"
+	"github.com/mrrtf/pigiron/geo"
 )
 
 var (
