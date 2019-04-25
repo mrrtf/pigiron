@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/mrrtf/pigiron/mapping"
 	"github.com/spf13/viper"
 
@@ -67,7 +68,7 @@ func getDeIdBending(u *url.URL) (int, Bending, error) {
 	return deid, Bending{present: false}, nil
 }
 
-func makeHandler(fn func(w http.ResponseWriter, r *http.Request, deid int, bending bool), isBendingRequired bool) http.HandlerFunc {
+func makeHandler(fn func(w http.ResponseWriter, r *http.Request, deid int, bending bool)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		deid, bending, err := getDeIdBending(r.URL)
@@ -75,7 +76,7 @@ func makeHandler(fn func(w http.ResponseWriter, r *http.Request, deid int, bendi
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if isBendingRequired && !bending.present {
+		if !bending.present {
 			http.Error(w, ErrMissingBending.Error(), http.StatusBadRequest)
 			return
 		}
@@ -83,22 +84,70 @@ func makeHandler(fn func(w http.ResponseWriter, r *http.Request, deid int, bendi
 	}
 }
 
+func getAreaLimit(e *error, limit string, u *url.URL) float64 {
+	q := u.Query()
+	s, ok := q[limit]
+	if !ok {
+		*e = multierror.Append(*e, fmt.Errorf("missing %s", limit))
+		return 0.0
+	}
+	l, err := strconv.ParseFloat(s[0], 64)
+	if err != nil {
+		*e = multierror.Append(*e, fmt.Errorf("%s is not a float", limit))
+		return 0.0
+	}
+	return l
+}
+
+func makePadHandler(fn func(w http.ResponseWriter, r *http.Request, deid int, bending bool, xmin, ymin, xmax, ymax float64)) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		deid, bending, err := getDeIdBending(r.URL)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if !bending.present {
+			http.Error(w, ErrMissingBending.Error(), http.StatusBadRequest)
+			return
+		}
+		u := r.URL
+		var e error
+
+		xmin := getAreaLimit(&e, "xmin", u)
+		ymin := getAreaLimit(&e, "ymin", u)
+		xmax := getAreaLimit(&e, "xmax", u)
+		ymax := getAreaLimit(&e, "ymax", u)
+		if e != nil {
+			http.Error(w, e.Error(), http.StatusBadRequest)
+			return
+		}
+		fn(w, r, deid, bending.value, xmin, ymin, xmax, ymax)
+	}
+}
+
 func dualSampas(w http.ResponseWriter, r *http.Request, deid int, bending bool) {
 	cseg := mapping.NewCathodeSegmentation(mapping.DEID(deid), bending)
-	jsonDualSampas(w, cseg, bending)
+	jsonDualSampas(w, cseg)
 }
 
 func deGeo(w http.ResponseWriter, r *http.Request, deid int, bending bool) {
 	cseg := mapping.NewCathodeSegmentation(mapping.DEID(deid), bending)
-	jsonDEGeo(w, cseg, bending)
+	jsonDEGeo(w, cseg)
+}
+
+func padsInArea(w http.ResponseWriter, r *http.Request, deid int, bending bool,
+	xmin, ymin, xmax, ymax float64) {
+	cseg := mapping.NewCathodeSegmentation(mapping.DEID(deid), bending)
+	jsonPadsInArea(w, cseg, xmin, ymin, xmax, ymax)
 }
 
 func handler() http.Handler {
 	r := http.NewServeMux()
 	r.HandleFunc("/", usage())
-	bendingIsRequired := true
-	r.HandleFunc("/dualsampas", makeHandler(dualSampas, bendingIsRequired))
-	r.HandleFunc("/degeo", makeHandler(deGeo, bendingIsRequired))
+	r.HandleFunc("/dualsampas", makeHandler(dualSampas))
+	r.HandleFunc("/degeo", makeHandler(deGeo))
+	r.HandleFunc("/padsinarea", makePadHandler(padsInArea))
 	return r
 }
 

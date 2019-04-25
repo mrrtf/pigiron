@@ -30,7 +30,7 @@ of a given detection element plane</p>
 
 <h2>Pads in area</h2>
 
-<pre>/padsinarea?deid=[integer](&bending=[true|false])&xmin=[float]&ymin=[float]&xmax=[float]&ymax=[float]</pre>
+<pre>/padsinarea?deid=[integer]&bending=[true|false]&xmin=[float]&ymin=[float]&xmax=[float]&ymax=[float]</pre>
 
 <p>Returns the pads which surface intersects the area specified by xmin,ymin,xmax,ymax.</p>
 `

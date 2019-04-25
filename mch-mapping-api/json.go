@@ -15,15 +15,6 @@ type Vertex struct {
 	Y float64 `json:"Y"`
 }
 
-type Pad struct {
-	DSID int     `json:"DSID"`
-	DSCH int     `json:"DSCH"`
-	X    float64 `json:"X"`
-	Y    float64 `json:"Y"`
-	SX   float64 `json:"SX"`
-	SY   float64 `json:"SY"`
-}
-
 type DualSampaPads struct {
 	ID   int `json:"ID"`
 	Pads []Pad
@@ -48,7 +39,7 @@ type DEGeo struct {
 	SY      float64 `json:"SY"`
 }
 
-func jsonDEGeo(w io.Writer, cseg mapping.CathodeSegmentation, bending bool) {
+func jsonDEGeo(w io.Writer, cseg mapping.CathodeSegmentation) {
 
 	bbox := mapping.ComputeBBox(cseg)
 
@@ -73,7 +64,7 @@ func jsonDualSampaPads(w io.Writer, seg mapping.Segmentation, dsid int) {
 	w.Write([]byte("coucou from JSONDualSampaPads"))
 }
 
-func jsonDualSampas(w io.Writer, cseg mapping.CathodeSegmentation, bending bool) {
+func jsonDualSampas(w io.Writer, cseg mapping.CathodeSegmentation) {
 
 	de := DE{}
 	var dualSampas []DualSampa
