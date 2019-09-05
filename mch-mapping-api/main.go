@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/mrrtf/pigiron/mapping"
+	v2 "github.com/mrrtf/pigiron/mch-mapping-api/v2"
 	"github.com/spf13/viper"
 
 	// must include the specific implementation package of the mapping
@@ -70,6 +71,7 @@ func getDeIdBending(u *url.URL) (int, Bending, error) {
 func makeHandler(fn func(w http.ResponseWriter, r *http.Request, deid int, bending bool), isBendingRequired bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Content-type", "application/json")
 		deid, bending, err := getDeIdBending(r.URL)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -98,6 +100,7 @@ func handler() http.Handler {
 	r.HandleFunc("/", usage())
 	bendingIsRequired := true
 	r.HandleFunc("/dualsampas", makeHandler(dualSampas, bendingIsRequired))
+	r.HandleFunc("/v2/dualsampas", makeHandler(v2.DualSampas, bendingIsRequired))
 	r.HandleFunc("/degeo", makeHandler(deGeo, bendingIsRequired))
 	return r
 }
