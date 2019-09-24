@@ -11,8 +11,8 @@ import (
 )
 
 type Vertex struct {
-	X float64 `json:"X"`
-	Y float64 `json:"Y"`
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
 }
 
 type Pad struct {
@@ -35,27 +35,37 @@ type DualSampa struct {
 }
 
 type DEGeo struct {
-	ID      int     `json:"ID"`
-	Bending bool    `json:"Bending"`
-	X       float64 `json:"X"`
-	Y       float64 `json:"Y"`
-	SX      float64 `json:"SX"`
-	SY      float64 `json:"SY"`
+	ID       int      `json:"id"`
+	Bending  bool     `json:"bending"`
+	X        float64  `json:"x"`
+	Y        float64  `json:"y"`
+	SX       float64  `json:"sx"`
+	SY       float64  `json:"sy"`
+	Vertices []Vertex `json:"vertices"`
 }
 
 func jsonDEGeo(w io.Writer, cseg mapping.CathodeSegmentation, bending bool) {
 
 	bbox := mapping.ComputeBBox(cseg)
 
-	b, err := json.Marshal(
-		DEGeo{
-			ID:      int(cseg.DetElemID()),
-			Bending: cseg.IsBending(),
-			X:       bbox.Xcenter(),
-			Y:       bbox.Ycenter(),
-			SX:      bbox.Width(),
-			SY:      bbox.Height()},
-	)
+	var vertices []Vertex
+	contour := segcontour.Contour(cseg)
+	for _, c := range contour {
+		for _, v := range c {
+			vertices = append(vertices, Vertex{X: v.X, Y: v.Y})
+		}
+	}
+
+	degeo := DEGeo{
+		ID:      int(cseg.DetElemID()),
+		Bending: cseg.IsBending(),
+		X:       bbox.Xcenter(),
+		Y:       bbox.Ycenter(),
+		SX:      bbox.Width(),
+		SY:      bbox.Height()}
+
+	degeo.Vertices = vertices
+	b, err := json.Marshal(degeo)
 
 	if err != nil {
 		log.Fatalf(err.Error())
@@ -64,8 +74,36 @@ func jsonDEGeo(w io.Writer, cseg mapping.CathodeSegmentation, bending bool) {
 	fmt.Fprintf(w, string(b))
 }
 
-func jsonDualSampaPads(w io.Writer, seg mapping.Segmentation, dsid int) {
-	w.Write([]byte("coucou from JSONDualSampaPads"))
+func jsonDualSampaPads(w io.Writer, cseg mapping.CathodeSegmentation, dsid int) {
+	var dualSampas []DualSampa
+	n := cseg.NofDualSampas()
+
+	for i := 0; i < n; i++ {
+		dsid, err := cseg.DualSampaID(i)
+		if err != nil {
+			panic(err)
+		}
+
+		ds := DualSampa{ID: int(dsid)}
+
+		padContours := segcontour.GetDualSampaPadPolygons(cseg, mapping.DualSampaID(dsid))
+
+		for _, c := range padContours {
+			for _, v := range c {
+				ds.Vertices = append(ds.Vertices, Vertex{X: v.X, Y: v.Y})
+			}
+		}
+
+		dualSampas = append(dualSampas, ds)
+	}
+
+	b, err := json.Marshal(dualSampas)
+
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+
+	fmt.Fprintf(w, string(b))
 }
 
 func jsonDualSampas(w io.Writer, cseg mapping.CathodeSegmentation, bending bool) {
