@@ -72,24 +72,54 @@ func initDetectionElementRotations() {
 		de2rot[i*100+2] = FlipY
 		de2rot[i*100+3] = FlipNone
 	}
-	de2rot[500] = FlipXY
-	de2rot[501] = FlipXY
-	de2rot[502] = FlipNone
-	de2rot[503] = FlipX
-	de2rot[504] = FlipNone
-	de2rot[505] = FlipY
-	de2rot[506] = FlipXY
-	de2rot[507] = FlipY
-	de2rot[508] = FlipX
-	de2rot[509] = FlipX
-	de2rot[510] = FlipNone
-	de2rot[511] = FlipY
-	de2rot[512] = FlipXY
-	de2rot[513] = FlipY
-	de2rot[514] = FlipNone
-	de2rot[515] = FlipX
-	de2rot[516] = FlipNone
-	de2rot[517] = FlipY
+	for i := 0; i < 2; i++ {
+		de2rot[500+i*100] = FlipXY
+		de2rot[501+i*100] = FlipXY
+		de2rot[502+i*100] = FlipNone
+		de2rot[503+i*100] = FlipX
+		de2rot[504+i*100] = FlipNone
+		de2rot[505+i*100] = FlipY
+		de2rot[506+i*100] = FlipXY
+		de2rot[507+i*100] = FlipY
+		de2rot[508+i*100] = FlipX
+		de2rot[509+i*100] = FlipX
+		de2rot[510+i*100] = FlipNone
+		de2rot[511+i*100] = FlipY
+		de2rot[512+i*100] = FlipXY
+		de2rot[513+i*100] = FlipY
+		de2rot[514+i*100] = FlipNone
+		de2rot[515+i*100] = FlipX
+		de2rot[516+i*100] = FlipNone
+		de2rot[517+i*100] = FlipY
+	}
+	for i := 0; i < 4; i++ {
+		de2rot[700+i*100] = FlipNone
+		de2rot[701+i*100] = FlipXY
+		de2rot[702+i*100] = FlipNone
+		de2rot[703+i*100] = FlipX
+		de2rot[704+i*100] = FlipNone
+		de2rot[705+i*100] = FlipX
+		de2rot[706+i*100] = FlipNone
+		de2rot[707+i*100] = FlipY
+		de2rot[708+i*100] = FlipXY
+		de2rot[709+i*100] = FlipY
+		de2rot[710+i*100] = FlipXY
+		de2rot[711+i*100] = FlipY
+		de2rot[712+i*100] = FlipX
+		de2rot[713+i*100] = FlipY
+		de2rot[714+i*100] = FlipNone
+		de2rot[715+i*100] = FlipY
+		de2rot[716+i*100] = FlipXY
+		de2rot[717+i*100] = FlipY
+		de2rot[718+i*100] = FlipXY
+		de2rot[719+i*100] = FlipY
+		de2rot[720+i*100] = FlipNone
+		de2rot[721+i*100] = FlipX
+		de2rot[722+i*100] = FlipNone
+		de2rot[723+i*100] = FlipX
+		de2rot[724+i*100] = FlipNone
+		de2rot[725+i*100] = FlipY
+	}
 }
 
 func init() {
