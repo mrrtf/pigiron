@@ -238,7 +238,7 @@ func jsonDualSampas(w io.Writer, cseg mapping.CathodeSegmentation, bending bool)
 func jsonPadList(w io.Writer, padlist []PadRef) {
 
 	type Vertices struct {
-		Vertices []Vertex
+		Vertices []Vertex `json:"vertices"`
 	}
 
 	pads := make(map[string]Vertices)
