@@ -33,4 +33,10 @@ of a given detection element plane</p>
 <pre>/padsinarea?deid=[integer](&bending=[true|false])&xmin=[float]&ymin=[float]&xmax=[float]&ymax=[float]</pre>
 
 <p>Returns the pads which surface intersects the area specified by xmin,ymin,xmax,ymax.</p>
+
+<h2>Pad list</h2>
+
+<pre>/padlist</pre>
+
+<p>The json request must contain a list of padid to get from one or several deids</p>
 `

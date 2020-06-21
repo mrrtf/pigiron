@@ -16,12 +16,10 @@ type Vertex struct {
 }
 
 type Pad struct {
-	DSID int     `json:"DSID"`
-	DSCH int     `json:"DSCH"`
-	X    float64 `json:"X"`
-	Y    float64 `json:"Y"`
-	SX   float64 `json:"SX"`
-	SY   float64 `json:"SY"`
+	DEID     int      `json:"deid"`
+	DSID     int      `json:"dsid"`
+	DSCH     int      `json:"dsch"`
+	Vertices []Vertex `json:"vertices"`
 }
 
 type DualSampaPads struct {
@@ -229,6 +227,40 @@ func jsonDualSampas(w io.Writer, cseg mapping.CathodeSegmentation, bending bool)
 	}
 
 	b, err := json.Marshal(dualSampas)
+
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+
+	fmt.Fprintf(w, string(b))
+}
+
+func jsonPadList(w io.Writer, padlist []PadRef) {
+
+	var pads []Pad
+
+	segcache := mapping.SegCache{}
+
+	for _, pad := range padlist {
+		paduid := mapping.PadUID(pad.PadId)
+		seg := segcache.Segmentation(mapping.DEID(pad.DeId))
+		x := seg.PadPositionX(paduid)
+		y := seg.PadPositionY(paduid)
+		dx := seg.PadSizeX(paduid) / 2
+		dy := seg.PadSizeY(paduid) / 2
+		var vertices []Vertex
+		vertices = append(vertices, Vertex{X: x - dx, Y: y - dy})
+		vertices = append(vertices, Vertex{X: x + dx, Y: y - dy})
+		vertices = append(vertices, Vertex{X: x + dx, Y: y + dy})
+		vertices = append(vertices, Vertex{X: x - dx, Y: y + dy})
+		vertices = append(vertices, Vertex{X: x - dx, Y: y - dy})
+		pads = append(pads, Pad{DEID: pad.DeId,
+			DSID:     int(seg.PadDualSampaID(paduid)),
+			DSCH:     int(seg.PadDualSampaChannel(paduid)),
+			Vertices: vertices})
+	}
+
+	b, err := json.Marshal(pads)
 
 	if err != nil {
 		log.Fatalf(err.Error())

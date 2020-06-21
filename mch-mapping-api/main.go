@@ -169,6 +169,7 @@ func handler() http.Handler {
 	r.HandleFunc("/v2/dualsampas", makeHandler(v2.DualSampas, bendingIsRequired))
 	r.HandleFunc("/v2/dualsampapads", makeDEDSHandler(v2.GetDualSampaPads))
 	r.HandleFunc("/v2/degeo", makeHandler(v2.DeGeo, bendingIsRequired))
+	r.HandleFunc("/v2/padlist", v2.PadList)
 	return r
 }
 
