@@ -8,9 +8,13 @@ import (
 	"github.com/mrrtf/pigiron/mapping"
 )
 
+type Padlist struct {
+	Padlist []PadRef `json:"padlist"`
+}
+
 type PadRef struct {
-	DeId  int
-	PadId int
+	DeId  int `json:"deid"`
+	PadId int `json:"padid"`
 }
 
 func DualSampas(w http.ResponseWriter, r *http.Request, deid int, bending bool) {
@@ -32,43 +36,22 @@ func DeGeo(w http.ResponseWriter, r *http.Request, deid int, bending bool) {
 	jsonDEGeo(w, cseg, bending)
 }
 
-type RequestPadId struct {
-	Des []struct {
-		ID     int   `json:"id"`
-		Padids []int `json:"padids"`
-	} `json:"des"`
-}
-
 func PadList(w http.ResponseWriter, r *http.Request) {
 	// expected form of the request is :
-	// {
-	//         "des": [
-	//                 {
-	//                 "id": 102,
-	//                 "padids": [
-	//                         1,
-	//                         3,
-	//                         150,
-	//                         14678
-	//                 ]
-	//                 }
-	//         ]
-	// }
+	// "padlist": [ "X-Y-Z", "a-b-c" ... ]
+	// where
+	// X=DeId
+	// Y=DsId
+	// Z=DsCh
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 	w.Header().Set("Content-type", "application/json")
-	var p RequestPadId
+	var padlist Padlist
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&p)
+	err := decoder.Decode(&padlist)
 	if err != nil {
 		fmt.Fprintf(w, err.Error())
 		return
 	}
-	var padlist []PadRef
-	for _, de := range p.Des {
-		for _, pad := range de.Padids {
-			padlist = append(padlist, PadRef{de.ID, pad})
-		}
-	}
-	jsonPadList(w, padlist)
+	jsonPadList(w, padlist.Padlist)
 }

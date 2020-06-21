@@ -1,0 +1,32 @@
+{
+  "padlist": [
+    {
+      "deid": 100,
+      "padid": 1
+    },
+    {
+      "deid": 100,
+      "padid": 2
+    },
+    {
+      "deid": 100,
+      "padid": 3
+    },
+    {
+      "deid": 1025,
+      "padid": 1
+    },
+    {
+      "deid": 1025,
+      "padid": 2
+    },
+    {
+      "deid": 1025,
+      "padid": 3
+    },
+    {
+      "deid": 503,
+      "padid": 1589
+    }
+  ]
+}

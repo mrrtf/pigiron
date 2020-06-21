@@ -237,7 +237,11 @@ func jsonDualSampas(w io.Writer, cseg mapping.CathodeSegmentation, bending bool)
 
 func jsonPadList(w io.Writer, padlist []PadRef) {
 
-	var pads []Pad
+	type Vertices struct {
+		Vertices []Vertex
+	}
+
+	pads := make(map[string]Vertices)
 
 	segcache := mapping.SegCache{}
 
@@ -254,10 +258,10 @@ func jsonPadList(w io.Writer, padlist []PadRef) {
 		vertices = append(vertices, Vertex{X: x + dx, Y: y + dy})
 		vertices = append(vertices, Vertex{X: x - dx, Y: y + dy})
 		vertices = append(vertices, Vertex{X: x - dx, Y: y - dy})
-		pads = append(pads, Pad{DEID: pad.DeId,
-			DSID:     int(seg.PadDualSampaID(paduid)),
-			DSCH:     int(seg.PadDualSampaChannel(paduid)),
-			Vertices: vertices})
+		key := fmt.Sprintf("%v-%v-%v", pad.DeId,
+			int(seg.PadDualSampaID(paduid)),
+			int(seg.PadDualSampaChannel(paduid)))
+		pads[key] = Vertices{vertices}
 	}
 
 	b, err := json.Marshal(pads)
