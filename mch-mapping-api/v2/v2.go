@@ -9,7 +9,8 @@ import (
 )
 
 type Padlist struct {
-	Padlist []PadRef `json:"padlist"`
+	Padlist   []PadRef `json:"padlist"`
+	KeepOrder bool     `json:"keepOrder"`
 }
 
 type PadRef struct {
@@ -53,5 +54,5 @@ func PadList(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, err.Error())
 		return
 	}
-	jsonPadList(w, padlist.Padlist)
+	jsonPadList(w, padlist.Padlist, padlist.KeepOrder)
 }

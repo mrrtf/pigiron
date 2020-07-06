@@ -22,6 +22,13 @@ type Pad struct {
 	Vertices []Vertex `json:"vertices"`
 }
 
+type PadAlt struct {
+	DEID     int      `json:"deid"`
+	PADID    int      `json:"padid"`
+	KEY      string   `json:"id"`
+	Vertices []Vertex `json:"vertices"`
+}
+
 type DualSampaPads struct {
 	ID   int `json:"id"`
 	Pads []Pad
@@ -235,17 +242,21 @@ func jsonDualSampas(w io.Writer, cseg mapping.CathodeSegmentation, bending bool)
 	fmt.Fprintf(w, string(b))
 }
 
-func jsonPadList(w io.Writer, padlist []PadRef) {
+func jsonPadList(w io.Writer, padlist []PadRef, keepOrder bool) {
 
-	type Vertices struct {
-		Vertices []Vertex `json:"vertices"`
+	if !keepOrder {
+		jsonPadListRegular(w, padlist)
+	} else {
+		jsonPadListOrdered(w, padlist)
 	}
+}
 
-	pads := make(map[string]Vertices)
+type Vertices struct {
+	Vertices []Vertex `json:"vertices"`
+}
 
-	segcache := mapping.SegCache{}
-
-	for _, pad := range padlist {
+func createVertexer(segcache mapping.SegCache) func(pad PadRef) (string, []Vertex) {
+	return func(pad PadRef) (string, []Vertex) {
 		paduid := mapping.PadUID(pad.PadId)
 		seg := segcache.Segmentation(mapping.DEID(pad.DeId))
 		x := seg.PadPositionX(paduid)
@@ -261,7 +272,48 @@ func jsonPadList(w io.Writer, padlist []PadRef) {
 		key := fmt.Sprintf("%v-%v-%v", pad.DeId,
 			int(seg.PadDualSampaID(paduid)),
 			int(seg.PadDualSampaChannel(paduid)))
+		return key, vertices
+	}
+}
+
+func jsonPadListRegular(w io.Writer, padlist []PadRef) {
+	pads := make(map[string]Vertices)
+
+	segcache := mapping.SegCache{}
+
+	vertexer := createVertexer(segcache)
+
+	for _, pad := range padlist {
+		key, vertices := vertexer(pad)
 		pads[key] = Vertices{vertices}
+	}
+
+	b, err := json.Marshal(pads)
+
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+
+	fmt.Fprintf(w, string(b))
+}
+
+// type PadAlt struct {
+// 	DEID     int      `json:"deid"`
+// 	PADID    int      `json:"padid"`
+// 	KEY      string   `json:"key"`
+// 	Vertices []Vertex `json:"vertices"`
+// }
+
+func jsonPadListOrdered(w io.Writer, padlist []PadRef) {
+	var pads []PadAlt
+
+	segcache := mapping.SegCache{}
+
+	vertexer := createVertexer(segcache)
+
+	for _, pad := range padlist {
+		key, vertices := vertexer(pad)
+		pads = append(pads, PadAlt{DEID: pad.DeId, PADID: pad.PadId, KEY: key, Vertices: vertices})
 	}
 
 	b, err := json.Marshal(pads)

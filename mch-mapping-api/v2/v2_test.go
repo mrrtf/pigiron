@@ -31,10 +31,6 @@ func TestDecoder(t *testing.T) {
 	}
 }
 
-type Vertices struct {
-	Vertices []Vertex
-}
-
 func TestMarshalMap(t *testing.T) {
 	m := make(map[string]Vertices)
 	var v []Vertex
@@ -44,7 +40,7 @@ func TestMarshalMap(t *testing.T) {
 	if err != nil {
 		t.Error("could not marshal map")
 	}
-	const expected = `{"1-2-3":{"Vertices":[{"x":12,"y":34}]}}`
+	const expected = `{"1-2-3":{"vertices":[{"x":12,"y":34}]}}`
 	got := string(jsonString)
 	if expected != got {
 		t.Errorf("got %s instead of expected %s", got, expected)
