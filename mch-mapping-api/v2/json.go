@@ -259,6 +259,11 @@ func createVertexer(segcache mapping.SegCache) func(pad PadRef) (string, []Verte
 	return func(pad PadRef) (string, []Vertex) {
 		paduid := mapping.PadUID(pad.PadId)
 		seg := segcache.Segmentation(mapping.DEID(pad.DeId))
+		cseg := seg.Bending()
+		if !seg.IsBendingPad(paduid) {
+			cseg = seg.NonBending()
+		}
+		bbox := mapping.ComputeBBox(cseg)
 		x := seg.PadPositionX(paduid)
 		y := seg.PadPositionY(paduid)
 		dx := seg.PadSizeX(paduid) / 2
@@ -272,6 +277,7 @@ func createVertexer(segcache mapping.SegCache) func(pad PadRef) (string, []Verte
 		key := fmt.Sprintf("%v-%v-%v", pad.DeId,
 			int(seg.PadDualSampaID(paduid)),
 			int(seg.PadDualSampaChannel(paduid)))
+		vertices = flipVertices(vertices, pad.DeId, bbox.Xcenter(), bbox.Ycenter())
 		return key, vertices
 	}
 }
